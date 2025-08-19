@@ -32,19 +32,19 @@ When developing locally, we use:
 Full documentation is available here: [`docs/`](docs).
 
 
-### Установка зависимостей при помощи poetry
+### Installing dependencies using Poetry
 
-1. Установите пакетный менеджер poetry
-2. Установите pyton 3.12.11(рекомендую познакомится с менеджером uv *https://habr.com/ru/articles/828016/*)
-3. Создайте окружение для poetry. 
-Используя команду `poetry env use` укажите путь где лежит ваш python 3.12.11
+1. Install the package manager Poetry.
+2. Install Python 3.12.11 (I recommend getting acquainted with the UV environment manager — read more at this article (https://habr.com/ru/articles/828016/)).
+3. Create an environment for Poetry.
+Use the command `poetry env use` to specify the path where your Python 3.12.11 is located.
 
-В моём случае выглядело так:
+In my case it looked like this:
 
 ```bash
 poetry env use  /home/aldmal/snap/code/204/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/bin/python3.12
 
 ```
 
-4. Командой `poetry install` установите зависимости для проекта.
-5. Введите в терминале `poetry` чтобы увидеть список доступных команд.
+4. Run the command `poetry install` to install project dependencies.
+5. Type `poetry` in the terminal to see a list of available commands.
