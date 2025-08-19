@@ -34,6 +34,8 @@ gunicorn = "^23.0"
 python-decouple = "^3.8"
 structlog = "^25.4"
 wheel = "^0.45"
+django-rest-framework = "^0.1"
+django-cors-headers = "^4.7"
 
 
 [tool.poetry.group.dev.dependencies]
