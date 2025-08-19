@@ -35,7 +35,7 @@ Full documentation is available here: [`docs/`](docs).
 ### Installing dependencies using Poetry
 
 1. Install the package manager Poetry.
-2. Install Python 3.12.11 (I recommend getting acquainted with the UV environment manager — read more at this article (https://habr.com/ru/articles/828016/)).
+2. Install Python 3.12.11 with poetry env install command, or use pyenv.
 3. Create an environment for Poetry.
 Use the command `poetry env use` to specify the path where your Python 3.12.11 is located.
 

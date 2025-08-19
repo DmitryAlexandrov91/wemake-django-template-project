@@ -53,6 +53,7 @@ ehthumbs_vista.db
 # Folder config file
 Desktop.ini
 
+
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
@@ -214,3 +215,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Visual Studio Code workspace settings
+.vscode/
