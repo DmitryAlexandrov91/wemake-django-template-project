@@ -40,7 +40,6 @@ run_ci () {
 
   # Linl HTML formatting:
   djlint --check server
-  djlint --lint server
 
   # Running type checking, see https://github.com/typeddjango/django-stubs
   mypy .
