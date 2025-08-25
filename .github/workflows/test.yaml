@@ -1,0 +1,53 @@
+---
+name: Test Code Quality
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [devops/test-deploy-main, devops/test-deploy-dev]
+  pull_request:
+    branches: [main, dev]
+
+env:
+  DOCKER_TAG: kk-back-${{ github.run_id }}
+  PYTHON_VERSION: '3.12'
+  POETRY_VERSION: '2.1.4'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
+      SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN}}
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: 2. Set environment variables
+        run: |
+          echo "IMAGE_NAME=${{ vars.DOCKERHUB_IMAGE }}" >> $GITHUB_ENV
+          echo "TAG_NAME=$DOCKER_TAG" >> $GITHUB_ENV
+
+      - name: 3. Create .env file for CI
+        run: |
+          pip3 install dump-env
+          dump-env \
+            -t config/.env.template \
+            -p 'SECRET_' \
+            --strict SECRET_DJANGO_SECRET_KEY \
+            --strict SECRET_TG_BOT_TOKEN > config/.env
+
+      - name: 4. Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: 5. Build and run tests
+        run: |
+          docker compose build \
+            --progress=plain \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            web
+          docker compose run \
+            --user=root \
+            --rm \
+            web ./docker/django/ci.sh
