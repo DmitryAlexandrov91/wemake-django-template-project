@@ -33,3 +33,9 @@ def _debug(settings: LazySettings) -> None:
     settings.DEBUG = False
     for template in settings.TEMPLATES:
         template['OPTIONS']['debug'] = True
+
+
+@pytest.fixture(autouse=True)
+def _db_connections(settings: LazySettings) -> None:
+    """Sets CONN_MAX_AGE to close database connections after each request."""
+    settings.DATABASES['default']['CONN_MAX_AGE'] = 0
