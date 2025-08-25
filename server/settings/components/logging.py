@@ -1,10 +1,3 @@
-# Logging
-# https://docs.djangoproject.com/en/5.2/topics/logging/
-
-# See also:
-# 'Do not log' by Nikita Sobolev (@sobolevn)
-# https://sobolevn.me/2020/03/do-not-log
-
 from __future__ import annotations
 
 from collections.abc import Callable

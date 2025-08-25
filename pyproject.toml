@@ -36,6 +36,7 @@ structlog = "^25.4"
 wheel = "^0.45"
 django-cors-headers = "^4.7"
 djangorestframework = "^3.16.1"
+punq = "^0.7"
 
 
 [tool.poetry.group.dev.dependencies]
