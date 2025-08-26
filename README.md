@@ -30,6 +30,7 @@ When developing locally, we use:
 ## Documentation
 
 Full documentation is available here: [`docs/`](docs).
+Cheatsheet is available [here](https://storage.yandexcloud.net/yamaster-teamclimate/useful-links_teamclimate.drawio.html).
 
 
 ### Installing dependencies using Poetry

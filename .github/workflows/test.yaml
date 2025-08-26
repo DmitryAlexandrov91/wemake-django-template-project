@@ -1,8 +1,6 @@
 ---
 name: Test Code Quality
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches: [devops/test-deploy-main, devops/test-deploy-dev]
   pull_request:
     branches: [main, dev]
 
