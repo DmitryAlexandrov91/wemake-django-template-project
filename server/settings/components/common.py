@@ -22,6 +22,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 INSTALLED_APPS: tuple[str, ...] = (
     # Your apps go here:
     'server.apps.users',
+    'server.apps.surveys',
     # Default django apps:
     'django.contrib.auth',
     'django.contrib.contenttypes',
