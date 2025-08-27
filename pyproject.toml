@@ -37,6 +37,7 @@ wheel = "^0.45"
 django-cors-headers = "^4.7"
 djangorestframework = "^3.16.1"
 punq = "^0.7"
+pytelegrambotapi = "^4.28"
 
 
 [tool.poetry.group.dev.dependencies]
