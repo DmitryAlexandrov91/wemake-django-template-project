@@ -65,6 +65,8 @@ MIDDLEWARE: tuple[str, ...] = (
     'axes.middleware.AxesMiddleware',
 )
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 ROOT_URLCONF = 'server.urls'
 
 WSGI_APPLICATION = 'server.wsgi.application'
