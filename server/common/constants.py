@@ -1,0 +1,1 @@
+DATA_LENGHT = 254
