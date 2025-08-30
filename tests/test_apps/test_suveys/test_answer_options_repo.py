@@ -3,6 +3,8 @@ import pytest
 from server.apps.surveys.infra.repository import AnswerOptionRepo
 from server.apps.surveys.models import AnswerOption, Question
 
+pytestmark = pytest.mark.django_db
+
 
 @pytest.fixture
 def repo() -> AnswerOptionRepo:
