@@ -32,4 +32,3 @@ def resolve[Thing](thing: type[Thing]) -> Thing:
 
 
 container = create_container()
-

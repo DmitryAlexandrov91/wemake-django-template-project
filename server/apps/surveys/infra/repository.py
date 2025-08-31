@@ -2,7 +2,6 @@ from typing import final
 
 from django.db.models import QuerySet
 
-
 from server.apps.surveys.models import AnswerOption, Question
 
 
