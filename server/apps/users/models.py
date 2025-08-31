@@ -126,6 +126,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         help_text='Enter your role: ',
     )
+
+    department = models.ForeignKey(
+        'company.Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        help_text="Select the user's department (optional): ",
+    )
+
     is_active = models.BooleanField(
         'Active status',
         default=True,
