@@ -1,7 +1,7 @@
 import punq
 from telebot import TeleBot
 
-from server.apps.surveys.infra.repository import AnswerOptionRepo
+from server.apps.surveys.infra.repository import AnswerOptionRepo, QuestionRepo
 from server.settings.components import tgbot as settings
 
 
@@ -12,16 +12,17 @@ def _inject_tg(container: punq.Container) -> None:
     )
 
 
-def _inject_repositories(container: punq.Container) -> None:
+def _inject_infra(container: punq.Container) -> None:
     """Register repositories."""
     container.register(AnswerOptionRepo, scope='singleton')
+    container.register(QuestionRepo)
 
 
 def create_container() -> punq.Container:
     """Create container."""
     container = punq.Container()
     _inject_tg(container)
-    _inject_repositories(container)
+    _inject_infra(container)
     return container
 
 
@@ -31,3 +32,4 @@ def resolve[Thing](thing: type[Thing]) -> Thing:
 
 
 container = create_container()
+
