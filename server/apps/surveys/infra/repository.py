@@ -2,7 +2,27 @@ from typing import final
 
 from django.db.models import QuerySet
 
-from server.apps.surveys.models import Question
+from server.apps.surveys.models import AnswerOption, Question
+
+
+@final
+class AnswerOptionRepo:
+    """Repository for AnswerOption model."""
+
+    def __init__(self, model: type[AnswerOption] = AnswerOption):
+        """Initialize repository."""
+        self.model = model
+
+    def get_all(self) -> QuerySet[AnswerOption]:
+        """Returns all answer options from DB."""
+        return self.model.objects.all()
+
+    def get_by_pk(self, pk: int) -> AnswerOption | None:
+        """Returns one answer option from DB by pk."""
+        try:
+            return self.model.objects.get(pk=pk)
+        except self.model.DoesNotExist:
+            return None
 
 
 @final
