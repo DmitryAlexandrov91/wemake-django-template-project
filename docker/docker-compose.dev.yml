@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
     env_file: ./config/.env
     volumes:
-      - ./docker/caddy/Caddyfile.prod:/etc/caddy/Caddyfile  # configuration
+      - ./docker/caddy/Caddyfile.dev:/etc/caddy/Caddyfile  # configuration
       - ./docker/caddy/ci.sh:/etc/ci.sh  # test script
       - /etc/letsencrypt:/certs:ro  # mount external letsencrypt
       - caddy-config:/config  # configuration autosaves
@@ -21,30 +21,22 @@ services:
       - django-static:/var/www/django/static  # statics
       - django-media:/var/www/django/media  # media
     ports:
-      - "80:80"
-      - "443:443"
+      - "8000:8000"
     networks:
       - proxy-net
 
   web:
-    <<: &web
+    <<: &web  # Image for production:
       image: ${DOCKER_TAG_WEB}
+      env_file: ./config/.env
+      restart: unless-stopped
       volumes:
-        - django-static:/var/www/django/static
         - django-media:/var/www/django/media
         - django-locale:/code/locale
-      restart: unless-stopped
-      command: bash ./docker/django/gunicorn.sh
-      depends_on:
-        db:
-          condition: service_healthy
-      networks:
-        - web-net
-        - postgres-net
-        - proxy-net
-      env_file: ./config/.env
-      environment:
-        DJANGO_DATABASE_HOST: db
+
+    command: bash ./docker/django/gunicorn.sh
+    networks:
+      - proxy-net
     expose:
       - 8000
 
@@ -59,8 +51,6 @@ networks:
   # Network for your proxy server and application to connect them,
   # do not use it for anything else!
   proxy-net:
-  # Network for postgres, use it for services that need access to the db:
-
 
 volumes:
   django-media:

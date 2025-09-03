@@ -6,6 +6,9 @@ values are overridden.
 """
 
 from server.settings.components import config
+from server.settings.components.common import (
+    DATABASES,
+)
 
 # Production flags:
 # https://docs.djangoproject.com/en/5.2/howto/deployment/
@@ -75,3 +78,6 @@ SECURE_REDIRECT_EXEMPT = [
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# persist connections should be disabled for postgres pooling makes it job
+DATABASES['default']['CONN_MAX_AGE'] = 0

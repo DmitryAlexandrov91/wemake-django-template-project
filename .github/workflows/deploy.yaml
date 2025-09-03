@@ -1,0 +1,168 @@
+---
+# For deploy you need GitHub environments: production and dev
+# Each environment must contain those secrets and variables:
+# Secrets:
+#  DOCKERHUB_TOKEN, DOCKERHUB_USERNAME, SECRET_DJANGO_SECRET_KEY,
+#  SECRET_POSTGRES_PASSWORD, SECRET_TG_BOT_TOKEN, SSH_DEPLOY_KEY,
+#  SSH_DEPLOY_USER
+#
+# Variables:
+#  DOCKERHUB_IMAGE, SSH_DEPLOY_HOST, CONFIG_DOMAIN_NAME
+
+name: Test and deploy
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main, devops/test-deploy-main, dev, devops/test-deploy-dev]
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    env:
+      SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
+      SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN }}
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: 2. Create .env file for CI
+        run: |
+          pip3 install dump-env
+          dump-env \
+            -t config/.env.template \
+            -p 'SECRET_' \
+            --strict SECRET_DJANGO_SECRET_KEY \
+            --strict SECRET_TG_BOT_TOKEN > config/.env
+
+      - name: 3. Login to GitHub Container Registry (for caching)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: 4. Build and test wemake-django-template containers
+        run: |
+          docker compose build \
+            --progress=plain \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            web
+          docker compose run \
+            --user=root \
+            --rm \
+            web ./docker/django/ci.sh
+
+  build-and-release:
+    runs-on: ubuntu-latest
+    needs: test
+    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    env:
+      SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
+      SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN }}
+      DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-${{ github.run_id }}
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: 2. Create .env file for CI
+        run: |
+          pip3 install dump-env
+          dump-env \
+            -t config/.env.template \
+            -p 'SECRET_' \
+            --strict SECRET_DJANGO_SECRET_KEY \
+            --strict SECRET_TG_BOT_TOKEN > config/.env
+
+      - name: 3. Login to GitHub Container Registry (for caching)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: 4. Build Django container for production
+        run: |
+          docker compose \
+            -f docker-compose.yml \
+            -f docker/docker-compose.prod.yml \
+            build \
+            --progress=plain \
+            web
+
+      - name: 6. Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 7. Push Django-container  to DockerHub
+        id: push
+        run: |
+          docker push ${{ env.DOCKER_TAG_WEB}}
+
+
+  deploy:
+    needs: build-and-release
+    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    env:
+      # DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-${{ github.run_id }}
+      DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-17326112842
+      SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
+      SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN }}
+      SECRET_POSTGRES_PASSWORD: ${{ secrets.SECRET_POSTGRES_PASSWORD }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      CONFIG_DOMAIN_NAME: ${{ vars.CONFIG_DOMAIN_NAME }}
+      DEPLOY_ENV: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: 2. Create .env file
+        run: |
+          pip3 install dump-env
+          dump-env \
+            -t config/.env.template \
+            -p 'SECRET_' \
+            -p 'CONFIG_' \
+            --strict SECRET_DJANGO_SECRET_KEY \
+            --strict SECRET_TG_BOT_TOKEN \
+            --strict SECRET_POSTGRES_PASSWORD \
+          > config/.env
+
+      - name: Copy deploy files to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.SSH_DEPLOY_HOST }}
+          username: ${{ secrets.SSH_DEPLOY_USER }}
+          key: ${{ secrets.SSH_DEPLOY_KEY }}
+          overwrite: true
+          source: "config/.env,docker-compose.yml,docker"
+          target: ${{ env.DEPLOY_ENV }}
+
+      - name: ssh docker compose up
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ vars.SSH_DEPLOY_HOST }}
+          username: ${{ secrets.SSH_DEPLOY_USER }}
+          key: ${{ secrets.SSH_DEPLOY_KEY }}
+          envs: >
+            DOCKER_TAG_WEB,
+            DOCKERHUB_TOKEN,
+            DOCKERHUB_USERNAME,
+            DEPLOY_ENV
+          script: |
+            echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} \
+            --password-stdin
+            cd ~/${DEPLOY_ENV}
+            docker compose \
+            -p ${DEPLOY_ENV} \
+            -f docker-compose.yml \
+            -f docker/docker-compose.dev.yml \
+            up -d
+            docker compose \
+            -p ${DEPLOY_ENV} \
+            -f docker-compose.yml \
+            -f docker/docker-compose.dev.yml \
+            restart caddy
