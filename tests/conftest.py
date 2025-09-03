@@ -10,6 +10,7 @@ pytest_plugins = [
     # Should be the first custom one:
     'plugins.fakery',
     # TODO: add your own plugins here!
+    'plugins.department_factory',
     'plugins.django_settings',
     'plugins.surveys',
 ]
