@@ -2,7 +2,20 @@ from typing import final
 
 from django.db.models import QuerySet
 
-from server.apps.surveys.models import Question
+from server.apps.surveys.models import AnswerOption, Question
+
+
+@final
+class AnswerOptionRepo:
+    """Repository for AnswerOption model."""
+
+    def get_all(self) -> QuerySet[AnswerOption]:
+        """Returns all answer options from DB."""
+        return AnswerOption.objects.select_related('question')
+
+    def get_by_pk(self, pk: int) -> AnswerOption:
+        """Returns one answer option from DB by pk."""
+        return AnswerOption.objects.select_related('question').get(pk=pk)
 
 
 @final
