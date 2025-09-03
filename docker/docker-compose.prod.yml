@@ -29,22 +29,17 @@ services:
   web:
     <<: &web
       image: ${DOCKER_TAG_WEB}
+      build:
+        target: production_build
+        args:
+          DJANGO_ENV: production
       volumes:
-        - django-static:/var/www/django/static
         - django-media:/var/www/django/media
         - django-locale:/code/locale
       restart: unless-stopped
       command: bash ./docker/django/gunicorn.sh
-      depends_on:
-        db:
-          condition: service_healthy
       networks:
-        - web-net
-        - postgres-net
         - proxy-net
-      env_file: ./config/.env
-      environment:
-        DJANGO_DATABASE_HOST: db
     expose:
       - 8000
 

@@ -28,7 +28,6 @@ services:
   web:
     <<: &web  # Image for production:
       image: ${DOCKER_TAG_WEB}
-      env_file: ./config/.env
       restart: unless-stopped
       volumes:
         - django-media:/var/www/django/media
