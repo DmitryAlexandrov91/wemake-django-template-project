@@ -105,8 +105,7 @@ jobs:
     needs: build-and-release
     environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
     env:
-      # DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-${{ github.run_id }}
-      DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-17326112842
+      DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-${{ github.run_id }}
       SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
       SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN }}
       SECRET_POSTGRES_PASSWORD: ${{ secrets.SECRET_POSTGRES_PASSWORD }}
