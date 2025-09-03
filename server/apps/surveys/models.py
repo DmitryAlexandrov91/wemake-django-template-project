@@ -128,3 +128,99 @@ class AnswerOption(models.Model):
         True
         """
         return self.text
+
+
+class SurveyResult(models.Model):
+    """Survey result model."""
+
+    user = models.ForeignKey(
+        to='users.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='survey_result',
+    )
+    survey = models.ForeignKey(
+        to='surveys.Survey',
+        on_delete=models.CASCADE,
+        related_name='result',
+    )
+
+    class Meta:
+        verbose_name = 'survey result'
+        verbose_name_plural = 'survey results'
+
+    @override
+    def __str__(self) -> str:
+        """
+        Returns the SurveyResult object string representation.
+
+        >>> from server.apps.users.models import CustomUser
+        >>> user = CustomUser(
+        ...     email='test@example.com',
+        ...     first_name='test_name',
+        ...     last_name='test_last_name',
+        ... )
+        >>> survey = Survey(title='Customer Feedback')
+        >>> survey_result = SurveyResult(
+        ...     user=user,
+        ...     survey=survey,
+        ... )
+        >>> str(survey_result) == f'Result {user} for survey "{survey}"'
+        True
+        """
+        return f'Result {self.user} for survey "{self.survey}"'
+
+
+class UserAnswer(models.Model):
+    """User answer model."""
+
+    survey_result = models.ForeignKey(
+        to='surveys.SurveyResult',
+        on_delete=models.CASCADE,
+        related_name='user_answers',
+    )
+    question = models.ForeignKey(
+        to='surveys.Question',
+        on_delete=models.CASCADE,
+        related_name='user_answers',
+    )
+
+    text_answer = models.TextField(
+        blank=True,
+    )
+
+    selected_options = models.ManyToManyField(
+        to='surveys.AnswerOption',
+        related_name='user_answers',
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'user answer'
+        verbose_name_plural = 'user answers'
+
+    @override
+    def __str__(self) -> str:
+        """
+        Returns the UserAnswer object string representation.
+
+        >>> from server.apps.users.models import CustomUser
+        >>> user = CustomUser(
+        ...     email='test@example.com',
+        ...     first_name='test_name',
+        ...     last_name='test_last_name',
+        ... )
+        >>> survey = Survey(title='Customer Feedback')
+        >>> survey_result = SurveyResult(
+        ...     user=user,
+        ...     survey=survey,
+        ... )
+        >>> question = Question(survey=survey, text='Gender?')
+        >>> user_answer = UserAnswer(
+        ...     survey_result=survey_result,
+        ...     question=question,
+        ...     text_answer='Some answer',
+        ... )
+        >>> str(user_answer) == user_answer.text_answer
+        True
+        """
+        return self.text_answer
