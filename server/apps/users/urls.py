@@ -1,0 +1,25 @@
+from django.urls import URLPattern, URLResolver, path
+
+from server.apps.users.views import (
+    CookieTokenObtainPairView,
+    CookieTokenRefreshView,
+    LogoutView,
+)
+
+urlpatterns: list[URLPattern | URLResolver] = [
+    path(
+        'api/auth/login',
+        CookieTokenObtainPairView.as_view(),
+        name='login',
+    ),
+    path(
+        'api/auth/refresh',
+        CookieTokenRefreshView.as_view(),
+        name='token_refresh',
+    ),
+    path(
+        'api/auth/logout',
+        LogoutView.as_view(),
+        name='logout',
+    ),
+]

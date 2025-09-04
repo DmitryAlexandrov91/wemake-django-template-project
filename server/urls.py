@@ -16,6 +16,8 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
+from server.apps.users import urls as users_urls
+
 admin.autodiscover()
 
 urlpatterns = [
@@ -25,6 +27,8 @@ urlpatterns = [
     # django-admin:
     path('admin/doc/', include(admindocs_urls)),
     path('admin/', admin.site.urls),
+    # Users auth
+    path('', include(users_urls)),
     # Text and xml static files:
     path(
         'robots.txt',

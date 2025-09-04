@@ -8,6 +8,9 @@ For the full list of settings and their config, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
+from datetime import timedelta
+
 from django.utils.translation import gettext_lazy as _
 
 from server.settings.components import BASE_DIR, config
@@ -43,6 +46,9 @@ INSTALLED_APPS: tuple[str, ...] = (
     'health_check.db',
     'health_check.cache',
     'health_check.storage',
+    # DRF apps
+    'rest_framework',
+    'rest_framework_simplejwt',
     'django_celery_beat',
 )
 
@@ -200,3 +206,53 @@ PERMISSIONS_POLICY: dict[str, str | list[str]] = {}
 # https://docs.djangoproject.com/en/5.2/ref/settings/#std:setting-EMAIL_TIMEOUT
 
 EMAIL_TIMEOUT = 5
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'server.apps.users.auth.CookieJWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+}
+
+# Cookie
+EXCEPTION_DETAIL_ATRR = 'detail'
+COOKIE_REFRESH_NAME = 'REFRESH_NAME'
+COOKIE_ACCESS_NAME = 'ACCESS_NAME'
+REFRESH_LIFETIME_KEY = 'REFRESH_TOKEN_LIFETIME'
+ACCESS_LIFETIME_KEY = 'ACCESS_TOKEN_LIFETIME'
+ACCESS_PATH_KEY = 'ACCESS_PATH'
+REFRESH_PATH_KEY = 'REFRESH_PATH'
+
+DEBUG = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'https://localhost',
+]
+JWT_COOKIE = {
+    COOKIE_ACCESS_NAME: 'access_token',
+    COOKIE_REFRESH_NAME: 'refresh_token',
+    'SAMESITE': 'Lax',
+    'SECURE': not DEBUG,
+    'HTTPONLY': True,
+    'REFRESH_PATH': '/api/auth/refresh',
+    'ACCESS_PATH': '/',
+}
+
+SIMPLE_JWT = {
+    'SIGNING_KEY': os.getenv('JWT_SIGNING_KEY', SECRET_KEY),
+    'ALGORITHM': 'HS256',
+    'ACCESS_TOKEN_LIFETIME': timedelta(
+        minutes=int(os.getenv('JWT_ACCESS_MIN', '15'))
+    ),
+    'REFRESH_TOKEN_LIFETIME': timedelta(
+        days=int(os.getenv('JWT_REFRESH_DAYS', '7'))
+    ),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'UPDATE_LAST_LOGIN': False,
+}
