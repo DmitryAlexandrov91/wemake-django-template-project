@@ -43,6 +43,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     'health_check.db',
     'health_check.cache',
     'health_check.storage',
+    'django_celery_beat',
 )
 
 MIDDLEWARE: tuple[str, ...] = (

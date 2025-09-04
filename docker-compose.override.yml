@@ -22,3 +22,13 @@ services:
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
+
+  celery_worker:
+    volumes:
+      # We only mount source code in development:
+      - .:/code
+
+  celery_beat:
+    volumes:
+      # We only mount source code in development:
+      - .:/code

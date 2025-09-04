@@ -12,13 +12,13 @@ files serving technique in development.
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admindocs import urls as admindocs_urls
-from django.urls import URLPattern, URLResolver, include, path
+from django.urls import include, path
 from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
 admin.autodiscover()
 
-urlpatterns: list[URLPattern | URLResolver] = [
+urlpatterns = [
     # Apps:
     # Health checks:
     path('health/', include(health_urls)),

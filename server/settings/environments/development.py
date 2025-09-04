@@ -121,14 +121,17 @@ ZEAL_ALLOWLIST = [
 # https://github.com/wemake-services/django-test-migrations
 
 # Set of badly named migrations to ignore:
-DTM_IGNORED_MIGRATIONS = frozenset((('axes', '*'),))
+DTM_IGNORED_MIGRATIONS = {
+    ('axes', '*'),
+    ('django_celery_beat', '*'),
+}
 
 
 # django-migration-linter
 # https://github.com/3YOURMIND/django-migration-linter
 
 MIGRATION_LINTER_OPTIONS = {
-    'exclude_apps': ['axes'],
+    'exclude_apps': ['axes', 'django_celery_beat'],
     'exclude_migration_tests': ['CREATE_INDEX', 'CREATE_INDEX_EXCLUSIVE'],
     'warnings_as_errors': True,
 }
