@@ -27,17 +27,6 @@ services:
     <<: &web
       # Image name is changed in production:
       image: "team-climate:dev"
-      build:
-        target: development_build
-        context: .
-        dockerfile: ./docker/django/Dockerfile
-        args:
-          DJANGO_ENV: development
-        cache_from:
-          - "team-climate:dev"
-          - "team-climate:latest"
-          - "*"
-
       volumes:
         - django-static:/var/www/django/static
       depends_on:
@@ -61,7 +50,6 @@ services:
 
   celery_worker:
     <<: *web
-    build: !reset null
     depends_on:
       - web
       - redis
@@ -70,7 +58,6 @@ services:
 
   celery_beat:
     <<: *web
-    build: !reset null
     depends_on:
       - web
       - redis
@@ -83,7 +70,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -92,14 +78,12 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
     env_file: ./config/.env
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
     networks:
       - web-net
-
 
 networks:
   # Network for postgres, use it for services that need access to the db:

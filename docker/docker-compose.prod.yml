@@ -5,6 +5,15 @@
 # This setup is supposed to be used with `docker-swarm`.
 # See `./docs/pages/template/production.rst` docs.
 
+x-common-web-params: &common-web
+  image: ${DOCKER_TAG_WEB}
+  volumes:
+    - django-media:/var/www/django/media
+    - django-locale:/code/locale
+  expose:
+    - 8000
+
+
 services:
   caddy:
     build:
@@ -13,7 +22,7 @@ services:
     restart: unless-stopped
     env_file: ./config/.env
     volumes:
-      - ./docker/caddy/Caddyfile.prod:/etc/caddy/Caddyfile  # configuration
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
       - ./docker/caddy/ci.sh:/etc/ci.sh  # test script
       - /etc/letsencrypt:/certs:ro  # mount external letsencrypt
       - caddy-config:/config  # configuration autosaves
@@ -27,28 +36,25 @@ services:
       - proxy-net
 
   web:
-    <<: &web
-      image: ${DOCKER_TAG_WEB}
-      build:
-        target: production_build
-        args:
-          DJANGO_ENV: production
-      volumes:
-        - django-media:/var/www/django/media
-        - django-locale:/code/locale
-      restart: unless-stopped
-      command: bash ./docker/django/gunicorn.sh
-      networks:
-        - proxy-net
-    expose:
-      - 8000
+    <<: *common-web
+    build:
+      target: production_build
+      context: .
+      dockerfile: ./docker/django/Dockerfile
+      args:
+        DJANGO_ENV: production
+    restart: unless-stopped
+    command: bash ./docker/django/gunicorn.sh
+    networks:
+      - proxy-net
 
-# This task is an example of how to extend existing ones:
-#   some_worker:
-#     <<: *web
-#     command: python manage.py worker_process
-#     deploy:
-#       replicas: 2
+
+  celery_worker:
+    <<: *common-web
+
+  celery_beat:
+    <<: *common-web
+
 
 networks:
   # Network for your proxy server and application to connect them,
