@@ -90,6 +90,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         role (CharField): User's role (optional).
         is_active (BooleanField): Indicates whether the user account is active.
         is_staff (BooleanField): Determines if the user can access admin site.
+        tg_id (PositiveBigIntegerField): Unique telegram id.
     """
 
     email = models.EmailField(
@@ -143,6 +144,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(
         'Staff status',
         default=True,
+    )
+    tg_id = models.PositiveBigIntegerField(
+        'Telegram id',
+        unique=True,
+        null=True,
+        blank=True,
     )
 
     objects = _CustomUserManager()  # noqa: WPS110

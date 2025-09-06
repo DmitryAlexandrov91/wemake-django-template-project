@@ -3,6 +3,7 @@ from telebot import TeleBot
 
 from server.apps.company.infra.repository import DepartmentRepo
 from server.apps.surveys.infra.repository import AnswerOptionRepo, QuestionRepo
+from server.apps.users.infra.repository import UserRepo
 from server.apps.users.services import AuthService
 from server.settings.components import tgbot as settings
 
@@ -23,6 +24,7 @@ def _inject_infra(container: punq.Container) -> None:
     """Register repositories."""
     container.register(QuestionRepo)
     container.register(AnswerOptionRepo)
+    container.register(UserRepo)
 
 
 def _inject_auth_service(container: punq.Container) -> None:

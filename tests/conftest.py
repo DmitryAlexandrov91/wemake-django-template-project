@@ -14,5 +14,6 @@ pytest_plugins = [
     'plugins.department_factory',
     'plugins.django_settings',
     'plugins.surveys',
+    'plugins.users',
     'plugins.users_auth',
 ]
