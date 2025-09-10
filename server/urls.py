@@ -17,11 +17,17 @@ from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
 from server.apps.users import urls as users_urls
+from server.apps.users.views import PasswordRecoveryAPIView
 
 admin.autodiscover()
 
 urlpatterns = [
     # Apps:
+    path(
+        'password-recovery',
+        PasswordRecoveryAPIView.as_view(),
+        name='password-recovery',
+    ),
     # Health checks:
     path('health/', include(health_urls)),
     # django-admin:

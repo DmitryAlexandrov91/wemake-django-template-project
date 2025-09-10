@@ -1,5 +1,6 @@
 from typing import final
 
+from django.contrib.auth import hashers
 from django.db.models import QuerySet
 
 from server.apps.users.models import CustomUser
@@ -28,3 +29,8 @@ class UserRepo:
     def get_by_tg_id(self, tg_id: int) -> CustomUser:
         """Return one User by tg_id."""
         return self.get_users_with_department().get(tg_id=tg_id)
+
+    def update_password(self, user: CustomUser, password: str) -> None:
+        """Changes user password."""
+        user.password = hashers.make_password(password)
+        user.save()

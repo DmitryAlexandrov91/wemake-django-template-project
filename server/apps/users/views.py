@@ -9,6 +9,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.views import TokenViewBase
 
 from server.apps.users import auth, serializers, services
+from server.apps.users.processing import pass_recovery_processing
 from server.di import resolve
 
 
@@ -92,3 +93,15 @@ class LogoutView(APIView):
             Response with cookies cleared.
         """
         return resolve(services.AuthService).remove_jwt_from_cookie()
+
+
+class PasswordRecoveryAPIView(APIView):
+    """Recovers the user password."""
+
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def post(self, request: Request) -> Response:
+        """Handle POST request for password recovery."""
+        pass_recovery_processing(request)
+        return Response(status=status.HTTP_200_OK)

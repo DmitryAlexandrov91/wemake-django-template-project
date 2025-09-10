@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import secrets
 from collections.abc import Callable
-from typing import TYPE_CHECKING, TypedDict, Unpack
+from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
+from pytest_mock import MockFixture
+from rest_framework.test import APIClient
 
 from server.apps.users.models import CustomUser
+from server.common.constants import DATA_LENGHT
+from tests.plugins.users_requests import RequestMock
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
@@ -72,4 +77,32 @@ def auth_user(user_factory: UserFactory) -> CustomUser:
         is_active=True,
         is_staff=False,
         tg_id=1234567890,
+    )
+
+
+@pytest.fixture
+def api_client() -> APIClient:
+    """API client."""
+    return APIClient()
+
+
+@pytest.fixture
+def mocked_send_mail(mocker: MockFixture) -> Any:
+    """Mock the email sending task."""
+    return mocker.patch(
+        'server.apps.users.tasks.send_recovery_email_task.delay',
+        return_value=None,
+    )
+
+
+@pytest.fixture
+def active_user(
+    valid_request: RequestMock, fakery_m: FakeryM[CustomUser]
+) -> CustomUser:
+    """Fixture for creating an active user."""
+    original_password = secrets.token_urlsafe(DATA_LENGHT)
+    return fakery_m(CustomUser)(
+        email=valid_request.data['email'],
+        password=original_password,
+        is_active=True,
     )
