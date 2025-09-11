@@ -9,19 +9,30 @@ This examples uses Django's default media
 files serving technique in development.
 """
 
-from django.conf import settings
+from django.conf import LazySettings
 from django.contrib import admin
 from django.contrib.admindocs import urls as admindocs_urls
 from django.urls import include, path
 from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
+from server.apps.tgbot.views import TelegramWebhookView
 from server.apps.users import urls as users_urls
+from server.apps.users.views import PasswordRecoveryAPIView
+from server.di import resolve
 
 admin.autodiscover()
 
+settings = resolve(LazySettings)
+
+
 urlpatterns = [
     # Apps:
+    path(
+        'password-recovery',
+        PasswordRecoveryAPIView.as_view(),
+        name='password-recovery',
+    ),
     # Health checks:
     path('health/', include(health_urls)),
     # django-admin:
@@ -43,6 +54,11 @@ urlpatterns = [
             template_name='common/txt/humans.txt',
             content_type='text/plain',
         ),
+    ),
+    path(
+        settings.WEBHOOK_PATH.lstrip('/'),
+        TelegramWebhookView.as_view(),
+        name='webhook',
     ),
 ]
 

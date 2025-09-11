@@ -1,18 +1,28 @@
 import punq
+from django.conf import LazySettings, settings
 from telebot import TeleBot
 
 from server.apps.company.infra.repository import DepartmentRepo
 from server.apps.surveys.infra.repository import AnswerOptionRepo, QuestionRepo
+from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
+from server.apps.tgbot.services import TelegramService
 from server.apps.users.infra.repository import UserRepo
 from server.apps.users.services import AuthService
-from server.settings.components import tgbot as settings
+from server.settings.components import tgbot as tg_settings
+
+
+def _inject_settings(container: punq.Container) -> None:
+    """Register settings."""
+    container.register(LazySettings, instance=settings, scope='singleton')
 
 
 def _inject_tg(container: punq.Container) -> None:
-    """Register container."""
+    """Register TG."""
     container.register(
-        TeleBot, instance=TeleBot(settings.BOT_TOKEN), scope='singleton'
+        TeleBot, instance=TeleBot(tg_settings.BOT_TOKEN), scope='singleton'
     )
+    container.register(TelegramService)
+    container.register(ProcessTelegramUpdate)
 
 
 def _inject_department_repo(container: punq.Container) -> None:
@@ -39,6 +49,7 @@ def create_container() -> punq.Container:
     _inject_department_repo(container)
     _inject_infra(container)
     _inject_auth_service(container)
+    _inject_settings(container)
     return container
 
 
