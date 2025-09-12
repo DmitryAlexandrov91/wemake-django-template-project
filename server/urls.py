@@ -40,6 +40,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Users auth
     path('', include(users_urls)),
+    # Company app API
+    path('api/', include('server.apps.company.urls')),
     # Text and xml static files:
     path(
         'robots.txt',

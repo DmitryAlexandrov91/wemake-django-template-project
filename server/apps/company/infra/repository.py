@@ -1,4 +1,4 @@
-from typing import final
+from typing import Any, final
 
 from django.db.models import QuerySet
 
@@ -16,3 +16,11 @@ class DepartmentRepo:
     def get_by_pk(self, pk: int) -> Department:
         """A method for retrieving a Department object by its primary key."""
         return Department.objects.select_related('head').get(pk=pk)
+
+    def update_department(
+        self, department: Department, **kwargs: Any
+    ) -> Department:
+        """Update an existing department."""
+        Department.objects.filter(pk=department.pk).update(**kwargs)
+        department.refresh_from_db()
+        return department

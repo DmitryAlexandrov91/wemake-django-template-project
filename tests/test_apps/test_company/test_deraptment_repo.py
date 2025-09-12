@@ -33,3 +33,15 @@ def test_get_by_pk_none() -> None:
     repo = resolve(DepartmentRepo)
     with pytest.raises(Department.DoesNotExist):
         repo.get_by_pk(pk=1)
+
+
+@pytest.mark.django_db
+def test_update_department(department: Department) -> None:
+    """Test DepartmentRepo update_department method changes department name."""
+    repo = resolve(DepartmentRepo)
+    original_name = department.name
+    upd_department_obj = repo.update_department(
+        department=department, name='UpdDEP'
+    )
+    assert upd_department_obj.name == 'UpdDEP'
+    assert upd_department_obj.name != original_name
