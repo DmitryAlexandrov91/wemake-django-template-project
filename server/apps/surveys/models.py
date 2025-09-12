@@ -76,6 +76,7 @@ class Question(models.Model):
         max_length=DATA_LENGHT,
         choices=QuestionType.choices,
     )
+    is_favorite = models.BooleanField(default=False)
 
     class Meta:
         default_related_name = 'questions'

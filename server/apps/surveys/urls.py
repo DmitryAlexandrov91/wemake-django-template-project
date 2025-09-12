@@ -1,8 +1,10 @@
-from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from server.apps.surveys.api import router
+from server.apps.surveys.views import QuestionViewSet, SurveyViewSet
 
-app_name = 'surveys'
+router = DefaultRouter()
+router.register(r'questions', QuestionViewSet, basename='questions')
+router.register(r'surveys', SurveyViewSet, basename='surveys')
 
 
-urlpatterns = [path('', include(router.urls))]
+urlpatterns = router.urls

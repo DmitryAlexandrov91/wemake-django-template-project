@@ -37,3 +37,15 @@ def test_repo_get_all(surveys_question_factory: QuestionFactory) -> None:
 
     assert questions.count() == batch_size
     assert all(isinstance(question, Question) for question in questions)
+
+
+@pytest.mark.django_db
+def test_update_question(consent_given_question: Question) -> None:
+    """Test QuestionRepo update_question method changes question text."""
+    repo = resolve(QuestionRepo)
+    original_text = consent_given_question.text
+    upd_question_obj = repo.update_question(
+        question=consent_given_question, text='New text'
+    )
+    assert upd_question_obj.text == 'New text'
+    assert upd_question_obj.text != original_text

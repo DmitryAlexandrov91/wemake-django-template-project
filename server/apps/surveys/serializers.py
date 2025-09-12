@@ -92,3 +92,15 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
             'questions',
             'department',
         )
+
+
+class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
+    """Serializer for creating a new question."""
+
+    class Meta:
+        model = Question
+        fields = ('id', 'text', 'question_type', 'is_favorite')
+        extra_kwargs = {  # noqa: RUF012
+            'text': {'required': True},
+            'question_type': {'required': True},
+        }

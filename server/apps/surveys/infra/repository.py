@@ -1,4 +1,4 @@
-from typing import final
+from typing import Any, final
 
 from django.db.models import QuerySet
 
@@ -24,8 +24,14 @@ class QuestionRepo:
 
     def get_all(self) -> QuerySet[Question]:
         """Return all Question instances from DB."""
-        return Question.objects.all()
+        return Question.objects.all().select_related('survey')
 
     def get_by_pk(self, pk: int) -> Question:
         """Return one Question by primary key."""
-        return Question.objects.get(pk=pk)
+        return Question.objects.select_related('survey').get(pk=pk)
+
+    def update_question(self, question: Question, **kwargs: Any) -> Question:
+        """Update an existing question."""
+        Question.objects.filter(pk=question.pk).update(**kwargs)
+        question.refresh_from_db()
+        return question
