@@ -13,6 +13,12 @@ class Survey(models.Model):
     description = models.TextField(blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
+    department = models.ForeignKey(
+        to='company.Department',
+        on_delete=models.CASCADE,
+        related_name='surveys',
+    )
+    is_favorite = models.BooleanField(default=False)
 
     class Meta:
         default_related_name = 'surveys'
@@ -106,6 +112,7 @@ class AnswerOption(models.Model):
         db_index=True,
     )
     text = models.TextField()
+    is_correct = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'answer option'

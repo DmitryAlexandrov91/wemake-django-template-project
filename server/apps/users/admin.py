@@ -22,3 +22,4 @@ class CustomUserAdmin(admin.ModelAdmin[CustomUser]):
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions')
+    list_select_related = ('department',)

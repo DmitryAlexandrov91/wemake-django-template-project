@@ -214,6 +214,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_PAGINATION_CLASS': (
+        'server.apps.surveys.paginators.CustomPaginator'
+    ),
+    'PAGE_SIZE': 20,
 }
 
 # Cookie

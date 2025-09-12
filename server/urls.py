@@ -9,37 +9,38 @@ This examples uses Django's default media
 files serving technique in development.
 """
 
-from django.conf import LazySettings
-from django.contrib import admin
+from django import conf, contrib
 from django.contrib.admindocs import urls as admindocs_urls
 from django.urls import include, path
 from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
+from server.apps.surveys import urls as surveys_urls
 from server.apps.tgbot.views import TelegramWebhookView
 from server.apps.users import urls as users_urls
-from server.apps.users.views import PasswordRecoveryAPIView
+from server.apps.users import views
 from server.di import resolve
 
-admin.autodiscover()
+contrib.admin.autodiscover()
 
-settings = resolve(LazySettings)
+settings = resolve(conf.LazySettings)
 
 
 urlpatterns = [
     # Apps:
     path(
         'password-recovery',
-        PasswordRecoveryAPIView.as_view(),
+        views.PasswordRecoveryAPIView.as_view(),
         name='password-recovery',
     ),
     # Health checks:
     path('health/', include(health_urls)),
     # django-admin:
     path('admin/doc/', include(admindocs_urls)),
-    path('admin/', admin.site.urls),
+    path('admin/', contrib.admin.site.urls),
     # Users auth
     path('', include(users_urls)),
+    path('api/', include(surveys_urls)),
     # Company app API
     path('api/', include('server.apps.company.urls')),
     # Text and xml static files:

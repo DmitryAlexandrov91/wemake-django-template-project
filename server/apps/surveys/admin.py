@@ -77,4 +77,8 @@ class UserAnswerAdmin(admin.ModelAdmin[UserAnswer]):
         'survey_result',
         'question',
     )
-    list_select_related = ('survey_result', 'question')
+    list_select_related = (
+        'survey_result__user',
+        'survey_result__survey',
+        'question',
+    )

@@ -1,10 +1,12 @@
 from typing import Any, override
 
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
 )
 
+from server.apps.users.models import CustomUser
 from server.apps.users.services import AuthService
 from server.di import resolve
 
@@ -44,3 +46,16 @@ class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
         return resolve(AuthService).remove_tokens_from_response(
             self, response_data
         )
+
+
+class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
+    """CustomUser`s serializer."""
+
+    id = serializers.IntegerField(source='pk', read_only=True)
+    email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'email', 'first_name', 'last_name')

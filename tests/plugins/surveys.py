@@ -5,15 +5,16 @@ from typing import TYPE_CHECKING, TypedDict, Unpack
 
 import pytest
 
-from server.apps.surveys.choices import QuestionType
-from server.apps.surveys.models import AnswerOption, Question
+from server.apps.surveys import choices, models
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
 
-type QuestionFactory = Callable[[Unpack[_QuestionFactoryParams]], Question]
+type QuestionFactory = Callable[
+    [Unpack[_QuestionFactoryParams]], models.Question
+]
 type AnswerOptionFactory = Callable[
-    [Unpack[_AnswerOptionFactoryParams]], AnswerOption
+    [Unpack[_AnswerOptionFactoryParams]], models.AnswerOption
 ]
 
 
@@ -21,34 +22,39 @@ class _QuestionFactoryParams(TypedDict, total=False):
     """Base params for QuestionFactory."""
 
     text: str
-    question_type: QuestionType
+    question_type: choices.QuestionType
+    survey: models.Survey
 
 
 class _AnswerOptionFactoryParams(TypedDict, total=False):
     """Base params for AnswerOptionFactory."""
 
-    question: Question
+    question: models.Question
     text: str
 
 
 @pytest.fixture
-def surveys_question_factory(fakery_m: FakeryM[Question]) -> QuestionFactory:
+def surveys_question_factory(
+    fakery_m: FakeryM[models.Question],
+) -> QuestionFactory:
     """Factory fixture for creating Question instances."""
 
-    def factory(**kwargs: Unpack[_QuestionFactoryParams]) -> Question:
-        return fakery_m(Question)(**kwargs)
+    def factory(**kwargs: Unpack[_QuestionFactoryParams]) -> models.Question:
+        return fakery_m(models.Question)(**kwargs)
 
     return factory
 
 
 @pytest.fixture
 def surveys_answer_option_factory(
-    fakery_m: FakeryM[AnswerOption],
+    fakery_m: FakeryM[models.AnswerOption],
 ) -> AnswerOptionFactory:
     """Factory fixture for creating AnswerOption instances."""
 
-    def factory(**kwargs: Unpack[_AnswerOptionFactoryParams]) -> AnswerOption:
-        return fakery_m(AnswerOption)(**kwargs)
+    def factory(
+        **kwargs: Unpack[_AnswerOptionFactoryParams],
+    ) -> models.AnswerOption:
+        return fakery_m(models.AnswerOption)(**kwargs)
 
     return factory
 
@@ -56,22 +62,22 @@ def surveys_answer_option_factory(
 @pytest.fixture
 def consent_given_question(
     surveys_question_factory: QuestionFactory,
-) -> Question:
+) -> models.Question:
     """Fixture that create a single Question instance."""
     return surveys_question_factory(
         text='Test Question',
-        question_type=QuestionType.CONSENT_GIVEN,
+        question_type=choices.QuestionType.CONSENT_GIVEN,
     )
 
 
 @pytest.fixture
 def surveys_answer_option_batch(
     surveys_answer_option_factory: AnswerOptionFactory,
-    consent_given_question: Question,
-) -> Callable[[int], list[AnswerOption]]:
+    consent_given_question: models.Question,
+) -> Callable[[int], list[models.AnswerOption]]:
     """Factory fixture for creating batches of AnswerOption instances."""
 
-    def factory(batch_size: int) -> list[AnswerOption]:
+    def factory(batch_size: int) -> list[models.AnswerOption]:
         return [
             surveys_answer_option_factory(
                 question=consent_given_question,
