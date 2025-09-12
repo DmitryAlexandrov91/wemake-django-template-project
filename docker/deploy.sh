@@ -49,7 +49,7 @@ run_compose() {
 }
 
 # Pull web-container image with new tag
-run_compose pull web
+run_compose pull -q web
 
 ##############  TEST MIGRATIONS ON COPY OF REAL DATABASE ########
 # Check if new container makes migrations on copy of prod db
@@ -85,8 +85,16 @@ run_compose -p test down -v
 ##############  END TEST MIGRATIONS ########
 
 
+# apply migrations on real database
+run_compose run --rm  web python manage.py migrate
+
+# refresh current backup for developers
+run_compose exec db bash  -c 'pg_dump --clean --if-exists -U $POSTGRES_USER -d $POSTGRES_DB > /tmp/backup.sql'
+run_compose cp db:/tmp/backup.sql /home/deploy/backups/${DEPLOY_ENV}/teamclimate.sql
+
 # Start all production containers with new web container
 run_compose up -d
+
 # if some container addresses changed, caddy restart is necessary
 run_compose restart caddy
 
