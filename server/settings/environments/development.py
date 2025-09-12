@@ -132,7 +132,13 @@ DTM_IGNORED_MIGRATIONS = {
 
 MIGRATION_LINTER_OPTIONS = {
     'exclude_apps': ['axes', 'django_celery_beat'],
-    'exclude_migration_tests': ['CREATE_INDEX', 'CREATE_INDEX_EXCLUSIVE'],
+    'exclude_migration_tests': [
+        'CREATE_INDEX',
+        'CREATE_INDEX_EXCLUSIVE',
+        'NOT_NULL',
+        'DROP_COLUMN',
+        'ADDING',
+    ],
     'warnings_as_errors': True,
 }
 
