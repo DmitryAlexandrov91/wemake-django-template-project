@@ -1,3 +1,4 @@
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from server.apps.company.views import DepartmentViewSet
@@ -5,4 +6,6 @@ from server.apps.company.views import DepartmentViewSet
 router = DefaultRouter()
 router.register(r'departments', DepartmentViewSet, basename='departments')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('api/', include(router.urls)),
+]

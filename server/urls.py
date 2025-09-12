@@ -5,7 +5,7 @@ Include other URLConfs from external apps using method `include()`.
 
 It is also a good practice to keep a single URL to the root index page.
 
-This examples uses Django's default media
+This example uses Django's default media
 files serving technique in development.
 """
 
@@ -15,6 +15,7 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 from health_check import urls as health_urls
 
+from server.apps.company import urls as company_urls
 from server.apps.surveys import urls as surveys_urls
 from server.apps.tgbot.views import TelegramWebhookView
 from server.apps.users import urls as users_urls
@@ -40,9 +41,10 @@ urlpatterns = [
     path('admin/', contrib.admin.site.urls),
     # Users auth
     path('', include(users_urls)),
+    # Surveys API
     path('api/', include(surveys_urls)),
     # Company app API
-    path('api/', include('server.apps.company.urls')),
+    path('api/', include(company_urls)),
     # Text and xml static files:
     path(
         'robots.txt',
@@ -58,6 +60,7 @@ urlpatterns = [
             content_type='text/plain',
         ),
     ),
+    # Telegram webhook
     path(
         settings.WEBHOOK_PATH.lstrip('/'),
         TelegramWebhookView.as_view(),

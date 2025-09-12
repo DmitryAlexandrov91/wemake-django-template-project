@@ -2,7 +2,6 @@ import secrets
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 from server.apps.users.models import CustomUser
 from tests.plugins.fakery import FakeryM
@@ -26,10 +25,3 @@ def user(fakery_m: FakeryM[CustomUser], password: str) -> CustomUser:
     """Create user."""
     user_factory = fakery_m(CustomUser)
     return user_factory(password=password)
-
-
-@pytest.fixture
-def auth_client(api_client: APIClient, auth_user: CustomUser) -> APIClient:
-    """Return an authenticated APIClient for testing."""
-    api_client.force_authenticate(user=auth_user)
-    return api_client
