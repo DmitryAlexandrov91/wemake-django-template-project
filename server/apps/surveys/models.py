@@ -164,8 +164,7 @@ class SurveyResult(models.Model):
         >>> from server.apps.users.models import CustomUser
         >>> user = CustomUser(
         ...     email='test@example.com',
-        ...     first_name='test_name',
-        ...     last_name='test_last_name',
+        ...     full_name='test_name',
         ... )
         >>> survey = Survey(title='Customer Feedback')
         >>> survey_result = SurveyResult(
@@ -214,8 +213,7 @@ class UserAnswer(models.Model):
         >>> from server.apps.users.models import CustomUser
         >>> user = CustomUser(
         ...     email='test@example.com',
-        ...     first_name='test_name',
-        ...     last_name='test_last_name',
+        ...     full_name='test_name',
         ... )
         >>> survey = Survey(title='Customer Feedback')
         >>> survey_result = SurveyResult(

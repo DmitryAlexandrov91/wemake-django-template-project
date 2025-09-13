@@ -20,8 +20,7 @@ class UserFactory(DjangoModelFactory):  # type: ignore[type-arg]
     email: Any = factory.LazyAttributeSequence(  # type: ignore[attr-defined, no-untyped-call]
         lambda _obj, idx: f'testuser{idx}@example.com'  # noqa: WPS110
     )
-    first_name: str = 'Test'
-    last_name: str = 'User'
+    full_name: str = 'Test User'
 
     password: Any = factory.PostGenerationMethodCall(  # type: ignore[attr-defined, no-untyped-call]
         'set_password', 'testpass'

@@ -9,8 +9,7 @@ class CustomUserAdmin(admin.ModelAdmin[CustomUser]):
 
     list_display = (
         'email',
-        'first_name',
-        'last_name',
+        'full_name',
         'is_staff',
         'is_active',
     )
@@ -19,7 +18,7 @@ class CustomUserAdmin(admin.ModelAdmin[CustomUser]):
         'is_active',
         'groups',
     )
-    search_fields = ('email', 'first_name', 'last_name')
+    search_fields = ('email', 'full_name')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions')
     list_select_related = ('department',)

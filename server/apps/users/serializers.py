@@ -1,4 +1,4 @@
-from typing import Any, override
+from typing import Any, ClassVar, override
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -53,9 +53,32 @@ class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
 
     id = serializers.IntegerField(source='pk', read_only=True)
     email = serializers.EmailField()
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
+    full_name = serializers.CharField()
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'first_name', 'last_name')
+        fields = ('id', 'email', 'full_name')
+
+
+class EmployeeSerializer(serializers.ModelSerializer[Any]):
+    """Сериализатор для работников."""
+
+    department_name = serializers.CharField(
+        source='department.name', read_only=True
+    )
+    telegram_id = serializers.IntegerField(
+        source='tg_id', required=False, allow_null=True
+    )
+    survey_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = User
+        fields: ClassVar[list[str]] = [
+            'id',
+            'full_name',
+            'department_name',
+            'email',
+            'telegram_id',
+            'survey_count',
+            'edited_at',
+        ]

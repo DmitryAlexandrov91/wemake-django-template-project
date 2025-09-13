@@ -1,7 +1,7 @@
 from typing import final
 
 from django.contrib.auth import hashers
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 
 from server.apps.users.models import CustomUser
 
@@ -34,3 +34,14 @@ class UserRepo:
         """Changes user password."""
         user.password = hashers.make_password(password)
         user.save()
+
+    def get_employees_with_survey_count(
+        self, order_field: str | None
+    ) -> QuerySet[CustomUser]:
+        """Get all employees with survey_count."""
+        queryset = CustomUser.objects.select_related('department').annotate(
+            survey_count=Count('survey_result')
+        )
+        if order_field:
+            queryset.order_by(order_field)
+        return queryset

@@ -22,17 +22,14 @@ def test_create_user_without_email_raises_error() -> None:
 def test_create_user_successfully() -> None:
     """Ensure that user is created successfully with valid data."""
     email = 'test@example.com'
-    first_name = 'test_name'
-    last_name = 'test_last_name'
+    full_name = 'test_name'
     password = secrets.token_urlsafe(12)
     user = CustomUser.objects.create_user(
         email=email,
         password=password,
-        first_name=first_name,
-        last_name=last_name,
+        full_name=full_name,
     )
     assert user is not None
     assert user.email == email
-    assert user.first_name == first_name
-    assert user.last_name == last_name
+    assert user.full_name == full_name
     assert user.check_password(password)

@@ -25,14 +25,15 @@ class _UserFactoryParams(TypedDict, total=False):
 
     username: str
     email: str
-    first_name: str
-    last_name: str
-    patronymic: str
+    full_name: str
     position: str
     role: str
     is_active: bool
     is_staff: bool
     tg_id: int
+    department: Any
+    survey_count: int
+    edited_at: str
 
 
 @pytest.fixture
@@ -64,19 +65,20 @@ def user_batch(
 
 
 @pytest.fixture
-def auth_user(user_factory: UserFactory) -> CustomUser:
+def auth_user(user_factory: UserFactory, department: Any) -> CustomUser:
     """Fixture that create a single User instance."""
     return user_factory(
         username='testuser',
         email='test@example.com',
-        first_name='Test first_name',
-        last_name='Test last_name',
-        patronymic='Test patronymic',
+        full_name='Test name',
         position='Test position',
         role='User',
         is_active=True,
         is_staff=False,
         tg_id=1234567890,
+        department=department,
+        survey_count=1,
+        edited_at='25.02.2025',
     )
 
 

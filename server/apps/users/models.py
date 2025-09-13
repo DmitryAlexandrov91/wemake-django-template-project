@@ -8,9 +8,7 @@ from django.contrib.auth.models import (
 from django.db import models
 
 EMAIL_MAX_LENGTH = 256
-FIRST_NAME_MAX_LENGTH = 128
-LAST_NAME_MAX_LENGTH = 128
-PATTRONYMIC_MAX_LENGTH = 128
+FULL_NAME_MAX_LENGTH = 256
 POSITION_MAX_LENGTH = 128
 ROLE_MAX_LENGTH = 128
 
@@ -83,14 +81,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     Attributes:
         email (EmailField): Unique email used as the username.
-        first_name (CharField): User's first name.
-        last_name (CharField): User's last name.
-        patronymic (CharField): User's patronymic (optional).
+        full_name (CharField): User's full name.
         position (CharField): User's position in the organization (optional).
         role (CharField): User's role (optional).
         is_active (BooleanField): Indicates whether the user account is active.
         is_staff (BooleanField): Determines if the user can access admin site.
         tg_id (PositiveBigIntegerField): Unique telegram id.
+        edited_at (DateTimeField) - the time of last edit.
     """
 
     email = models.EmailField(
@@ -99,21 +96,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         max_length=EMAIL_MAX_LENGTH,
         help_text='Enter your email: ',
     )
-    first_name = models.CharField(
-        'First name',
-        max_length=FIRST_NAME_MAX_LENGTH,
-        help_text='Enter your first name: ',
-    )
-    last_name = models.CharField(
-        'Last name',
-        max_length=LAST_NAME_MAX_LENGTH,
-        help_text='Enter your last name: ',
-    )
-    patronymic = models.CharField(
-        'Patronymic',
-        max_length=PATTRONYMIC_MAX_LENGTH,
-        blank=True,
-        help_text='Enter your patronymic (optionally): ',
+    full_name = models.CharField(
+        'Full name',
+        max_length=FULL_NAME_MAX_LENGTH,
+        help_text='Enter your full name: ',
+        default='Unknown',
     )
     position = models.CharField(
         'Position',
@@ -151,6 +138,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
+    edited_at = models.DateTimeField(
+        'Время редактирования', auto_now=True, null=True
+    )
 
     objects = _CustomUserManager()  # noqa: WPS110
 
@@ -170,9 +160,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'Users'
         ordering = (
             'email',
-            'first_name',
-            'last_name',
-            'patronymic',
+            'full_name',
         )
         default_related_name = 'users'
 
