@@ -37,7 +37,7 @@ def build_survey(  # noqa: WPS210
         start_date = today - ten_days_shift
         end_date = today - five_days_shift
     return surveys_survey_factory(
-        department=department_factory(name='department'),
+        department=department_factory(),
         title=filter_param,
         start_date=start_date,
         end_date=end_date,

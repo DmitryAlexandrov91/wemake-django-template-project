@@ -1,17 +1,21 @@
 from typing import Any, final
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 
 from server.apps.company.models import Department
 
 
 @final
 class DepartmentRepo:
-    """Repository for accessing Department objects from the database."""
+    """Repository for Department model."""
 
     def get_all(self) -> QuerySet[Department]:
         """A method for extracting all department objects from the database."""
-        return Department.objects.all().select_related('head')
+        return (
+            Department.objects.all()
+            .select_related('head')
+            .prefetch_related('users')
+        )
 
     def get_by_pk(self, pk: int) -> Department:
         """A method for retrieving a Department object by its primary key."""
@@ -24,3 +28,15 @@ class DepartmentRepo:
         Department.objects.filter(pk=department.pk).update(**kwargs)
         department.refresh_from_db()
         return department
+
+    def get_all_ordered_by_name(self) -> QuerySet[Department]:
+        """Return all departments ordered by name ASC."""
+        return (
+            self.get_all()
+            .annotate(employees_count=Count('users'))
+            .order_by('name')
+        )
+
+    def create(self, **kwargs: Any) -> Department:
+        """Create and return a new Department instance."""
+        return Department.objects.create(**kwargs)

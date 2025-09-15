@@ -7,8 +7,10 @@ from rest_framework.response import Response
 
 from server.apps.company.infra.repository import DepartmentRepo
 from server.apps.company.models import Department
-from server.apps.company.repositories import DepartmentRepository
-from server.apps.company.serializers import DepartmentCreateSerializer
+from server.apps.company.serializers import (
+    DepartmentCreateSerializer,
+    DepartmentSerializer,
+)
 from server.di import resolve
 
 
@@ -17,8 +19,6 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
 
     serializer_class = DepartmentCreateSerializer
     http_method_names = ('get', 'post', 'patch')
-
-    queryset = DepartmentRepository.all_with_related()
 
     @override
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -37,7 +37,8 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        department: Department = DepartmentRepository.create(
+        department_repo = self.get_repository()
+        department: Department = department_repo.create(
             **serializer.validated_data,
         )
 
@@ -49,24 +50,34 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
     @override
     def get_queryset(self) -> QuerySet[Department]:  # noqa: WPS615
         """Get queryset using repo."""
-        repo = resolve(DepartmentRepo)
-        return repo.get_all()
+        department_repo = self.get_repository()
+        return department_repo.get_all_ordered_by_name()
 
     @override
     def partial_update(
         self, request: Request, *args: Any, **kwargs: Any
     ) -> Response:
         """Partial update department using repo."""
-        repo = resolve(DepartmentRepo)
-        department = repo.get_by_pk(kwargs['pk'])
+        department_repo = self.get_repository()
+        department = department_repo.get_by_pk(kwargs['pk'])
         serializer = self.get_serializer(
             department, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
-        upd_department = repo.update_department(
+        upd_department = department_repo.update_department(
             department, **serializer.validated_data
         )
         return Response(
             self.get_serializer(upd_department).data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @override
+    def list(self, request: Request) -> Response:
+        """Return a list of all departments with employees."""
+        serializer = DepartmentSerializer(self.get_queryset(), many=True)
+        return Response(serializer.data)
+
+    def get_repository(self) -> DepartmentRepo:
+        """Return an instance of DepartmentRepo."""
+        return resolve(DepartmentRepo)

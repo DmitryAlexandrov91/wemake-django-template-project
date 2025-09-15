@@ -7,10 +7,10 @@ from tests.plugins.department_factory import DepartmentBatchFactory
 
 
 @pytest.mark.django_db
-def test_get_all(deparment_batch: DepartmentBatchFactory) -> None:
+def test_get_all(department_batch: DepartmentBatchFactory) -> None:
     """Test the `get_all()` method of DepartmentRepo."""
     batch_size = 2
-    deparment_batch(batch_size)
+    department_batch(batch_size)
 
     repo = resolve(DepartmentRepo)
     all_departments = repo.get_all()

@@ -37,7 +37,7 @@ def department_factory(fakery_m: FakeryM[Department]) -> DepartmentFactory:
 
 
 @pytest.fixture
-def deparment_batch(
+def department_batch(
     department_factory: DepartmentFactory,
 ) -> DepartmentBatchFactory:
     """Return a factory that creates `batch_size` Department instances."""
@@ -54,4 +54,4 @@ def deparment_batch(
 @pytest.fixture
 def department(department_factory: DepartmentFactory) -> Department:
     """Return a single Department instance created."""
-    return department_factory(name='Dep1')
+    return department_factory(name='Unique Department')

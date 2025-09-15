@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from server.apps.company.models import Department
+from server.apps.users.models import CustomUser
 
 
 class DepartmentCreateSerializer(serializers.ModelSerializer['Department']):
@@ -14,3 +15,23 @@ class DepartmentCreateSerializer(serializers.ModelSerializer['Department']):
     class Meta:
         model = Department
         fields = ('id', 'department_name')
+
+
+class UserSerializer(serializers.ModelSerializer[CustomUser]):
+    """Serializer for CustomUser model with id and name fields."""
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'name')
+
+
+class DepartmentSerializer(serializers.ModelSerializer[Department]):
+    """Serializer for Department model with employees list and count."""
+
+    department_name = serializers.CharField(source='name')
+    employees = UserSerializer(many=True, read_only=True)
+    employees_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Department
+        fields = ('id', 'department_name', 'employees_count', 'employees')
