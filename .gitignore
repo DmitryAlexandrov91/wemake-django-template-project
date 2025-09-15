@@ -218,3 +218,6 @@ fabric.properties
 
 # Visual Studio Code workspace settings
 .vscode/
+
+# .ipython/
+.ipython/

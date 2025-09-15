@@ -24,11 +24,11 @@ class QuestionRepo:
 
     def get_all(self) -> QuerySet[Question]:
         """Return all Question instances from DB."""
-        return Question.objects.all().select_related('survey')
+        return Question.objects.select_related('survey', 'survey__department')
 
     def get_by_pk(self, pk: int) -> Question:
         """Return one Question by primary key."""
-        return Question.objects.select_related('survey').get(pk=pk)
+        return self.get_all().get(pk=pk)
 
     def update_question(self, question: Question, **kwargs: Any) -> Question:
         """Update an existing question."""

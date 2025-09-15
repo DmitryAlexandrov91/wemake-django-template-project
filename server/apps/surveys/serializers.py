@@ -95,11 +95,18 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
-    """Serializer for creating a new question."""
+    """Serializer for creating a new question with survey_id in body."""
+
+    survey_id = serializers.PrimaryKeyRelatedField(
+        queryset=Survey.objects.all(),
+        source='survey',
+        write_only=True,
+    )
 
     class Meta:
         model = Question
-        fields = ('id', 'text', 'question_type', 'is_favorite')
+        fields = ('id', 'text', 'question_type', 'is_favorite', 'survey_id')
+        read_only_fields = ('id', 'is_favorite')
         extra_kwargs = {  # noqa: RUF012
             'text': {'required': True},
             'question_type': {'required': True},

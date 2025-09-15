@@ -7,5 +7,5 @@ router = DefaultRouter()
 router.register(r'departments', DepartmentViewSet, basename='departments')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
