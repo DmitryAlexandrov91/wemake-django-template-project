@@ -146,7 +146,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'  # noqa: WPS115
     EMAIL_FIELD = 'email'  # noqa: WPS115
-    REQUIRED_FIELDS: ClassVar[list[str]] = ['first_name', 'last_name']  # noqa: WPS115
+    REQUIRED_FIELDS: ClassVar[list[str]] = ['full_name']  # noqa: WPS115
 
     class Meta:
         """
