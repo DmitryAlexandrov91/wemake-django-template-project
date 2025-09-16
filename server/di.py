@@ -3,7 +3,11 @@ from django.conf import LazySettings, settings
 from telebot import TeleBot
 
 from server.apps.company.infra.repository import DepartmentRepo
-from server.apps.surveys.infra.repository import AnswerOptionRepo, QuestionRepo
+from server.apps.surveys.infra.repository import (
+    AnswerOptionRepo,
+    QuestionRepo,
+    SurveyRepo,
+)
 from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
 from server.apps.tgbot.services import TelegramService
 from server.apps.users.infra.repository import UserRepo
@@ -35,6 +39,7 @@ def _inject_infra(container: punq.Container) -> None:
     container.register(QuestionRepo)
     container.register(AnswerOptionRepo)
     container.register(UserRepo)
+    container.register(SurveyRepo)
 
 
 def _inject_auth_service(container: punq.Container) -> None:

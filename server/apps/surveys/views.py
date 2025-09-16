@@ -1,18 +1,20 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
-from rest_framework import status, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from server.apps.surveys.infra.repository import QuestionRepo
+from server.apps.surveys.infra.repository import QuestionRepo, SurveyRepo
 from server.apps.surveys.models import Question, Survey
 from server.apps.surveys.paginators import CustomPaginator
-from server.apps.surveys.serializers import (
+from server.apps.surveys.serializers_create import (
     QuestionCreateSerializer,
+    SurveyCreateSerializer,
+)
+from server.apps.surveys.serializers_list import (
     SurveyListSerializer,
 )
-from server.apps.surveys.services import get_modified_surveys_queryset
 from server.di import resolve
 
 
@@ -49,10 +51,36 @@ class QuestionViewSet(viewsets.ModelViewSet[Question]):
 class SurveyViewSet(viewsets.ModelViewSet[Survey]):
     """ViewSet for Survey model."""
 
-    serializer_class = SurveyListSerializer
     pagination_class = CustomPaginator
+
+    @override
+    def get_serializer_class(
+        self,
+    ) -> type[serializers.BaseSerializer[Survey]]:
+        """Method for selecting serializer."""
+        if self.action == 'create':
+            return SurveyCreateSerializer
+        return SurveyListSerializer
 
     @override
     def get_queryset(self) -> QuerySet[Survey]:
         """Return modificated Survey`s queryset."""
-        return get_modified_surveys_queryset(self.request)
+        return resolve(SurveyRepo).get_modified_surveys_queryset(self.request)
+
+    @override
+    def create(
+        self,
+        request: Request,
+        *args: tuple[Any, ...],
+        **kwargs: dict[str, Any],  # noqa: WPS221
+    ) -> Response:
+        create_serializer = self.get_serializer(data=request.data)
+        create_serializer.is_valid(raise_exception=True)
+        return Response(
+            SurveyListSerializer(
+                resolve(SurveyRepo).build_survey_for_create_response(
+                    create_serializer.save(),
+                ),
+            ).data,
+            status=status.HTTP_201_CREATED,
+        )

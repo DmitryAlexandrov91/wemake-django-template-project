@@ -2,10 +2,18 @@ from django.db.models import Model
 from rest_framework import serializers
 
 from server.apps.company.models import Department
-from server.apps.surveys.models import Question, Survey, UserAnswer
+from server.apps.surveys.models import (
+    AnswerOption,
+    Question,
+    Survey,
+    UserAnswer,
+)
 from server.apps.users.serializers import UserShortSerializer
 
 ATTR_PK = 'pk'
+TEXT_ATTR = 'text'
+QUESTION_TYPE_ATTR = 'question_type'
+IS_FAVORITE_ATTR = 'is_favorite'
 
 
 class SerializerIDFieldMixin[ModelT: Model](
@@ -40,17 +48,26 @@ class UserAnswersListSerializer(SerializerIDFieldMixin[UserAnswer]):
         ]
 
 
+class AnswerOptionListSerializer(serializers.ModelSerializer[AnswerOption]):
+    """Serializer for display AnswerOption instances."""
+
+    class Meta:
+        model = AnswerOption
+        fields = ('id', TEXT_ATTR, 'is_correct')
+
+
 class QuestionListSerializer(SerializerIDFieldMixin[Question]):
     """Serializer for Question model."""
 
     id = serializers.IntegerField(source=ATTR_PK, read_only=True)
     text = serializers.CharField()
-    type = serializers.CharField(source='question_type')
+    type = serializers.CharField(source=QUESTION_TYPE_ATTR)
     user_answers = UserAnswersListSerializer(many=True)
+    answer_options = AnswerOptionListSerializer(many=True)
 
     class Meta:
         model = Question
-        fields = ('id', 'text', 'type', 'user_answers')
+        fields = ('id', TEXT_ATTR, 'type', 'user_answers', 'answer_options')
 
 
 class DepartmentListSerializer(SerializerIDFieldMixin[Department]):
@@ -86,28 +103,9 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
             'comment',
             'started_at',
             'finished_at',
-            'is_favorite',
+            IS_FAVORITE_ATTR,
             'question_count',
             'finished_count',
             'questions',
             'department',
         )
-
-
-class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
-    """Serializer for creating a new question with survey_id in body."""
-
-    survey_id = serializers.PrimaryKeyRelatedField(
-        queryset=Survey.objects.all(),
-        source='survey',
-        write_only=True,
-    )
-
-    class Meta:
-        model = Question
-        fields = ('id', 'text', 'question_type', 'is_favorite', 'survey_id')
-        read_only_fields = ('id', 'is_favorite')
-        extra_kwargs = {  # noqa: RUF012
-            'text': {'required': True},
-            'question_type': {'required': True},
-        }

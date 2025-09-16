@@ -17,6 +17,7 @@ from server.apps.users.models import CustomUser
 from tests.plugins.fakery import FakeryM
 
 GET_ALL_SURVEYS_URL = reverse('surveys-list')
+CREATE_SURVEY_URL = reverse('surveys-list')
 
 type SurveyFactory = Callable[[Unpack[_SurveyFactoryParams]], Survey]
 type SurveyResultFactory = Callable[

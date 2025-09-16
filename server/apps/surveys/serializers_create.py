@@ -1,0 +1,85 @@
+from typing import Any, override
+
+from rest_framework import serializers
+
+from server.apps.company.serializers import DepartmentCreateSerializer
+from server.apps.surveys.infra.repository import SurveyRepo
+from server.apps.surveys.models import (
+    AnswerOption,
+    Question,
+    Survey,
+)
+from server.di import resolve
+
+ATTR_PK = 'pk'
+TEXT_ATTR = 'text'
+QUESTION_TYPE_ATTR = 'question_type'
+IS_FAVORITE_ATTR = 'is_favorite'
+
+
+class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
+    """Serializer for creating a new question."""
+
+    class Meta:
+        model = Question
+        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, IS_FAVORITE_ATTR)
+        extra_kwargs = {  # noqa: RUF012
+            TEXT_ATTR: {'required': True},
+            QUESTION_TYPE_ATTR: {'required': True},
+        }
+
+
+class AnswerOptionCreateSerializer(serializers.ModelSerializer[AnswerOption]):
+    """Serializer for creating UserOption instance."""
+
+    class Meta:
+        model = AnswerOption
+        fields = (TEXT_ATTR, 'is_correct')
+
+
+class QuestionAnswerOptionCreateSerializer(
+    serializers.ModelSerializer[Question],
+):
+    """Serializer for creating Question instance."""
+
+    type = serializers.CharField(source=QUESTION_TYPE_ATTR)
+    answers = AnswerOptionCreateSerializer(
+        source='answer_options', many=True, required=False
+    )
+
+    class Meta:
+        model = Question
+        fields = (TEXT_ATTR, 'type', IS_FAVORITE_ATTR, 'answers')
+
+
+class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
+    """Serializer for creating survey`s instance."""
+
+    name = serializers.CharField(source='title')
+    comment = serializers.CharField(source='description')
+    started_at = serializers.DateField(source='start_date')
+    finished_at = serializers.DateField(source='end_date')
+    questions = QuestionAnswerOptionCreateSerializer(many=True, required=False)
+    department = DepartmentCreateSerializer()
+
+    class Meta:
+        model = Survey
+        fields = (
+            'id',
+            'name',
+            'comment',
+            'started_at',
+            'finished_at',
+            IS_FAVORITE_ATTR,
+            'questions',
+            'department',
+        )
+        read_only_fields = ('id',)
+
+    @override
+    def create(self, validated_data: dict[str, Any]) -> Survey:
+        """Custom create for saving nested objects."""
+        repo = resolve(SurveyRepo)
+        questions = validated_data.pop('questions', [])
+        survey = repo.create(validated_data)
+        return repo.add_questions(survey, questions)

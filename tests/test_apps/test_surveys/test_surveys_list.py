@@ -5,7 +5,7 @@ import pytest
 from django.test import Client
 
 from server.apps.company.models import Department
-from server.apps.surveys import paginators, serializers
+from server.apps.surveys import paginators, serializers_list
 from server.apps.surveys.choices import QuestionType
 from server.apps.surveys.models import (
     AnswerOption,
@@ -134,7 +134,7 @@ def test_response_with_text_answer(  # noqa: WPS211, WPS210
             option.question = question
             option.save()
         user_answer.selected_options.set(options)
-    serialized = serializers.UserAnswersListSerializer(user_answer).data
+    serialized = serializers_list.UserAnswersListSerializer(user_answer).data
     expected_result = ['Option 0', 'Option 1'] if bunch else 'Some comment'
     assert serialized['result'] == expected_result
     assert serialized['employer'][ID_ATTR] == user.id
