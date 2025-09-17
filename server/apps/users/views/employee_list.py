@@ -6,13 +6,14 @@ from rest_framework.views import APIView
 
 from server.apps.users import serializers
 from server.apps.users.infra.repository import UserRepo
+from server.di import resolve
 
 User = get_user_model()
 
 
 class EmployeeListView(APIView):
     """
-    GET api/employees?sort=name|edited_at&order=asc|desc.
+    GET api/employees?sort=full_name|edited_at&order=asc|desc.
 
     Returns list of all employees with optional sorting
     and prefetching survey results.
@@ -26,6 +27,7 @@ class EmployeeListView(APIView):
             sort = None
         if sort and order == 'desc':
             sort = f'-{sort}'
-        queryset = UserRepo().get_employees_with_survey_count(sort)
+        repo = resolve(UserRepo)
+        queryset = repo.get_employees_with_survey_count(sort)
         serializer = serializers.EmployeeSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
