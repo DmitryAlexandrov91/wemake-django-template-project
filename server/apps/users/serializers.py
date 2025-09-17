@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from server.apps.company.models import Department
-from server.apps.users.infra.repository import UserRepo, UserRepoSave
+from server.apps.users.infra.repository import UserRepoSave
 from server.apps.users.models import CustomUser
 from server.apps.users.services import AuthService
 from server.di import resolve
@@ -14,6 +14,8 @@ from server.di import resolve
 User = get_user_model()
 
 EMAIL_ATTR = 'email'
+FULL_NAME_ATTR = 'full_name'
+TG_ID_ATTR = 'tg_id'
 
 
 class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -60,8 +62,8 @@ class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
         model = CustomUser
         fields = (
             'id',
-            'email',
-            'full_name',
+            EMAIL_ATTR,
+            FULL_NAME_ATTR,
         )
 
 
@@ -72,7 +74,7 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
         source='department.name', read_only=True
     )
     telegram_id = serializers.IntegerField(
-        source='tg_id', required=False, allow_null=True
+        source=TG_ID_ATTR, required=False, allow_null=True
     )
     survey_count = serializers.IntegerField(read_only=True)
 
@@ -80,9 +82,9 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
         model = User
         fields: ClassVar[list[str]] = [
             'id',
-            'full_name',
+            FULL_NAME_ATTR,
             'department_name',
-            'email',
+            EMAIL_ATTR,
             'telegram_id',
             'survey_count',
             'edited_at',
@@ -102,10 +104,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
     class Meta:
         model = CustomUser
         fields = (
-            'full_name',
+            FULL_NAME_ATTR,
             EMAIL_ATTR,
             'department',
-            'tg_id',
+            TG_ID_ATTR,
         )
 
     @override
@@ -113,11 +115,62 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
         """Employee creation."""
         validated_data['role'] = 'employee'
         validated_data['is_staff'] = False
-        user_repo = UserRepo()
-        user_repo_save = UserRepoSave(user_repo=user_repo)
-        return user_repo_save.create_user(**validated_data)
+        return resolve(UserRepoSave).create_user(**validated_data)
 
     @override
     def to_representation(self, employee: CustomUser) -> dict[str, Any]:
         """Employee serializer is applyed to return the new employee."""
         return EmployeeSerializer(employee).to_representation(employee)
+
+
+class EmployeeResponseSerializer(serializers.ModelSerializer[CustomUser]):
+    """Serializer for patch response according to API spec."""
+
+    telegram_id = serializers.IntegerField(source=TG_ID_ATTR, read_only=True)
+    survey_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields: ClassVar[list[str]] = [
+            'id',
+            FULL_NAME_ATTR,
+            EMAIL_ATTR,
+            'department_id',
+            'telegram_id',
+            'survey_count',
+            'edited_at',
+        ]
+
+
+class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
+    """Serializer for updating an employee."""
+
+    email = serializers.EmailField(
+        validators=[EmailValidator()], required=False
+    )
+    full_name = serializers.CharField(required=False)
+    department_id = serializers.PrimaryKeyRelatedField(
+        source='department', queryset=Department.objects.all(), required=False
+    )
+    telegram_id = serializers.IntegerField(source=TG_ID_ATTR, required=False)
+
+    class Meta:
+        model = CustomUser
+        fields: ClassVar[list[str]] = [
+            FULL_NAME_ATTR,
+            EMAIL_ATTR,
+            'department_id',
+            'telegram_id',
+        ]
+
+    @override
+    def update(
+        self, instance: CustomUser, validated_data: dict[str, Any]
+    ) -> CustomUser:
+        """Employee update."""
+        return resolve(UserRepoSave).update_user(instance, **validated_data)
+
+    @override
+    def to_representation(self, instance: CustomUser) -> dict[str, Any]:
+        """Convert to response format."""
+        return EmployeeResponseSerializer(instance).data

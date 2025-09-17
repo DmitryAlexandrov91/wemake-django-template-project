@@ -13,7 +13,6 @@ from tests.plugins.users_requests import RequestMock
 
 PASS_RECOVERY_URL = reverse('password-recovery')
 EMPLOYEE_URL = reverse('employee')
-json = 'json'
 
 
 @pytest.mark.django_db

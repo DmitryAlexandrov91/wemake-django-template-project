@@ -21,8 +21,7 @@ def test_get_methods_raise_exception(
     method_name: str, test_args: list[Any], test_kwargs: dict[str, Any]
 ) -> None:
     """Test get methods raise DoesNotExist for non-existent objects."""
-    repo = resolve(UserRepo)
-    method = getattr(repo, method_name)
+    method = getattr(resolve(UserRepo), method_name)
 
     with pytest.raises(CustomUser.DoesNotExist):
         method(*test_args, **test_kwargs)
@@ -33,8 +32,7 @@ def test_repo_get_by_tg_id(auth_user: CustomUser) -> None:
     """Test UserRepo get_by_tg_id method."""
     assert auth_user.tg_id is not None
 
-    repo = resolve(UserRepo)
-    created_user = repo.get_by_tg_id(tg_id=auth_user.tg_id)
+    created_user = resolve(UserRepo).get_by_tg_id(tg_id=auth_user.tg_id)
 
     assert isinstance(created_user, CustomUser)
     assert created_user.tg_id == auth_user.tg_id
@@ -43,8 +41,7 @@ def test_repo_get_by_tg_id(auth_user: CustomUser) -> None:
 @pytest.mark.django_db
 def test_repo_get_by_email(auth_user: CustomUser) -> None:
     """Test UserRepo get_by_email method."""
-    repo = resolve(UserRepo)
-    created_user = repo.get_by_email(email=auth_user.email)
+    created_user = resolve(UserRepo).get_by_email(email=auth_user.email)
 
     assert isinstance(created_user, CustomUser)
     assert created_user.email == auth_user.email
@@ -53,8 +50,7 @@ def test_repo_get_by_email(auth_user: CustomUser) -> None:
 @pytest.mark.django_db
 def test_repo_get_by_pk(auth_user: CustomUser) -> None:
     """Test UserRepo get_by_pk method."""
-    repo = resolve(UserRepo)
-    created_user = repo.get_by_pk(pk=auth_user.pk)
+    created_user = resolve(UserRepo).get_by_pk(pk=auth_user.pk)
 
     assert isinstance(created_user, CustomUser)
     assert created_user == auth_user
@@ -63,12 +59,9 @@ def test_repo_get_by_pk(auth_user: CustomUser) -> None:
 @pytest.mark.django_db
 def test_repo_get_all(user_batch: UserBatchFactory) -> None:
     """Test UserRepo get_all method."""
-    repo = resolve(UserRepo)
     batch_size = 3
-
     user_batch(batch_size)
-
-    users = repo.get_all()
+    users = resolve(UserRepo).get_all()
 
     assert users.count() == batch_size
     assert all(isinstance(user, CustomUser) for user in users)
@@ -77,8 +70,6 @@ def test_repo_get_all(user_batch: UserBatchFactory) -> None:
 @pytest.mark.django_db
 def test_create_user(auth_user: CustomUser) -> None:
     """Test UserRepo user creation."""
-    user_repo = UserRepo()
-    user_repo_save = UserRepoSave(user_repo=user_repo)
     user_data = {
         'email': 'another@email.com',
         'full_name': auth_user.full_name,
@@ -86,7 +77,8 @@ def test_create_user(auth_user: CustomUser) -> None:
         'role': auth_user.role,
         'is_staff': auth_user.is_staff,
     }
-    created_user = user_repo_save.create_user(**user_data)
+    created_user = resolve(UserRepoSave).create_user(**user_data)
+
     assert isinstance(created_user, CustomUser)
     assert CustomUser.objects.filter(pk=created_user.pk).exists()
     assert created_user.full_name == user_data['full_name']

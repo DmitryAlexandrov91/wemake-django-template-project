@@ -10,7 +10,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
 from server.apps.tgbot.services import TelegramService
-from server.apps.users.infra.repository import UserRepo
+from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
 from server.settings.components import tgbot as tg_settings
 
@@ -39,6 +39,7 @@ def _inject_infra(container: punq.Container) -> None:
     container.register(QuestionRepo)
     container.register(AnswerOptionRepo)
     container.register(UserRepo)
+    container.register(UserRepoSave)
     container.register(SurveyRepo)
 
 

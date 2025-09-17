@@ -41,6 +41,14 @@ class UserRepo:
             queryset.order_by(order_field)
         return queryset
 
+    def get_employee_with_survey_count(self, pk: int) -> CustomUser:
+        """Get one employee with survey_count annotation."""
+        return (
+            CustomUser.objects.select_related('department')
+            .annotate(survey_count=Count('survey_result'))
+            .get(pk=pk)
+        )
+
 
 @final
 class UserRepoSave:
@@ -58,3 +66,9 @@ class UserRepoSave:
     def create_user(self, **kwargs: Any) -> CustomUser:
         """Creates a new user from keyword arguments."""
         return CustomUser.objects.create(**kwargs)
+
+    def update_user(self, user: CustomUser, **kwargs: Any) -> CustomUser:
+        """Update an existing user."""
+        CustomUser.objects.filter(pk=user.pk).update(**kwargs)
+        user.refresh_from_db()
+        return user

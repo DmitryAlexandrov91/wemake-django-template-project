@@ -30,8 +30,7 @@ class EmployeeView(APIView):
             sort = None
         if sort and order == 'desc':
             sort = f'-{sort}'
-        repo = resolve(UserRepo)
-        queryset = repo.get_employees_with_survey_count(sort)
+        queryset = resolve(UserRepo).get_employees_with_survey_count(sort)
         serializer = serializers.EmployeeSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -42,3 +41,19 @@ class EmployeeView(APIView):
             raise ValidationError(serializer.errors)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def patch(self, request: Request, pk: int) -> Response:
+        """Handles employee partial update."""
+        employee = resolve(UserRepo).get_employee_with_survey_count(pk)
+
+        serializer = serializers.EmployeeUpdateSerializer(
+            employee,
+            data=request.data,
+            partial=True,
+        )
+
+        if not serializer.is_valid():
+            raise ValidationError(serializer.errors)
+
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

@@ -28,4 +28,9 @@ urlpatterns: list[URLPattern | URLResolver] = [
         EmployeeView.as_view(),
         name='employee',
     ),
+    path(
+        'api/employees/<int:pk>',
+        EmployeeView.as_view(),
+        name='employee-update',
+    ),
 ]
