@@ -4,7 +4,9 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, TypedDict, Unpack
 
 import pytest
+from django.utils import timezone
 
+from server.apps.company.models import Department
 from server.apps.surveys import choices, models
 
 if TYPE_CHECKING:
@@ -24,6 +26,7 @@ class _QuestionFactoryParams(TypedDict, total=False):
     text: str
     question_type: choices.QuestionType
     survey: models.Survey
+    is_favorite: bool
 
 
 class _AnswerOptionFactoryParams(TypedDict, total=False):
@@ -87,3 +90,32 @@ def surveys_answer_option_batch(
         ]
 
     return factory
+
+
+@pytest.fixture
+def questions_batch(
+    surveys_question_factory: QuestionFactory,
+) -> Callable[[int, bool], list[models.Question]]:
+    """Factory fixture for creating batches of Question instances."""
+
+    def factory(
+        batch_size: int = 1, *, is_favorite: bool = False
+    ) -> list[models.Question]:
+        department = Department.objects.create(name='Test Department')
+        survey = models.Survey.objects.create(
+            title='Test Survey',
+            department=department,
+            start_date=timezone.now().date(),
+        )
+        questions = []
+        for num in range(batch_size):
+            question = surveys_question_factory(
+                survey=survey,
+                text=f'Question {num}',
+                question_type=choices.QuestionType.RATING_SCALE,
+                is_favorite=is_favorite,
+            )
+            questions.append(question)
+        return questions
+
+    return factory  # type: ignore[return-value]

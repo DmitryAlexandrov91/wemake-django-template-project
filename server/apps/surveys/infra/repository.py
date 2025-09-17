@@ -16,6 +16,12 @@ from server.apps.surveys.models import (
 
 QUESTION_ATTR = 'question'
 QUESTIONS_ATTR = 'questions'
+QUESTION_ID = 'question_id'
+QUESTION_TYPE = 'question_type'
+TEXT_ATTR = 'text'
+ID_ATTR = 'id'
+ASC_PARAM = 'asc'
+ALL_PARAM = 'all'
 
 
 @final
@@ -48,6 +54,33 @@ class QuestionRepo:
         Question.objects.filter(pk=question.pk).update(**kwargs)
         question.refresh_from_db()
         return question
+
+    def get_modified_questions_queryset(
+        self, request: Request
+    ) -> QuerySet[Question]:
+        """Return optimized and filtered question's queryset."""
+        queryset = Question.objects.select_related('survey').prefetch_related(
+            Prefetch(
+                'answer_options',
+                queryset=AnswerOption.objects.only(
+                    ID_ATTR, QUESTION_ID, TEXT_ATTR
+                ),
+            )
+        )
+        filter_param = request.query_params.get('filter', ALL_PARAM)
+        filter_mapping = {
+            'favorite': queryset.filter(is_favorite=True),
+            'all': queryset,
+        }
+        queryset = filter_mapping.get(filter_param, queryset)
+
+        order = request.query_params.get('order', ASC_PARAM)
+        if order == ASC_PARAM:
+            queryset = queryset.order_by(ID_ATTR)
+        else:
+            queryset = queryset.order_by('-id')
+
+        return queryset
 
 
 @final
@@ -110,13 +143,13 @@ class SurveyRepo:
                 Prefetch(
                     QUESTIONS_ATTR,
                     queryset=Question.objects.only(
-                        'id', 'survey_id', 'text', 'question_type'
+                        'id', 'survey_id', 'text', QUESTION_TYPE
                     ),
                 ),
                 Prefetch(
                     'questions__answer_options',
                     queryset=AnswerOption.objects.only(
-                        'id', 'question_id', 'text', 'is_correct'
+                        ID_ATTR, QUESTION_ID, TEXT_ATTR, 'is_correct'
                     ),
                 ),
                 Prefetch(
@@ -125,8 +158,8 @@ class SurveyRepo:
                         UserAnswer.objects.select_related(
                             'survey_result__user', 'survey_result__survey'
                         ).only(
-                            'id',
-                            'question_id',
+                            ID_ATTR,
+                            QUESTION_ID,
                             'survey_result_id',
                             'text_answer',
                         )
@@ -154,4 +187,4 @@ class SurveyRepo:
             'archive': queryset.filter(end_date__lt=now_date),
             'all': queryset,
         }
-        return filter_mapping[request.query_params.get('filter', 'all')]
+        return filter_mapping[request.query_params.get('filter', ALL_PARAM)]

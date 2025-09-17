@@ -79,6 +79,7 @@ class Question(models.Model):
     is_favorite = models.BooleanField(default=False)
 
     class Meta:
+        ordering = ('id',)
         default_related_name = 'questions'
         constraints = (
             models.UniqueConstraint(

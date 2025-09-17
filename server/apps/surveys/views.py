@@ -1,7 +1,7 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
-from rest_framework import serializers, status, viewsets
+from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -13,6 +13,7 @@ from server.apps.surveys.serializers_create import (
     SurveyCreateSerializer,
 )
 from server.apps.surveys.serializers_list import (
+    QuestionShortSerializer,
     SurveyListSerializer,
 )
 from server.di import resolve
@@ -83,4 +84,20 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
                 ),
             ).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class QuestionListViewSet(
+    mixins.ListModelMixin, viewsets.GenericViewSet[Question]
+):
+    """ViewSet for Question model."""
+
+    serializer_class = QuestionShortSerializer
+    pagination_class = CustomPaginator
+
+    @override
+    def get_queryset(self) -> QuerySet[Question]:
+        """Return modificated Survey`s queryset."""
+        return resolve(QuestionRepo).get_modified_questions_queryset(
+            self.request
         )

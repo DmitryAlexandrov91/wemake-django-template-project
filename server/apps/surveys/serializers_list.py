@@ -70,6 +70,18 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
         fields = ('id', TEXT_ATTR, 'type', 'user_answers', 'answer_options')
 
 
+class QuestionShortSerializer(SerializerIDFieldMixin[Question]):
+    """Short serializer for Question model."""
+
+    text = serializers.CharField()
+    question_type = serializers.CharField()
+    is_favorite = serializers.BooleanField()
+
+    class Meta:
+        model = Question
+        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, 'is_favorite')
+
+
 class DepartmentListSerializer(SerializerIDFieldMixin[Department]):
     """Serializer for Department model."""
 
