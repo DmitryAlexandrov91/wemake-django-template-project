@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from server.apps.users.serializers import EmployeeSerializer
 
 User = get_user_model()
-EMPLOYEE_LIST_URL = 'employee-list'
+EMPLOYEE_LIST_URL = 'employee'
 
 
 def check_json_data(json_data: Any) -> None:

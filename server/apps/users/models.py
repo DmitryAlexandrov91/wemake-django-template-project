@@ -12,7 +12,6 @@ FULL_NAME_MAX_LENGTH = 256
 POSITION_MAX_LENGTH = 128
 ROLE_MAX_LENGTH = 128
 
-
 REGISTRATION_EMAIL_REQUIRED_ERROR = 'Email is required!'
 
 
@@ -114,7 +113,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         help_text='Enter your role: ',
     )
-
     department = models.ForeignKey(
         'company.Department',
         on_delete=models.SET_NULL,
@@ -123,7 +121,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         related_name='users',
         help_text="Select the user's department (optional): ",
     )
-
     is_active = models.BooleanField(
         'Active status',
         default=True,
@@ -152,7 +149,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         """
         Metadata for the CustomUser model.
 
-        Ordering is by email, first name, last name, and patronymic.
+        Ordering is by email, full name.
         Default related name for reverse relations is 'users'.
         """
 

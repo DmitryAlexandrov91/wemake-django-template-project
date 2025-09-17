@@ -137,7 +137,7 @@ MIGRATION_LINTER_OPTIONS = {
         'CREATE_INDEX_EXCLUSIVE',
         'NOT_NULL',
         'DROP_COLUMN',
-        'ADDING',
+        'ADD_UNIQUE',
     ],
     'warnings_as_errors': True,
 }

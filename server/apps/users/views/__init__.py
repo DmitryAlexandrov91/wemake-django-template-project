@@ -1,5 +1,5 @@
 from server.apps.users.views.employee_list import (
-    EmployeeListView as EmployeeListView,
+    EmployeeView as EmployeeView,
 )
 from server.apps.users.views.logout import LogoutView as LogoutView
 from server.apps.users.views.obtain_pair import (

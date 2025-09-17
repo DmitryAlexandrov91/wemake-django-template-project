@@ -20,4 +20,5 @@ pytest_plugins = [
     'plugins.surveys_survey',
     'plugins.tgbot',
     'plugins.users_requests',
+    'plugins.users_clients',
 ]

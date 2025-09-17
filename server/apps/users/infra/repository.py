@@ -1,4 +1,4 @@
-from typing import final
+from typing import Any, final
 
 from django.contrib.auth import hashers
 from django.db.models import Count, QuerySet
@@ -8,7 +8,7 @@ from server.apps.users.models import CustomUser
 
 @final
 class UserRepo:
-    """Repository for User model operations."""
+    """Repository for read User model operations."""
 
     def get_users_with_department(self) -> QuerySet[CustomUser]:
         """Base queryset with department selection."""
@@ -30,11 +30,6 @@ class UserRepo:
         """Return one User by tg_id."""
         return self.get_users_with_department().get(tg_id=tg_id)
 
-    def update_password(self, user: CustomUser, password: str) -> None:
-        """Changes user password."""
-        user.password = hashers.make_password(password)
-        user.save()
-
     def get_employees_with_survey_count(
         self, order_field: str | None
     ) -> QuerySet[CustomUser]:
@@ -45,3 +40,21 @@ class UserRepo:
         if order_field:
             queryset.order_by(order_field)
         return queryset
+
+
+@final
+class UserRepoSave:
+    """Repository for write User model operations."""
+
+    def __init__(self, user_repo: UserRepo):
+        """Inject repo."""
+        self.user_repo = user_repo
+
+    def update_password(self, user: CustomUser, password: str) -> None:
+        """Changes user password."""
+        user.password = hashers.make_password(password)
+        user.save()
+
+    def create_user(self, **kwargs: Any) -> CustomUser:
+        """Creates a new user from keyword arguments."""
+        return CustomUser.objects.create(**kwargs)

@@ -3,7 +3,7 @@ from django.urls import URLPattern, URLResolver, path
 from server.apps.users.views import (
     CookieTokenObtainPairView,
     CookieTokenRefreshView,
-    EmployeeListView,
+    EmployeeView,
     LogoutView,
 )
 
@@ -25,7 +25,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     ),
     path(
         'api/employees',
-        EmployeeListView.as_view(),
-        name='employee-list',
+        EmployeeView.as_view(),
+        name='employee',
     ),
 ]

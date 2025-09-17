@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
 from pytest_mock import MockFixture
-from rest_framework.test import APIClient
 
 from server.apps.users.models import CustomUser
 from server.common.constants import DATA_LENGHT
@@ -80,12 +79,6 @@ def auth_user(user_factory: UserFactory, department: Any) -> CustomUser:
         survey_count=1,
         edited_at='25.02.2025',
     )
-
-
-@pytest.fixture
-def api_client() -> APIClient:
-    """API client."""
-    return APIClient()
 
 
 @pytest.fixture

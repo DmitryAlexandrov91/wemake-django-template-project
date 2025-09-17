@@ -1,11 +1,12 @@
 from typing import Any, ClassVar, override
 
 from django.contrib.auth import get_user_model
+from django.core.validators import EmailValidator
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer,
-)
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from server.apps.company.models import Department
+from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.models import CustomUser
 from server.apps.users.services import AuthService
 from server.di import resolve
@@ -57,7 +58,11 @@ class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'full_name')
+        fields = (
+            'id',
+            'email',
+            'full_name',
+        )
 
 
 class EmployeeSerializer(serializers.ModelSerializer[Any]):
@@ -82,3 +87,37 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
             'survey_count',
             'edited_at',
         ]
+
+
+class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
+    """Serializer for creating an empoyee."""
+
+    email = serializers.EmailField(validators=[EmailValidator()])
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        required=False,
+    )
+    tg_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'full_name',
+            EMAIL_ATTR,
+            'department',
+            'tg_id',
+        )
+
+    @override
+    def create(self, validated_data: dict[str, Any]) -> CustomUser:
+        """Employee creation."""
+        validated_data['role'] = 'employee'
+        validated_data['is_staff'] = False
+        user_repo = UserRepo()
+        user_repo_save = UserRepoSave(user_repo=user_repo)
+        return user_repo_save.create_user(**validated_data)
+
+    @override
+    def to_representation(self, employee: CustomUser) -> dict[str, Any]:
+        """Employee serializer is applyed to return the new employee."""
+        return EmployeeSerializer(employee).to_representation(employee)
