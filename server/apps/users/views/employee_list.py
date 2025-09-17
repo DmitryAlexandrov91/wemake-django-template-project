@@ -6,12 +6,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from server.apps.users import serializers
+from server.apps.users.drf_spectacular_schemas.schema import (
+    employee_view_schema,
+)
 from server.apps.users.infra.repository import UserRepo
 from server.di import resolve
 
 User = get_user_model()
 
 
+@employee_view_schema
 class EmployeeView(APIView):
     """
     GET api/employees?sort=full_name|edited_at&order=asc|desc.
@@ -41,19 +45,3 @@ class EmployeeView(APIView):
             raise ValidationError(serializer.errors)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def patch(self, request: Request, pk: int) -> Response:
-        """Handles employee partial update."""
-        employee = resolve(UserRepo).get_employee_with_survey_count(pk)
-
-        serializer = serializers.EmployeeUpdateSerializer(
-            employee,
-            data=request.data,
-            partial=True,
-        )
-
-        if not serializer.is_valid():
-            raise ValidationError(serializer.errors)
-
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

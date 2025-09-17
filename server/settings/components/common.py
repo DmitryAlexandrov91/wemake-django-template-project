@@ -50,6 +50,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     'rest_framework',
     'rest_framework_simplejwt',
     'django_celery_beat',
+    'drf_spectacular',
 )
 
 MIDDLEWARE: tuple[str, ...] = (
@@ -218,6 +219,7 @@ REST_FRAMEWORK = {
         'server.apps.surveys.paginators.CustomPaginator'
     ),
     'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Cookie
@@ -271,3 +273,9 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1
+
+
+SPECTACULAR_SETTINGS = {
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVE_AUTHENTICATION': [],
+}

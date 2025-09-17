@@ -22,14 +22,14 @@ class UserSerializer(serializers.ModelSerializer[CustomUser]):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'name')
+        fields = ('id', 'full_name')
 
 
 class DepartmentSerializer(serializers.ModelSerializer[Department]):
     """Serializer for Department model with employees list and count."""
 
     department_name = serializers.CharField(source='name')
-    employees = UserSerializer(many=True, read_only=True)
+    employees = UserSerializer(source='users', many=True, read_only=True)
     employees_count = serializers.IntegerField(read_only=True)
 
     class Meta:

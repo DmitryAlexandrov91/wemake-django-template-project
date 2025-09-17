@@ -1,6 +1,7 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -72,6 +73,7 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
             status=status.HTTP_202_ACCEPTED,
         )
 
+    @extend_schema(responses=DepartmentSerializer)
     @override
     def list(self, request: Request) -> Response:
         """Return a list of all departments with employees."""

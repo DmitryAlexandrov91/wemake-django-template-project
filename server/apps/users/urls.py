@@ -4,6 +4,7 @@ from server.apps.users.views import (
     CookieTokenObtainPairView,
     CookieTokenRefreshView,
     EmployeeView,
+    EmployeeViewDetail,
     LogoutView,
 )
 
@@ -30,7 +31,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     ),
     path(
         'api/employees/<int:pk>',
-        EmployeeView.as_view(),
+        EmployeeViewDetail.as_view(),
         name='employee-update',
     ),
 ]

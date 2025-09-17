@@ -48,6 +48,7 @@ django-celery-beat = "^2.8.1"
 polyfactory = "^2.22.2"
 pytest-mock = "^3.14.1"
 mimesis = "^18.0.0"
+drf-spectacular = "^0.28.0"
 
 
 [tool.poetry.group.dev.dependencies]

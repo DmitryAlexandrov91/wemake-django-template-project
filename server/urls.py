@@ -13,6 +13,7 @@ from django import conf, contrib
 from django.contrib.admindocs import urls as admindocs_urls
 from django.urls import include, path
 from django.views.generic import TemplateView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from health_check import urls as health_urls
 
 from server.apps.company import urls as company_urls
@@ -45,6 +46,12 @@ urlpatterns = [
     path('api/', include(surveys_urls)),
     # Company app API
     path('api/', include(company_urls)),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(
+        'api/docs/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='docs',
+    ),
     # Text and xml static files:
     path(
         'robots.txt',
