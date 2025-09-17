@@ -55,7 +55,7 @@ run_compose pull -q web
 # Check if new container makes migrations on copy of prod db
 # backup current db for host
 mkdir -p /home/deploy/backups/${DEPLOY_ENV}
-run_compose exec db bash  -c 'pg_dump --clean --if-exists --drop-cascade -U $POSTGRES_USER -d $POSTGRES_DB > /tmp/backup.sql'
+run_compose exec db bash  -c 'pg_dump --clean --if-exists -U $POSTGRES_USER -d $POSTGRES_DB > /tmp/backup.sql'
 backup_file_name=`date '+%Y-%m-%d_%H%M%Z'`_before_action_${DOCKER_TAG_WEB##*-}.sql
 run_compose cp db:/tmp/backup.sql /home/deploy/backups/${DEPLOY_ENV}/${backup_file_name}
 
