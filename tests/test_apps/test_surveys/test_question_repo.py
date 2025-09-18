@@ -11,9 +11,8 @@ from tests.plugins.surveys import QuestionFactory
 def test_repo_get_by_pk(consent_given_question: Question) -> None:
     """Test QuestionRepo get_by_pk method."""
     repo = resolve(QuestionRepo)
-
     with pytest.raises(Question.DoesNotExist):
-        repo.get_by_pk(pk=2)
+        repo.get_by_pk(pk=consent_given_question.pk + 1)
 
     created_question = repo.get_by_pk(pk=consent_given_question.pk)
 
