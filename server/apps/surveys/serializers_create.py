@@ -22,7 +22,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
 
     class Meta:
         model = Question
-        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, IS_FAVORITE_ATTR)
+        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, IS_FAVORITE_ATTR)  # noqa: WPS226
         extra_kwargs = {  # noqa: RUF012
             TEXT_ATTR: {'required': True},
             QUESTION_TYPE_ATTR: {'required': True},
@@ -83,3 +83,33 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
         questions = validated_data.pop('questions', [])
         survey = repo.create(validated_data)
         return repo.add_questions(survey, questions)
+
+
+class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
+    """Serializer for updating survey`s instance."""
+
+    name = serializers.CharField(source='title', required=False)
+    comment = serializers.CharField(source='description', required=False)
+    started_at = serializers.DateField(source='start_date', required=False)
+    finished_at = serializers.DateField(source='end_date', required=False)
+    department = DepartmentCreateSerializer(required=False)
+
+    class Meta:
+        model = Survey
+        fields = (
+            'id',
+            'name',
+            'comment',
+            'started_at',
+            'finished_at',
+            IS_FAVORITE_ATTR,
+            'department',
+        )
+
+    @override
+    def update(
+        self, instance: Survey, validated_data: dict[str, Any]
+    ) -> Survey:
+        """Use repo for update operation with nested relations."""
+        repo = resolve(SurveyRepo)
+        return repo.update_survey(instance, **validated_data)

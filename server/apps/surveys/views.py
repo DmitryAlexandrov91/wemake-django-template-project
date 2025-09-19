@@ -11,6 +11,7 @@ from server.apps.surveys.paginators import CustomPaginator
 from server.apps.surveys.serializers_create import (
     QuestionCreateSerializer,
     SurveyCreateSerializer,
+    SurveyUpdateSerializer,
 )
 from server.apps.surveys.serializers_list import (
     QuestionShortSerializer,
@@ -53,15 +54,17 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
     """ViewSet for Survey model."""
 
     pagination_class = CustomPaginator
+    http_method_names = ('get', 'post', 'patch')
 
     @override
     def get_serializer_class(
         self,
     ) -> type[serializers.BaseSerializer[Survey]]:
         """Method for selecting serializer."""
-        if self.action == 'create':
-            return SurveyCreateSerializer
-        return SurveyListSerializer
+        return {
+            'create': SurveyCreateSerializer,
+            'partial_update': SurveyUpdateSerializer,
+        }.get(self.action, SurveyListSerializer)
 
     @override
     def get_queryset(self) -> QuerySet[Survey]:
@@ -84,6 +87,28 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
                 ),
             ).data,
             status=status.HTTP_201_CREATED,
+        )
+
+    @override
+    def partial_update(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Response:
+        """Partial update survey using repo."""
+        repo = resolve(SurveyRepo)
+        survey = repo.get_modified_surveys_queryset(request).get(
+            pk=kwargs['pk']
+        )
+        serializer = self.get_serializer(
+            survey,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_survey = repo.update_survey(survey, **serializer.validated_data)
+
+        return Response(
+            SurveyListSerializer(updated_survey).data,
+            status=status.HTTP_202_ACCEPTED,
         )
 
 

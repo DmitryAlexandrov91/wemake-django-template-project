@@ -22,6 +22,7 @@ TEXT_ATTR = 'text'
 ID_ATTR = 'id'
 ASC_PARAM = 'asc'
 ALL_PARAM = 'all'
+DEPARTMENT = 'department'
 
 
 @final
@@ -91,7 +92,7 @@ class SurveyRepo:
     def create(self, survey_data: dict[str, Any]) -> Survey:
         """Create survey with nested params."""
         department = Department.objects.create(
-            **survey_data.pop('department'),
+            **survey_data.pop(DEPARTMENT),
         )
         return Survey.objects.create(
             department=department,
@@ -120,7 +121,7 @@ class SurveyRepo:
                 question_count=Count(QUESTIONS_ATTR, distinct=True),
                 finished_count=Count('result', distinct=True),
             )
-            .select_related('department')
+            .select_related(DEPARTMENT)
             .prefetch_related(
                 QUESTIONS_ATTR,
                 'questions__answer_options',
@@ -172,7 +173,7 @@ class SurveyRepo:
                     ),
                 ),
             )
-            .select_related('department')
+            .select_related(DEPARTMENT)
         )
         queryset = queryset.order_by(
             'start_date'
@@ -188,3 +189,24 @@ class SurveyRepo:
             'all': queryset,
         }
         return filter_mapping[request.query_params.get('filter', ALL_PARAM)]
+
+    def update_survey(self, survey: Survey, **kwargs: Any) -> Survey:
+        """Update survey."""
+        department_data = kwargs.pop(DEPARTMENT, None)
+
+        mapped_data = {
+            key: field_value
+            for key, field_value in kwargs.items()
+            if field_value is not None
+        }
+
+        with transaction.atomic():
+            Department.objects.filter(pk=survey.department.pk).update(
+                **department_data
+            )
+            survey.department.refresh_from_db()
+
+            Survey.objects.filter(pk=survey.pk).update(**mapped_data)
+            survey.refresh_from_db()
+
+        return survey

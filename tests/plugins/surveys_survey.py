@@ -83,3 +83,11 @@ def surveys_user_answer_result_factory(
         return fakery_m(UserAnswer)(**kwargs)
 
     return factory
+
+
+@pytest.fixture
+def survey(surveys_survey_factory: SurveyFactory) -> Survey:
+    """Return a single Survey instance created."""
+    return surveys_survey_factory(
+        title='Original Title', description='Original Description'
+    )
