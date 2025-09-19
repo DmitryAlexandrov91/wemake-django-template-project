@@ -1,9 +1,5 @@
 from typing import NotRequired, TypedDict
 
-import pytest
-from polyfactory.factories import TypedDictFactory
-from polyfactory.pytest_plugin import register_fixture
-
 
 class TGChat(TypedDict):
     """Represents a Telegram chat object."""
@@ -48,19 +44,3 @@ class TGApiAnswer(TypedDict):
 
     result: TGUpdate  # noqa: WPS110
     ok: NotRequired[bool]
-
-
-@register_fixture(name='tg_api_answer_factory')
-class TGApiAnswerFactory(TypedDictFactory[TGApiAnswer]):
-    """Factory for generating mock Telegram API response."""
-
-    __check_model__ = False
-    ok = True
-
-
-@pytest.fixture
-def tg_api_answer(
-    tg_api_answer_factory: TGApiAnswerFactory,
-) -> TGApiAnswer:
-    """Returns tg_api_answer_factory fixture build result."""
-    return tg_api_answer_factory.build()

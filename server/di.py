@@ -8,6 +8,7 @@ from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
 )
+from server.apps.tgbot.handlers.start import StartHandlerService
 from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
 from server.apps.tgbot.services import TelegramService
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
@@ -27,6 +28,7 @@ def _inject_tg(container: punq.Container) -> None:
     )
     container.register(TelegramService)
     container.register(ProcessTelegramUpdate)
+    container.register(StartHandlerService)
 
 
 def _inject_department_repo(container: punq.Container) -> None:

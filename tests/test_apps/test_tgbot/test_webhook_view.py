@@ -6,7 +6,7 @@ from django.conf import LazySettings
 from django.test import Client
 
 from server.di import resolve
-from tests.plugins.tgbot import TGApiAnswer
+from tests.plugins.tgbot.api_factory import TGApiAnswer
 
 CONTENT_TYPE = 'application/json'
 settings = resolve(LazySettings)

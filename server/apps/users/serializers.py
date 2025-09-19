@@ -68,7 +68,7 @@ class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
 
 
 class EmployeeSerializer(serializers.ModelSerializer[Any]):
-    """Сериализатор для работников."""
+    """Serializer for read employees."""
 
     department_name = serializers.CharField(
         source='department.name', read_only=True
