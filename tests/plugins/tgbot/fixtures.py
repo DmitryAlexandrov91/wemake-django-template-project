@@ -2,30 +2,11 @@ from typing import final
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from polyfactory.factories import TypedDictFactory
 from polyfactory.factories.pydantic_factory import ModelFactory
 from polyfactory.pytest_plugin import register_fixture
 from pydantic import BaseModel, Field
 from pytest_mock import MockerFixture
 from telebot import TeleBot
-
-from tests.plugins.tgbot.api_factory import TGApiAnswer
-
-
-@register_fixture(name='tg_api_answer_factory')
-class TGApiAnswerFactory(TypedDictFactory[TGApiAnswer]):
-    """Factory for generating mock Telegram API response."""
-
-    __check_model__ = False
-    ok = True
-
-
-@pytest.fixture
-def tg_api_answer(
-    tg_api_answer_factory: TGApiAnswerFactory,
-) -> TGApiAnswer:
-    """Returns tg_api_answer_factory fixture build result."""
-    return tg_api_answer_factory.build()
 
 
 @pytest.fixture
@@ -54,6 +35,21 @@ class MockMessage(BaseModel):
     from_user: _User | None
     chat: _Chat
     text: str | None = None
+    date: int
+
+
+class TGUpdate(BaseModel):
+    """Update test DTO."""
+
+    update_id: int
+    message: MockMessage
+
+
+class TGApiAnswer(BaseModel):
+    """TG Api answer test DTO."""
+
+    result: TGUpdate  # noqa: WPS110
+    ok: bool = True
 
 
 @pytest.fixture
@@ -88,3 +84,22 @@ def message_with_user(
 ) -> MockMessage:
     """Get ok message."""
     return tg_message_factory.build(from_user=tg_message_user_factory.build())
+
+
+@register_fixture(name='tg_api_answer_factory')
+class TGApiAnswerFactory(ModelFactory[TGApiAnswer]):
+    """Get mock Telegram API response."""
+
+    __check_model__ = False
+
+
+@pytest.fixture
+def tg_api_answer(
+    tg_api_answer_factory: TGApiAnswerFactory,
+) -> TGApiAnswer:
+    """
+    Returns tg_api_answer_factory fixture build result.
+
+    If you need dict obj, use model_dump() method.
+    """
+    return tg_api_answer_factory.build()

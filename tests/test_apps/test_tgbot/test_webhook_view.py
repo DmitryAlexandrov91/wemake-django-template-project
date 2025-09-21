@@ -6,7 +6,7 @@ from django.conf import LazySettings
 from django.test import Client
 
 from server.di import resolve
-from tests.plugins.tgbot.api_factory import TGApiAnswer
+from tests.plugins.tgbot.fixtures import TGApiAnswer
 
 CONTENT_TYPE = 'application/json'
 settings = resolve(LazySettings)
@@ -50,7 +50,7 @@ def test_webhook_invalid_secret_token(
 
     response = client.post(
         path=settings.WEBHOOK_PATH,
-        data=tg_api_answer['result'],  # noqa: WPS226
+        data=tg_api_answer.model_dump(mode='json')['result'],  # noqa: WPS226
         headers=headers,
         content_type=CONTENT_TYPE,
     )
@@ -69,7 +69,7 @@ def test_webhook_valid_update(
         settings.WEBHOOK_PATH,
         headers=header_with_current_secret,
         content_type=CONTENT_TYPE,
-        data=tg_api_answer['result'],
+        data=tg_api_answer.model_dump(mode='json')['result'],
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -86,7 +86,7 @@ def test_custom_webhook_path(
         settings.WEBHOOK_PATH,
         headers=header_with_current_secret,
         content_type=CONTENT_TYPE,
-        data=tg_api_answer['result'],
+        data=tg_api_answer.model_dump(mode='json')['result'],
     )
 
     assert response.status_code == HTTPStatus.OK
