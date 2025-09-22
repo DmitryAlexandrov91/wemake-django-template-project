@@ -67,10 +67,22 @@ www.{$DOMAIN_NAME} {
 		file_server
 	}
 
-	# Serve Django app
-	handle {
-		reverse_proxy web:8000
-	}
+
+  # Serve Django paths
+  handle /api/* {
+          reverse_proxy web:8000
+  }
+  handle /admin/* {
+          reverse_proxy web:8000
+  }
+
+
+  # Serve Frontend static files
+  handle {
+          root * /var/www/frontend
+          file_server
+  }
+
 
 	# Dynamically compress response with gzip when it makes sense.
 	# This setting is ignored for precompressed files.

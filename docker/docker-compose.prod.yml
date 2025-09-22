@@ -29,6 +29,7 @@ services:
       - caddy-data:/data  # saving certificates
       - django-static:/var/www/django/static  # statics
       - django-media:/var/www/django/media  # media
+      - ~/frontend/${DEPLOY_ENV}/dist:/var/www/frontend  # frontend
     ports:
       - "80:80"
       - "443:443"
