@@ -15,6 +15,8 @@ ATTR_PK = 'pk'
 TEXT_ATTR = 'text'
 QUESTION_TYPE_ATTR = 'question_type'
 IS_FAVORITE_ATTR = 'is_favorite'
+SURVEY_FIELD = 'survey'
+ID_FIELD = 'id'
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
@@ -22,10 +24,18 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
 
     class Meta:
         model = Question
-        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, IS_FAVORITE_ATTR)  # noqa: WPS226
+        fields = (
+            ID_FIELD,
+            SURVEY_FIELD,
+            TEXT_ATTR,
+            QUESTION_TYPE_ATTR,
+            IS_FAVORITE_ATTR,
+        )
+        read_only_fields = (ID_FIELD,)
         extra_kwargs = {  # noqa: RUF012
             TEXT_ATTR: {'required': True},
             QUESTION_TYPE_ATTR: {'required': True},
+            SURVEY_FIELD: {'required': True},
         }
 
 
@@ -65,7 +75,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     class Meta:
         model = Survey
         fields = (
-            'id',
+            ID_FIELD,
             'name',
             'comment',
             'started_at',
@@ -74,7 +84,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
             'questions',
             'department',
         )
-        read_only_fields = ('id',)
+        read_only_fields = (ID_FIELD,)
 
     @override
     def create(self, validated_data: dict[str, Any]) -> Survey:
@@ -97,7 +107,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
     class Meta:
         model = Survey
         fields = (
-            'id',
+            ID_FIELD,
             'name',
             'comment',
             'started_at',
