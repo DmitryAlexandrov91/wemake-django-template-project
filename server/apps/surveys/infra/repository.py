@@ -23,6 +23,7 @@ ID_ATTR = 'id'
 ASC_PARAM = 'asc'
 ALL_PARAM = 'all'
 DEPARTMENT = 'department'
+SURVEY_ATTR = 'survey'
 
 
 @final
@@ -44,7 +45,9 @@ class QuestionRepo:
 
     def get_all(self) -> QuerySet[Question]:
         """Return all Question instances from DB."""
-        return Question.objects.select_related('survey', 'survey__department')
+        return Question.objects.select_related(
+            SURVEY_ATTR, 'survey__department'
+        )
 
     def get_by_pk(self, pk: int) -> Question:
         """Return one Question by primary key."""
@@ -60,7 +63,9 @@ class QuestionRepo:
         self, request: Request
     ) -> QuerySet[Question]:
         """Return optimized and filtered question's queryset."""
-        queryset = Question.objects.select_related('survey').prefetch_related(
+        queryset = Question.objects.select_related(
+            SURVEY_ATTR,
+        ).prefetch_related(
             Prefetch(
                 'answer_options',
                 queryset=AnswerOption.objects.only(
@@ -169,7 +174,7 @@ class SurveyRepo:
                 Prefetch(
                     'result',
                     queryset=SurveyResult.objects.select_related(
-                        'user', 'survey'
+                        'user', SURVEY_ATTR
                     ),
                 ),
             )
@@ -210,3 +215,24 @@ class SurveyRepo:
             survey.refresh_from_db()
 
         return survey
+
+    def get_results(self, survey_id: int) -> QuerySet[SurveyResult]:
+        """Get all SurveyResults objects with their answers by survey_id."""
+        return (
+            Survey.objects.get(pk=survey_id)
+            .result.select_related('user', SURVEY_ATTR)
+            .prefetch_related(
+                Prefetch(
+                    'user_answers',
+                    queryset=UserAnswer.objects.select_related(
+                        QUESTION_ATTR,
+                    ).only(ID_ATTR, 'text_answer', 'question_id'),
+                ),
+                Prefetch(
+                    'user_answers__selected_options',
+                    queryset=AnswerOption.objects.select_related(
+                        'question',
+                    ).only(ID_ATTR, TEXT_ATTR, 'is_correct', 'question_id'),
+                ),
+            )
+        )
