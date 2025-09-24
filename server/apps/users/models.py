@@ -5,12 +5,17 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.validators import MinLengthValidator
 from django.db import models
+
+from server.apps.users.validators import validate_telegram_username
 
 EMAIL_MAX_LENGTH = 256
 FULL_NAME_MAX_LENGTH = 256
 POSITION_MAX_LENGTH = 128
 ROLE_MAX_LENGTH = 128
+TELEGRAM_USERNAME_MAX_LENGTH = 33
+TELEGRAM_USERNAME_MIN_LENGTH = 6
 
 REGISTRATION_EMAIL_REQUIRED_ERROR = 'Email is required!'
 
@@ -129,11 +134,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         'Staff status',
         default=True,
     )
-    tg_id = models.PositiveBigIntegerField(
-        'Telegram id',
-        unique=True,
-        null=True,
+    tg_username = models.CharField(
+        'Telegram username',
         blank=True,
+        max_length=TELEGRAM_USERNAME_MAX_LENGTH,
+        help_text='Enter your telegram @username: ',
+        validators=(
+            validate_telegram_username,
+            MinLengthValidator(TELEGRAM_USERNAME_MIN_LENGTH),
+        ),
     )
     edited_at = models.DateTimeField(
         'Время редактирования', auto_now=True, null=True
@@ -160,6 +169,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'full_name',
         )
         default_related_name = 'users'
+        constraints: ClassVar[list[models.UniqueConstraint]] = [
+            models.UniqueConstraint(
+                fields=('tg_username',),
+                name='unique_tg_username_not_blank',
+                condition=~models.Q(tg_username=''),
+            )
+        ]
 
     @override
     def __str__(self) -> str:

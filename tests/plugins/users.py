@@ -29,7 +29,7 @@ class _UserFactoryParams(TypedDict, total=False):
     role: str
     is_active: bool
     is_staff: bool
-    tg_id: int
+    tg_username: str
     department: Any
     survey_count: int
     edited_at: str
@@ -74,7 +74,7 @@ def auth_user(user_factory: UserFactory, department: Any) -> CustomUser:
         role='User',
         is_active=True,
         is_staff=False,
-        tg_id=1234567890,
+        tg_username='@1234567890',
         department=department,
         survey_count=1,
         edited_at='25.02.2025',

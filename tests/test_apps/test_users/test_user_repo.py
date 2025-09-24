@@ -14,7 +14,7 @@ from tests.plugins.users import UserBatchFactory
     [
         ('get_by_pk', [], {'pk': 2}),
         ('get_by_email', [], {'email': 'nontest@example.ru'}),
-        ('get_by_tg_id', [], {'tg_id': 9999999999}),
+        ('get_by_tg_username', [], {'tg_username': '@default_username'}),
     ],
 )
 def test_get_methods_raise_exception(
@@ -29,13 +29,15 @@ def test_get_methods_raise_exception(
 
 @pytest.mark.django_db
 def test_repo_get_by_tg_id(auth_user: CustomUser) -> None:
-    """Test UserRepo get_by_tg_id method."""
-    assert auth_user.tg_id is not None
+    """Test UserRepo get_by_tg_username method."""
+    assert auth_user.tg_username is not None
 
-    created_user = resolve(UserRepo).get_by_tg_id(tg_id=auth_user.tg_id)
+    created_user = resolve(UserRepo).get_by_tg_username(
+        tg_username=auth_user.tg_username
+    )
 
     assert isinstance(created_user, CustomUser)
-    assert created_user.tg_id == auth_user.tg_id
+    assert created_user.tg_username == auth_user.tg_username
 
 
 @pytest.mark.django_db

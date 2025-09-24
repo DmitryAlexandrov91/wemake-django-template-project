@@ -26,9 +26,9 @@ class UserRepo:
         """Return one User by email."""
         return self.get_users_with_department().get(email=email)
 
-    def get_by_tg_id(self, tg_id: int) -> CustomUser:
-        """Return one User by tg_id."""
-        return self.get_users_with_department().get(tg_id=tg_id)
+    def get_by_tg_username(self, tg_username: str) -> CustomUser:
+        """Return one User by tg_username."""
+        return self.get_users_with_department().get(tg_username=tg_username)
 
     def get_employees_with_survey_count(
         self, order_field: str | None

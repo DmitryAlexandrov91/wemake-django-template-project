@@ -15,7 +15,7 @@ User = get_user_model()
 
 EMAIL_ATTR = 'email'
 FULL_NAME_ATTR = 'full_name'
-TG_ID_ATTR = 'tg_id'
+TG_ID_ATTR = 'tg_username'
 
 
 class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -73,9 +73,6 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
     department_name = serializers.CharField(
         source='department.name', read_only=True
     )
-    telegram_id = serializers.IntegerField(
-        source=TG_ID_ATTR, required=False, allow_null=True
-    )
     survey_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -85,7 +82,7 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
             FULL_NAME_ATTR,
             'department_name',
             EMAIL_ATTR,
-            'telegram_id',
+            TG_ID_ATTR,
             'survey_count',
             'edited_at',
         ]
@@ -99,7 +96,6 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
         queryset=Department.objects.all(),
         required=False,
     )
-    tg_id = serializers.IntegerField(required=False)
 
     class Meta:
         model = CustomUser
@@ -126,7 +122,6 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
 class EmployeeResponseSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for patch response according to API spec."""
 
-    telegram_id = serializers.IntegerField(source=TG_ID_ATTR, read_only=True)
     survey_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -136,10 +131,11 @@ class EmployeeResponseSerializer(serializers.ModelSerializer[CustomUser]):
             FULL_NAME_ATTR,
             EMAIL_ATTR,
             'department_id',
-            'telegram_id',
+            TG_ID_ATTR,
             'survey_count',
             'edited_at',
         ]
+        read_only_fields: ClassVar[list[str]] = [TG_ID_ATTR]
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
@@ -152,7 +148,6 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
     department_id = serializers.PrimaryKeyRelatedField(
         source='department', queryset=Department.objects.all(), required=False
     )
-    telegram_id = serializers.IntegerField(source=TG_ID_ATTR, required=False)
 
     class Meta:
         model = CustomUser
@@ -160,7 +155,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
             FULL_NAME_ATTR,
             EMAIL_ATTR,
             'department_id',
-            'telegram_id',
+            TG_ID_ATTR,
         ]
 
     @override

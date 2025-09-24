@@ -20,7 +20,7 @@ def check_json_data(json_data: Any) -> None:
     assert set(employee.keys()) == {
         'id',
         'full_name',
-        'telegram_id',
+        'tg_username',
         'department_name',
         'survey_count',
         'edited_at',
@@ -40,7 +40,7 @@ def test_employee_serializer_fields(auth_user: Any, department: Any) -> None:
         'full_name',
         'department_name',
         'email',
-        'telegram_id',
+        'tg_username',
         'survey_count',
         'edited_at',
     }
