@@ -2,7 +2,7 @@ from typing import override
 
 from django.db import models
 
-from server.apps.surveys.choices import QuestionType
+from server.apps.surveys.choices import QuestionType, SurveyStatus
 from server.common.constants import DATA_LENGHT
 
 
@@ -20,6 +20,12 @@ class Survey(models.Model):
     )
     is_favorite = models.BooleanField(default=False)
 
+    status = models.CharField(
+        max_length=DATA_LENGHT,
+        choices=SurveyStatus.choices,
+        default=SurveyStatus.DRAFT,
+    )
+
     class Meta:
         default_related_name = 'surveys'
         constraints = (
@@ -29,6 +35,10 @@ class Survey(models.Model):
                     models.Q(end_date__gte=models.F('start_date'))
                     | models.Q(end_date__isnull=True)
                 ),
+            ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_status_valid',
+                condition=(models.Q(status__in=SurveyStatus.values)),
             ),
         )
 

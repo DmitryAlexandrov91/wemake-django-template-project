@@ -8,19 +8,18 @@ from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.tasks import send_recovery_email_task
 from server.apps.users.validators import validate_request
 from server.common.constants import DATA_LENGHT
+from server.di import resolve
 
 
 def pass_recovery_processing(request: Request) -> Any | None:
     """Processes the POST request for password recovery."""
     email = validate_request(request)
-    user_repo = UserRepo()
-    user_repo_save = UserRepoSave(user_repo=user_repo)
     try:
-        user = user_repo_save.user_repo.get_by_email(email)
+        user = resolve(UserRepo).get_by_email(email)
     except ObjectDoesNotExist:
         return None
     new_password = secrets.token_urlsafe(DATA_LENGHT)
-    user_repo_save.update_password(user, new_password)
+    resolve(UserRepoSave).update_password(user, new_password)
     return send_recovery_email_task.delay(
         to_email=user.email, new_password=new_password
     )

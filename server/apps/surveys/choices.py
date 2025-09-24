@@ -7,3 +7,11 @@ class QuestionType(models.TextChoices):
     RATING_SCALE = 'ratingScale', 'Rating scale'
     SCORE = 'score', 'Score'
     CONSENT_GIVEN = 'consentGiven', 'Consent given'
+
+
+class SurveyStatus(models.TextChoices):
+    """Choices for survey status."""
+
+    DRAFT = 'draft', 'Draft'
+    ACTIVE = 'active', 'Active'
+    COMPLETED = 'completed', 'Completed'
