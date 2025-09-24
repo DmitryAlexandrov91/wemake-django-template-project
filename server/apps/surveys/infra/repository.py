@@ -60,7 +60,9 @@ class QuestionRepo:
         return question
 
     def get_modified_questions_queryset(
-        self, request: Request
+        self,
+        filter_param: str,
+        order_param: str,
     ) -> QuerySet[Question]:
         """Return optimized and filtered question's queryset."""
         queryset = Question.objects.select_related(
@@ -73,18 +75,16 @@ class QuestionRepo:
                 ),
             )
         )
-        filter_param = request.query_params.get('filter', ALL_PARAM)
         filter_mapping = {
             'favorite': queryset.filter(is_favorite=True),
             'all': queryset,
         }
         queryset = filter_mapping.get(filter_param, queryset)
 
-        order = request.query_params.get('order', ASC_PARAM)
-        if order == ASC_PARAM:
+        if order_param == ASC_PARAM:
             queryset = queryset.order_by(ID_ATTR)
         else:
-            queryset = queryset.order_by('-id')
+            queryset = queryset.order_by(f'-{ID_ATTR}')
 
         return queryset
 

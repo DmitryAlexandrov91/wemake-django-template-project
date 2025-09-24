@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from server.apps.surveys.infra.repository import QuestionRepo, SurveyRepo
 from server.apps.surveys.models import Question, Survey
 from server.apps.surveys.paginators import CustomPaginator
+from server.apps.surveys.schemas import question_viewset_schema
 from server.apps.surveys.serializers_create import (
     QuestionCreateSerializer,
     SurveyCreateSerializer,
@@ -19,18 +20,39 @@ from server.apps.surveys.serializers_list import (
 )
 from server.di import resolve
 
+ALL_PARAM = 'all'
+ASC_PARAM = 'asc'
 
-class QuestionViewSet(viewsets.ModelViewSet[Question]):
+
+@question_viewset_schema
+class QuestionViewSet(  # noqa: WPS215
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet[Question],
+):
     """ViewSet for managing questions."""
 
     serializer_class = QuestionCreateSerializer
+    pagination_class = CustomPaginator
     http_method_names = ('get', 'post', 'patch')
 
     @override
     def get_queryset(self) -> QuerySet[Question]:
         """Get queryset using repo."""
         repo = resolve(QuestionRepo)
-        return repo.get_all()
+        filter_param = self.request.query_params.get('filter', ALL_PARAM)
+        order_param = self.request.query_params.get('order', ASC_PARAM)
+        return repo.get_modified_questions_queryset(filter_param, order_param)
+
+    @override
+    def get_serializer_class(  # noqa: WPS615
+        self,
+    ) -> type[serializers.BaseSerializer[Question]]:
+        """Return serializer class depending on action."""
+        if self.action == 'list':
+            return QuestionShortSerializer
+        return super().get_serializer_class()
 
     @override
     def partial_update(
@@ -109,20 +131,4 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
         return Response(
             SurveyListSerializer(updated_survey).data,
             status=status.HTTP_202_ACCEPTED,
-        )
-
-
-class QuestionListViewSet(
-    mixins.ListModelMixin, viewsets.GenericViewSet[Question]
-):
-    """ViewSet for Question model."""
-
-    serializer_class = QuestionShortSerializer
-    pagination_class = CustomPaginator
-
-    @override
-    def get_queryset(self) -> QuerySet[Question]:
-        """Return modificated Survey`s queryset."""
-        return resolve(QuestionRepo).get_modified_questions_queryset(
-            self.request
         )

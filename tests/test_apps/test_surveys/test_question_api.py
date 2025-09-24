@@ -1,24 +1,12 @@
 from http import HTTPStatus
 
 import pytest
-from django.db.models import QuerySet
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 from server.apps.surveys.models import Question
-from server.apps.surveys.views import QuestionViewSet
 
 QUESTION_TEXT = 'text'
-
-
-@pytest.mark.django_db
-def test_get_queryset_returns_queryset() -> None:
-    """Test that get_queryset returns a QuerySet."""
-    viewset = QuestionViewSet()
-    queryset = viewset.get_queryset()
-
-    assert isinstance(queryset, QuerySet)
-    assert queryset.model is Question
 
 
 @pytest.mark.django_db

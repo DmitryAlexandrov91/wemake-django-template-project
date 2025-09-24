@@ -32,7 +32,7 @@ PAGINATION_FIELDS = (
 @pytest.fixture
 def questions_url() -> str:
     """Return questions endpoint URL."""
-    return reverse('questions-list-list')
+    return reverse('questions-list')
 
 
 @pytest.fixture
