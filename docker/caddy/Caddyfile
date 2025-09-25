@@ -42,7 +42,7 @@ www.{$DOMAIN_NAME} {
 				not path /static/* /media/*
 			}
 			key {remote_host}
-			events 100
+			events 300
 			window 3s
 		}
 

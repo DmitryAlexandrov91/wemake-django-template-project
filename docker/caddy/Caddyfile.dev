@@ -25,7 +25,7 @@ https://{$DOMAIN_NAME}:8000 {
 				path /static/* /media/*
 			}
 			key {remote_host}
-			events 100
+			events 500
 			window 10s
 		}
 		zone dynamic {
@@ -33,7 +33,7 @@ https://{$DOMAIN_NAME}:8000 {
 				not path /static/* /media/*
 			}
 			key {remote_host}
-			events 10
+			events 300
 			window 3s
 		}
 		log_key

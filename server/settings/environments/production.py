@@ -81,3 +81,7 @@ CSRF_COOKIE_SECURE = True
 
 # persist connections should be disabled for postgres pooling makes it job
 DATABASES['default']['CONN_MAX_AGE'] = 0
+
+
+# Temporary disable users blocking while develop
+AXES_ENABLED = False
