@@ -41,7 +41,7 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
                     'position',
                     'role',
                     'department',
-                    'tg_id',
+                    'tg_username',
                 )
             },
         ),

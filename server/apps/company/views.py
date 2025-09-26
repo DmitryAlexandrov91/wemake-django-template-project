@@ -19,7 +19,7 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
     """ViewSet for managing departments."""
 
     serializer_class = DepartmentCreateSerializer
-    http_method_names = ('get', 'post', 'patch')
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     @override
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
