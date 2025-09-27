@@ -7,9 +7,13 @@ from server.apps.surveys.infra.repository import (
     AnswerOptionRepo,
     QuestionRepo,
     SurveyRepo,
+    SurveyResultRepo,
 )
 from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
+from server.apps.tgbot.logic.usecases import (
+    HandleStartCommandUseCase,
+    ProcessTelegramUpdate,
+)
 from server.apps.tgbot.services import TelegramService
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
@@ -29,6 +33,7 @@ def _inject_tg(container: punq.Container) -> None:
     container.register(TelegramService)
     container.register(ProcessTelegramUpdate)
     container.register(StartHandlerService)
+    container.register(HandleStartCommandUseCase)
 
 
 def _inject_department_repo(container: punq.Container) -> None:
@@ -43,6 +48,7 @@ def _inject_infra(container: punq.Container) -> None:
     container.register(UserRepo)
     container.register(UserRepoSave)
     container.register(SurveyRepo)
+    container.register(SurveyResultRepo)
 
 
 def _inject_auth_service(container: punq.Container) -> None:

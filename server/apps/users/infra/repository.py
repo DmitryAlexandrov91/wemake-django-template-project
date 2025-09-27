@@ -54,10 +54,6 @@ class UserRepo:
 class UserRepoSave:
     """Repository for write User model operations."""
 
-    def __init__(self, user_repo: UserRepo):
-        """Inject repo."""
-        self.user_repo = user_repo
-
     def update_password(self, user: CustomUser, password: str) -> None:
         """Changes user password."""
         user.password = hashers.make_password(password)

@@ -16,6 +16,12 @@ JWT_COOKIE_REFRESH_NAME = 'REFRESH_NAME'
 
 
 @pytest.fixture
+def api_client() -> APIClient:
+    """API client."""
+    return APIClient()
+
+
+@pytest.fixture
 def password() -> str:
     """Fixture returns password for creating user."""
     return secrets.token_urlsafe()

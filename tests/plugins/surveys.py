@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, TypedDict, Unpack
+from datetime import timedelta
+from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
 from django.utils import timezone
 
 from server.apps.company.models import Department
-from server.apps.surveys import choices, models
+from server.apps.surveys.choices import QuestionType
+from server.apps.surveys.models import AnswerOption, Question, Survey
+from tests.plugins.department_factory import DepartmentFactory
+from tests.plugins.surveys_survey import SurveyFactory
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
 
-type QuestionFactory = Callable[
-    [Unpack[_QuestionFactoryParams]], models.Question
-]
+type QuestionFactory = Callable[[Unpack[_QuestionFactoryParams]], Question]
 type AnswerOptionFactory = Callable[
-    [Unpack[_AnswerOptionFactoryParams]], models.AnswerOption
+    [Unpack[_AnswerOptionFactoryParams]], AnswerOption
 ]
 
 
@@ -24,40 +26,42 @@ class _QuestionFactoryParams(TypedDict, total=False):
     """Base params for QuestionFactory."""
 
     text: str
-    question_type: choices.QuestionType
-    survey: models.Survey
+    question_type: QuestionType
+    survey: Survey
     is_favorite: bool
 
 
 class _AnswerOptionFactoryParams(TypedDict, total=False):
     """Base params for AnswerOptionFactory."""
 
-    question: models.Question
+    question: Question
     text: str
 
 
 @pytest.fixture
 def surveys_question_factory(
-    fakery_m: FakeryM[models.Question],
+    fakery_m: FakeryM[Question],
 ) -> QuestionFactory:
     """Factory fixture for creating Question instances."""
 
-    def factory(**kwargs: Unpack[_QuestionFactoryParams]) -> models.Question:
-        return fakery_m(models.Question)(**kwargs)
+    def factory(
+        **kwargs: Unpack[_QuestionFactoryParams],
+    ) -> Question:
+        return fakery_m(Question)(**kwargs)
 
     return factory
 
 
 @pytest.fixture
 def surveys_answer_option_factory(
-    fakery_m: FakeryM[models.AnswerOption],
+    fakery_m: FakeryM[AnswerOption],
 ) -> AnswerOptionFactory:
     """Factory fixture for creating AnswerOption instances."""
 
     def factory(
         **kwargs: Unpack[_AnswerOptionFactoryParams],
-    ) -> models.AnswerOption:
-        return fakery_m(models.AnswerOption)(**kwargs)
+    ) -> AnswerOption:
+        return fakery_m(AnswerOption)(**kwargs)
 
     return factory
 
@@ -65,22 +69,22 @@ def surveys_answer_option_factory(
 @pytest.fixture
 def consent_given_question(
     surveys_question_factory: QuestionFactory,
-) -> models.Question:
+) -> Question:
     """Fixture that create a single Question instance."""
     return surveys_question_factory(
         text='Test Question',
-        question_type=choices.QuestionType.CONSENT_GIVEN,
+        question_type=QuestionType.CONSENT_GIVEN,
     )
 
 
 @pytest.fixture
 def surveys_answer_option_batch(
     surveys_answer_option_factory: AnswerOptionFactory,
-    consent_given_question: models.Question,
-) -> Callable[[int], list[models.AnswerOption]]:
+    consent_given_question: Question,
+) -> Callable[[int], list[AnswerOption]]:
     """Factory fixture for creating batches of AnswerOption instances."""
 
-    def factory(batch_size: int) -> list[models.AnswerOption]:
+    def factory(batch_size: int) -> list[AnswerOption]:
         return [
             surveys_answer_option_factory(
                 question=consent_given_question,
@@ -95,14 +99,14 @@ def surveys_answer_option_batch(
 @pytest.fixture
 def questions_batch(
     surveys_question_factory: QuestionFactory,
-) -> Callable[[int, bool], list[models.Question]]:
+) -> Callable[[int, bool], list[Question]]:
     """Factory fixture for creating batches of Question instances."""
 
     def factory(
         batch_size: int = 1, *, is_favorite: bool = False
-    ) -> list[models.Question]:
+    ) -> list[Question]:
         department = Department.objects.create(name='Test Department')
-        survey = models.Survey.objects.create(
+        survey = Survey.objects.create(
             title='Test Survey',
             department=department,
             start_date=timezone.now().date(),
@@ -112,10 +116,65 @@ def questions_batch(
             question = surveys_question_factory(
                 survey=survey,
                 text=f'Question {num}',
-                question_type=choices.QuestionType.RATING_SCALE,
+                question_type=QuestionType.RATING_SCALE,
                 is_favorite=is_favorite,
             )
             questions.append(question)
         return questions
 
     return factory  # type: ignore[return-value]
+
+
+@pytest.fixture
+def survey_with_question(
+    surveys_survey_factory: Callable[..., Survey],
+    surveys_question_factory: Callable[..., Question],
+) -> Callable[[dict[str, Any]], tuple[Survey, Question]]:
+    """Fixture for creating a survey with a question."""
+
+    def factory(
+        survey_params: dict[str, Any],
+    ) -> tuple[Survey, Question]:
+        survey = surveys_survey_factory(**survey_params)
+        question = surveys_question_factory(survey=survey, text='Question.')
+        return survey, question
+
+    return factory
+
+
+@pytest.fixture
+def create_surveys(
+    surveys_survey_factory: SurveyFactory,
+    department_factory: DepartmentFactory,
+) -> Callable[[Department], Survey]:
+    """Fixture for creating all survey types."""
+
+    def factory(department: Department) -> Survey:
+        today = timezone.now().date()
+        surveys_survey_factory(
+            title='Another department survey',
+            description='Another survey text',
+            start_date=today,
+            end_date=today + timedelta(days=30),
+            department=department_factory(name='Department1'),
+            is_favorite=False,
+        )
+        active_survey = surveys_survey_factory(
+            title='Active survey',
+            description='Active survey text',
+            start_date=today,
+            end_date=today + timedelta(days=30),
+            department=department,
+            is_favorite=False,
+        )
+        surveys_survey_factory(
+            title='Ended survey',
+            description='Ended survey text',
+            start_date=today - timedelta(days=60),
+            end_date=today - timedelta(days=30),
+            department=department,
+            is_favorite=False,
+        )
+        return active_survey
+
+    return factory

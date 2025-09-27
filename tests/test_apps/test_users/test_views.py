@@ -59,16 +59,14 @@ def test_no_email_in_request(
 
 @pytest.mark.django_db
 def test_create_employee_success(
-    api_client_auth: APIClient,
+    auth_client: APIClient,
     employee_create_request: RequestMock,
     department: Department,
 ) -> None:
     """Testing new employee creation."""
     CustomUser.objects.all().delete()
     employee_create_request.data['department'] = department.id
-    response = api_client_auth.post(
-        EMPLOYEE_URL, data=employee_create_request.data
-    )
+    response = auth_client.post(EMPLOYEE_URL, data=employee_create_request.data)
     assert response.status_code == status.HTTP_201_CREATED
     created_user = CustomUser.objects.get(
         email=employee_create_request.data['email']
@@ -81,10 +79,10 @@ def test_create_employee_success(
 
 @pytest.mark.django_db
 def test_create_employee_invalid(
-    api_client_auth: APIClient, employee_create_wrong_request: RequestMock
+    auth_client: APIClient, employee_create_wrong_request: RequestMock
 ) -> None:
     """Testing new employee creation."""
-    response = api_client_auth.post(
+    response = auth_client.post(
         EMPLOYEE_URL, data=employee_create_wrong_request.data
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST

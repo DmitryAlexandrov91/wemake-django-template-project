@@ -1,7 +1,6 @@
 from typing import Any, final
 
-from django.db import transaction
-from django.db.models import Count, Prefetch, QuerySet
+from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.request import Request
 
@@ -13,6 +12,7 @@ from server.apps.surveys.models import (
     SurveyResult,
     UserAnswer,
 )
+from server.apps.users.models import CustomUser
 
 QUESTION_ATTR = 'question'
 QUESTIONS_ATTR = 'questions'
@@ -30,7 +30,7 @@ SURVEY_ATTR = 'survey'
 class AnswerOptionRepo:
     """Repository for AnswerOption model."""
 
-    def get_all(self) -> QuerySet[AnswerOption]:
+    def get_all(self) -> models.QuerySet[AnswerOption]:
         """Returns all answer options from DB."""
         return AnswerOption.objects.select_related(QUESTION_ATTR)
 
@@ -43,7 +43,7 @@ class AnswerOptionRepo:
 class QuestionRepo:
     """Repository for Question model operations."""
 
-    def get_all(self) -> QuerySet[Question]:
+    def get_all(self) -> models.QuerySet[Question]:
         """Return all Question instances from DB."""
         return Question.objects.select_related(
             SURVEY_ATTR, 'survey__department'
@@ -63,12 +63,12 @@ class QuestionRepo:
         self,
         filter_param: str,
         order_param: str,
-    ) -> QuerySet[Question]:
+    ) -> models.QuerySet[Question]:
         """Return optimized and filtered question's queryset."""
         queryset = Question.objects.select_related(
             SURVEY_ATTR,
         ).prefetch_related(
-            Prefetch(
+            models.Prefetch(
                 'answer_options',
                 queryset=AnswerOption.objects.only(
                     ID_ATTR, QUESTION_ID, TEXT_ATTR
@@ -123,8 +123,8 @@ class SurveyRepo:
         """Build survey for create response."""
         return (
             Survey.objects.annotate(
-                question_count=Count(QUESTIONS_ATTR, distinct=True),
-                finished_count=Count('result', distinct=True),
+                question_count=models.Count(QUESTIONS_ATTR, distinct=True),
+                finished_count=models.Count('result', distinct=True),
             )
             .select_related(DEPARTMENT)
             .prefetch_related(
@@ -138,27 +138,27 @@ class SurveyRepo:
 
     def get_modified_surveys_queryset(
         self, request: Request
-    ) -> QuerySet[Survey]:
+    ) -> models.QuerySet[Survey]:
         """Return optimize and filtered survey`s queryset."""
         queryset = (
             Survey.objects.annotate(
-                question_count=Count(QUESTIONS_ATTR, distinct=True)
+                question_count=models.Count(QUESTIONS_ATTR, distinct=True)
             )
-            .annotate(finished_count=Count('result', distinct=True))
+            .annotate(finished_count=models.Count('result', distinct=True))
             .prefetch_related(
-                Prefetch(
+                models.Prefetch(
                     QUESTIONS_ATTR,
                     queryset=Question.objects.only(
                         'id', 'survey_id', 'text', QUESTION_TYPE
                     ),
                 ),
-                Prefetch(
+                models.Prefetch(
                     'questions__answer_options',
                     queryset=AnswerOption.objects.only(
                         ID_ATTR, QUESTION_ID, TEXT_ATTR, 'is_correct'
                     ),
                 ),
-                Prefetch(
+                models.Prefetch(
                     'questions__user_answers',
                     queryset=(
                         UserAnswer.objects.select_related(
@@ -171,7 +171,7 @@ class SurveyRepo:
                         )
                     ),
                 ),
-                Prefetch(
+                models.Prefetch(
                     'result',
                     queryset=SurveyResult.objects.select_related(
                         'user', SURVEY_ATTR
@@ -216,19 +216,19 @@ class SurveyRepo:
 
         return survey
 
-    def get_results(self, survey_id: int) -> QuerySet[SurveyResult]:
+    def get_results(self, survey_id: int) -> models.QuerySet[SurveyResult]:
         """Get all SurveyResults objects with their answers by survey_id."""
         return (
             Survey.objects.get(pk=survey_id)
             .result.select_related('user', SURVEY_ATTR)
             .prefetch_related(
-                Prefetch(
+                models.Prefetch(
                     'user_answers',
                     queryset=UserAnswer.objects.select_related(
                         QUESTION_ATTR,
                     ).only(ID_ATTR, 'text_answer', 'question_id'),
                 ),
-                Prefetch(
+                models.Prefetch(
                     'user_answers__selected_options',
                     queryset=AnswerOption.objects.select_related(
                         'question',
@@ -236,3 +236,36 @@ class SurveyRepo:
                 ),
             )
         )
+
+    def get_active_survey_for_user(self, user: CustomUser) -> Survey:
+        """Returns the only active survey for the user, if any."""
+        now_date = timezone.now().date()
+        return (
+            Survey.objects.filter(
+                department=user.department, start_date__lte=now_date
+            )
+            .filter(
+                models.Q(end_date__gte=now_date)
+                | models.Q(end_date__isnull=True)
+            )
+            .latest('start_date')
+        )
+
+
+@final
+class SurveyResultRepo:
+    """Repository for survey results."""
+
+    def get_or_create_user_survey_res(
+        self, user: CustomUser, survey: Survey
+    ) -> SurveyResult:
+        """Finds or creates SurveyResult object for the user and survey."""
+        first_question = survey.questions.earliest('pk')
+        user_survey_result, _ = SurveyResult.objects.get_or_create(
+            user=user,
+            survey=survey,
+            defaults={
+                'current_question': first_question,
+            },
+        )
+        return user_survey_result
