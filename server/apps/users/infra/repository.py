@@ -68,3 +68,8 @@ class UserRepoSave:
         CustomUser.objects.filter(pk=user.pk).update(**kwargs)
         user.refresh_from_db()
         return user
+
+    def delete(self, pk: int) -> None:
+        """Delete an existing user."""
+        instance = CustomUser.objects.get(pk=pk)
+        instance.delete()

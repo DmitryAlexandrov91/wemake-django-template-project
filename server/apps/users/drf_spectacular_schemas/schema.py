@@ -60,4 +60,9 @@ employee_detail_schema = extend_schema_view(
             status.HTTP_202_ACCEPTED: EmployeeResponseSerializer,
         },
     ),
+    delete=extend_schema(
+        responses={
+            status.HTTP_204_NO_CONTENT: None,
+        },
+    ),
 )

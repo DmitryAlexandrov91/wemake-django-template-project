@@ -9,14 +9,15 @@ from server.apps.users import serializers
 from server.apps.users.drf_spectacular_schemas.schema import (
     employee_detail_schema,
 )
-from server.apps.users.infra.repository import UserRepo
+from server.apps.users.infra.repository import UserRepo, UserRepoSave
+from server.apps.users.models import CustomUser
 from server.di import resolve
 
 User = get_user_model()
 
 
 @employee_detail_schema
-class EmployeeViewDetail(APIView):
+class EmployeeDetailView(APIView):
     """Handles operations on a single employee identified by `pk`."""
 
     def patch(self, request: Request, pk: int) -> Response:
@@ -34,3 +35,11 @@ class EmployeeViewDetail(APIView):
 
         serializer.save()
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request: Request, pk: int) -> Response:
+        """Delete employee by primary key."""
+        try:
+            resolve(UserRepoSave).delete(pk)
+        except CustomUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)

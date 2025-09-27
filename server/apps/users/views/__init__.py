@@ -1,5 +1,5 @@
 from server.apps.users.views.employee_detail import (
-    EmployeeViewDetail as EmployeeViewDetail,
+    EmployeeDetailView as EmployeeDetailView,
 )
 from server.apps.users.views.employee_list import (
     EmployeeView as EmployeeView,
