@@ -3,6 +3,7 @@ from typing import Any, override
 from rest_framework import serializers
 
 from server.apps.company.serializers import DepartmentCreateSerializer
+from server.apps.surveys.choices import SurveyStatus
 from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import (
     AnswerOption,
@@ -71,12 +72,17 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     finished_at = serializers.DateField(source='end_date')
     questions = QuestionAnswerOptionCreateSerializer(many=True, required=False)
     department = DepartmentCreateSerializer()
+    status = serializers.ChoiceField(
+        choices=SurveyStatus.choices,
+        required=False,
+    )
 
     class Meta:
         model = Survey
         fields = (
             ID_FIELD,
             'name',
+            'status',
             'comment',
             'started_at',
             'finished_at',

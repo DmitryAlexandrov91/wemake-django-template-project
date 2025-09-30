@@ -52,6 +52,7 @@ def get_survey_json(answers_count: int | None = 2) -> dict[str, Any]:
     """Build survey json."""
     json_data: dict[str, Any] = {
         'name': 'Customer feedback',
+        'status': 'active',
         'comment': 'Short survey',
         'started_at': '2025-09-15',
         'finished_at': '2025-09-25',
