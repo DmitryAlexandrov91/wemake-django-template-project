@@ -269,3 +269,25 @@ class SurveyResultRepo:
             },
         )
         return user_survey_result
+
+    @transaction.atomic
+    def save_answer(
+        self,
+        survey_result: SurveyResult,
+        text_answer: str | None = None,
+        selected_options: list[AnswerOption] | None = None,
+    ) -> UserAnswer:
+        """Save user's answer for the current question."""
+        if not survey_result.current_question:
+            raise ValueError('Survey has no current question to answer.')
+
+        user_answer = UserAnswer.objects.create(
+            survey_result=survey_result,
+            question=survey_result.current_question,
+            text_answer=text_answer or '',
+        )
+
+        if selected_options:
+            user_answer.selected_options.set(selected_options)
+
+        return user_answer
