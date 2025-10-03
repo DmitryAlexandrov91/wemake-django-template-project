@@ -1,5 +1,6 @@
-from typing import override
+from typing import Any, override
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from server.apps.surveys.choices import QuestionType, SurveyStatus
@@ -76,10 +77,10 @@ class Survey(models.Model):
 class Question(models.Model):
     """Question model."""
 
-    survey = models.ForeignKey(
+    surveys = models.ManyToManyField(  # type: ignore[var-annotated]
         'surveys.Survey',
-        on_delete=models.CASCADE,
-        db_index=True,
+        related_name='questions',
+        through='SurveyQuestion',
     )
     text = models.TextField()
     question_type = models.CharField(
@@ -92,10 +93,6 @@ class Question(models.Model):
         ordering = ('id',)
         default_related_name = 'questions'
         constraints = (
-            models.UniqueConstraint(
-                fields=['survey', 'text'],
-                name='unique_question_per_survey',
-            ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_question_type_valid',
                 condition=models.Q(question_type__in=QuestionType.values),
@@ -108,11 +105,49 @@ class Question(models.Model):
         Returns question text as the object string representation.
 
         >>> survey = Survey(title='Customer Feedback')
-        >>> question = Question(survey=survey, text='How old are you?')
+        >>> question = Question(text='How old are you?')
         >>> str(question) == question.text
         True
         """
         return self.text
+
+
+class SurveyQuestion(models.Model):
+    """Link between survey and question."""
+
+    survey = models.ForeignKey(
+        'surveys.Survey', on_delete=models.CASCADE, db_index=True
+    )
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, db_index=True
+    )
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=['survey', 'question'], name='unique_survey_question'
+            ),
+        )
+
+    @override
+    def clean(self) -> None:
+        """Ensure unique text in survey."""
+        if (
+            SurveyQuestion.objects.filter(
+                survey=self.survey, question__text=self.question.text
+            )
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            raise ValidationError(
+                'This survey already has a question with this text.'
+            )
+
+    @override
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Save."""
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 class AnswerOption(models.Model):
@@ -141,7 +176,7 @@ class AnswerOption(models.Model):
         Returns the text of the answer option as its string representation.
 
         >>> survey = Survey(title='Customer Feedback')
-        >>> question = Question(survey=survey, text='Gender?')
+        >>> question = Question(text='Gender?')
         >>> answer_option = AnswerOption(question=question, text='Male')
         >>> str(answer_option) == answer_option.text
         True
@@ -238,7 +273,7 @@ class UserAnswer(models.Model):
         ...     user=user,
         ...     survey=survey,
         ... )
-        >>> question = Question(survey=survey, text='Gender?')
+        >>> question = Question(text='Gender?')
         >>> user_answer = UserAnswer(
         ...     survey_result=survey_result,
         ...     question=question,

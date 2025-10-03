@@ -26,7 +26,7 @@ class AdvanceToNextQuestion:
 
         next_question = (
             Question.objects.filter(
-                survey=survey_result.survey,
+                surveys=survey_result.survey,
                 id__gt=current_question.id,
             )
             .order_by('id')

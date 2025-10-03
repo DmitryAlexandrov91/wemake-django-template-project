@@ -83,6 +83,7 @@ polint = "^0.5"
 dump-env = "^1.5"
 ipython = "^9.4"
 factory-boy = "^3.3.3"
+pre-commit = "^4.3.0"
 
 [tool.poetry.group.docs]
 optional = true

@@ -9,6 +9,7 @@ from server.apps.surveys.models import (
     AnswerOption,
     Question,
     Survey,
+    SurveyQuestion,
     SurveyResult,
     UserAnswer,
 )
@@ -23,7 +24,7 @@ ID_ATTR = 'id'
 ASC_PARAM = 'asc'
 ALL_PARAM = 'all'
 DEPARTMENT = 'department'
-SURVEY_ATTR = 'survey'
+SURVEY_ATTR = 'surveys'
 
 
 @final
@@ -45,18 +46,23 @@ class QuestionRepo:
 
     def get_all(self) -> models.QuerySet[Question]:
         """Return all Question instances from DB."""
-        return Question.objects.select_related(
-            SURVEY_ATTR, 'survey__department'
+        return Question.objects.prefetch_related(
+            SURVEY_ATTR, 'surveys__department'
         )
 
     def get_by_pk(self, pk: int) -> Question:
         """Return one Question by primary key."""
         return self.get_all().get(pk=pk)
 
-    def update_question(self, question: Question, **kwargs: Any) -> Question:
+    def update_question(self, question: Question, **kwargs: Any) -> Any:
         """Update an existing question."""
-        Question.objects.filter(pk=question.pk).update(**kwargs)
+        surveys = kwargs.pop('surveys', None)
+        for attr, value_data in kwargs.items():
+            setattr(question, attr, value_data)
+        question.save()
         question.refresh_from_db()
+        if surveys is not None:
+            question.surveys.set(surveys)
         return question
 
     def get_modified_questions_queryset(
@@ -65,15 +71,14 @@ class QuestionRepo:
         order_param: str,
     ) -> models.QuerySet[Question]:
         """Return optimized and filtered question's queryset."""
-        queryset = Question.objects.select_related(
-            SURVEY_ATTR,
-        ).prefetch_related(
+        queryset = Question.objects.prefetch_related(
             models.Prefetch(
                 'answer_options',
                 queryset=AnswerOption.objects.only(
                     ID_ATTR, QUESTION_ID, TEXT_ATTR
                 ),
-            )
+            ),
+            SURVEY_ATTR,
         )
         filter_mapping = {
             'favorite': queryset.filter(is_favorite=True),
@@ -94,15 +99,23 @@ class SurveyRepo:
     """Repository fo Survey model operations."""
 
     @transaction.atomic
-    def create(self, survey_data: dict[str, Any]) -> Survey:
+    def create(self, survey_data: dict[str, Any]) -> Survey:  # noqa: WPS210
         """Create survey with nested params."""
+        questions_data = survey_data.pop(QUESTIONS_ATTR, [])
         department = Department.objects.create(
             **survey_data.pop(DEPARTMENT),
         )
-        return Survey.objects.create(
+        survey = Survey.objects.create(
             department=department,
             **survey_data,
         )
+        for question_data in questions_data:
+            answers_data = question_data.pop('answers', [])
+            question = Question.objects.create(**question_data)
+            for answer_data in answers_data:
+                AnswerOption.objects.create(question=question, **answer_data)
+            SurveyQuestion.objects.create(survey=survey, question=question)
+        return survey
 
     @transaction.atomic
     def add_questions(
@@ -111,7 +124,8 @@ class SurveyRepo:
         """Add questions and they answer options for survey instance."""
         for question_data in questions_data:
             answers_data = question_data.pop('answer_options', [])
-            question = Question.objects.create(survey=survey, **question_data)
+            question = Question.objects.create(**question_data)
+            question.surveys.add(survey)
             if answers_data:
                 AnswerOption.objects.bulk_create([
                     AnswerOption(question=question, **answer_data)
@@ -132,6 +146,7 @@ class SurveyRepo:
                 'questions__answer_options',
                 'questions__user_answers',
                 'questions__user_answers__selected_options',
+                'questions__surveys',
             )
             .get(pk=survey.pk)
         )
@@ -149,8 +164,8 @@ class SurveyRepo:
                 models.Prefetch(
                     QUESTIONS_ATTR,
                     queryset=Question.objects.only(
-                        'id', 'survey_id', 'text', QUESTION_TYPE
-                    ),
+                        'id', 'text', QUESTION_TYPE
+                    ).prefetch_related('surveys'),
                 ),
                 models.Prefetch(
                     'questions__answer_options',
@@ -174,7 +189,7 @@ class SurveyRepo:
                 models.Prefetch(
                     'result',
                     queryset=SurveyResult.objects.select_related(
-                        'user', SURVEY_ATTR
+                        'user', 'survey'
                     ),
                 ),
             )
@@ -220,7 +235,7 @@ class SurveyRepo:
         """Get all SurveyResults objects with their answers by survey_id."""
         return (
             Survey.objects.get(pk=survey_id)
-            .result.select_related('user', SURVEY_ATTR)
+            .result.select_related('user', 'survey')
             .prefetch_related(
                 models.Prefetch(
                     'user_answers',

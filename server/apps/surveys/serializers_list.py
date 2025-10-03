@@ -64,10 +64,20 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
     type = serializers.CharField(source=QUESTION_TYPE_ATTR)
     user_answers = UserAnswersListSerializer(many=True)
     answer_options = AnswerOptionListSerializer(many=True)
+    surveys = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Survey.objects.all()
+    )
 
     class Meta:
         model = Question
-        fields = ('id', TEXT_ATTR, 'type', 'user_answers', 'answer_options')
+        fields = (
+            'id',
+            TEXT_ATTR,
+            'type',
+            'user_answers',
+            'answer_options',
+            'surveys',
+        )
 
 
 class QuestionShortSerializer(SerializerIDFieldMixin[Question]):
@@ -76,10 +86,13 @@ class QuestionShortSerializer(SerializerIDFieldMixin[Question]):
     text = serializers.CharField()
     question_type = serializers.CharField()
     is_favorite = serializers.BooleanField()
+    surveys = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Survey.objects.all()
+    )
 
     class Meta:
         model = Question
-        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, 'is_favorite')
+        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, 'is_favorite', 'surveys')
 
 
 class DepartmentListSerializer(SerializerIDFieldMixin[Department]):

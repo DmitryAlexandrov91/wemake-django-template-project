@@ -2,7 +2,7 @@ import pytest
 
 from server.apps.surveys.choices import QuestionType
 from server.apps.surveys.infra.repository import QuestionRepo
-from server.apps.surveys.models import Question
+from server.apps.surveys.models import Question, Survey
 from server.di import resolve
 from tests.plugins.surveys import QuestionFactory
 
@@ -48,3 +48,16 @@ def test_update_question(consent_given_question: Question) -> None:
     )
     assert upd_question_obj.text == 'New text'
     assert upd_question_obj.text != original_text
+
+
+@pytest.mark.django_db
+def test_update_question_surveys(
+    consent_given_question: Question, two_surveys: list[Survey]
+) -> None:
+    """Test QuestionRepo update_question sets surveys for question."""
+    repo = QuestionRepo()
+    assert consent_given_question.surveys.count() == 0
+    repo.update_question(question=consent_given_question, surveys=two_surveys)
+    updated_surveys = list(consent_given_question.surveys.all())
+    assert all(survey in updated_surveys for survey in two_surveys)
+    assert consent_given_question.surveys.count() == len(two_surveys)

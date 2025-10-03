@@ -46,10 +46,13 @@ def test_advance_to_next_question(
     survey_result = surveys_survey_result_factory()
 
     questions = [
-        surveys_question_factory(survey=survey_result.survey),
-        surveys_question_factory(survey=survey_result.survey),
-        surveys_question_factory(survey=survey_result.survey),
+        surveys_question_factory(),
+        surveys_question_factory(),
+        surveys_question_factory(),
     ]
+    for question in questions:
+        question.surveys.add(survey_result.survey)
+        question.save()
 
     survey_result.current_question = questions[0]
     survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
@@ -61,8 +64,7 @@ def test_advance_to_next_question(
     updated_result = usecase(updated_result)
     assert updated_result.current_question == questions[2]
 
-    updated_result = usecase(updated_result)
-    assert updated_result.current_question is None
+    assert usecase(updated_result).current_question is None
 
 
 @pytest.mark.django_db

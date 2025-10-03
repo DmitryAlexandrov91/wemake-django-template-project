@@ -119,13 +119,13 @@ def test_response_with_text_answer(  # noqa: WPS211, WPS210
     user_answer = surveys_user_answer_result_factory(
         survey_result=surveys_survey_result_factory(user=user, survey=survey),
         question=surveys_question_factory(
-            survey=survey,
+            surveys={survey},
             question_type=QuestionType.SCORE,
         ),
         **user_answer_params,  # type: ignore[arg-type]
     )
     question = surveys_question_factory(
-        survey=survey,
+        surveys={survey},
         question_type=QuestionType.SCORE,
     )
     if bunch:

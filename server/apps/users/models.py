@@ -169,7 +169,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'full_name',
         )
         default_related_name = 'users'
-        constraints: ClassVar[list[models.UniqueConstraint]] = [
+        constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=('tg_username',),
                 name='unique_tg_username_not_blank',

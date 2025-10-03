@@ -1,9 +1,11 @@
+from collections.abc import Callable
 from http import HTTPStatus
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.test import Client
 
-from server.apps.surveys.models import Survey
+from server.apps.surveys.models import Question, Survey, SurveyQuestion
 from server.apps.surveys.serializers_create import SurveyUpdateSerializer
 from server.apps.users.models import CustomUser
 from tests.plugins.surveys_survey import CREATE_SURVEY_URL
@@ -51,3 +53,21 @@ def test_survey_update_serializer_integration(survey: Survey) -> None:
 
     assert upd_survey.pk == survey.pk
     assert upd_survey.title == 'Updated Title'
+
+
+@pytest.mark.django_db
+def test_survey_question_unique_text_violation(
+    survey: Survey,
+    surveys_question_factory: Callable[..., Question],
+) -> None:
+    """SurveyQuestion.clean: no duplicated question text in one survey."""
+    question1 = surveys_question_factory(text='Same text')
+    question2 = surveys_question_factory(text='Same text')  # Same text.
+
+    SurveyQuestion.objects.create(survey=survey, question=question1)
+
+    survey_question = SurveyQuestion(survey=survey, question=question2)
+    with pytest.raises(
+        ValidationError, match='already has a question with this text'
+    ):
+        survey_question.save()

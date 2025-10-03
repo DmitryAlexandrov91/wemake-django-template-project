@@ -91,3 +91,12 @@ def survey(surveys_survey_factory: SurveyFactory) -> Survey:
     return surveys_survey_factory(
         title='Original Title', description='Original Description'
     )
+
+
+@pytest.fixture
+def two_surveys(surveys_survey_factory: SurveyFactory) -> list[Survey]:
+    """Fixture for two surveys."""
+    return [
+        surveys_survey_factory(title='Survey 1', description='Desription1'),
+        surveys_survey_factory(title='Survey 2', description='Description2'),
+    ]

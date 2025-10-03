@@ -16,12 +16,16 @@ ATTR_PK = 'pk'
 TEXT_ATTR = 'text'
 QUESTION_TYPE_ATTR = 'question_type'
 IS_FAVORITE_ATTR = 'is_favorite'
-SURVEY_FIELD = 'survey'
+SURVEY_FIELD = 'surveys'
 ID_FIELD = 'id'
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
     """Serializer for creating a new question."""
+
+    surveys = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Survey.objects.all(), required=False
+    )
 
     class Meta:
         model = Question
@@ -36,7 +40,6 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
         extra_kwargs = {  # noqa: RUF012
             TEXT_ATTR: {'required': True},
             QUESTION_TYPE_ATTR: {'required': True},
-            SURVEY_FIELD: {'required': True},
         }
 
 

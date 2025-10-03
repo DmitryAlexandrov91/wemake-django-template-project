@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
+from django.contrib.auth import get_user_model
 from pytest_mock import MockFixture
 
 from server.apps.users.models import CustomUser
@@ -101,3 +102,10 @@ def active_user(
         password=original_password,
         is_active=True,
     )
+
+
+@pytest.fixture
+def admin_user(db) -> Any:  # type: ignore[no-untyped-def]
+    """Fixture for admin user."""
+    user = get_user_model()
+    return user.objects.create_superuser('admin', 'password')

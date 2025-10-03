@@ -27,7 +27,7 @@ class _QuestionFactoryParams(TypedDict, total=False):
 
     text: str
     question_type: QuestionType
-    survey: Survey
+    surveys: set[Survey]
     is_favorite: bool
 
 
@@ -114,11 +114,11 @@ def questions_batch(
         questions = []
         for num in range(batch_size):
             question = surveys_question_factory(
-                survey=survey,
                 text=f'Question {num}',
                 question_type=QuestionType.RATING_SCALE,
                 is_favorite=is_favorite,
             )
+            question.surveys.add(survey)
             questions.append(question)
         return questions
 
@@ -136,7 +136,8 @@ def survey_with_question(
         survey_params: dict[str, Any],
     ) -> tuple[Survey, Question]:
         survey = surveys_survey_factory(**survey_params)
-        question = surveys_question_factory(survey=survey, text='Question.')
+        question = surveys_question_factory(text='Question.')
+        question.surveys.add(survey)
         return survey, question
 
     return factory
@@ -176,5 +177,23 @@ def create_surveys(
             is_favorite=False,
         )
         return active_survey
+
+    return factory
+
+
+@pytest.fixture
+def question_with_two_surveys(  # noqa: WPS234
+    surveys_question_factory: Callable[..., Question],
+    two_surveys: list[Survey],
+) -> Callable[[dict[str, Any]], tuple[Question, list[Survey]]]:  # noqa: WPS221
+    """Fixture for creating a question with two surveys."""
+
+    def factory(
+        question_params: dict[str, Any] | None = None,
+    ) -> tuple[Question, list[Survey]]:
+        params_data = question_params or {}
+        question = surveys_question_factory(**params_data)
+        question.surveys.set(two_surveys)
+        return question, two_surveys
 
     return factory
