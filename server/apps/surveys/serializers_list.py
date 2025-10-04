@@ -8,6 +8,7 @@ from server.apps.surveys.models import (
     Survey,
     UserAnswer,
 )
+from server.apps.surveys.serializers_report import SurveyTimeReportSerializer
 from server.apps.users.serializers import UserShortSerializer
 
 ATTR_PK = 'pk'
@@ -119,6 +120,7 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
     finished_count = serializers.IntegerField(read_only=True)
     questions = QuestionListSerializer(many=True)
     department = DepartmentListSerializer()
+    employees = SurveyTimeReportSerializer(many=True, read_only=True)
 
     class Meta:
         model = Survey
@@ -133,4 +135,6 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
             'finished_count',
             'questions',
             'department',
+            'status',
+            'employees',
         )

@@ -1,14 +1,18 @@
 from collections.abc import Callable
+from datetime import timedelta
 from http import HTTPStatus
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from server.apps.company.models import Department
-from server.apps.surveys import paginators, serializers_list
-from server.apps.surveys.choices import QuestionType
-from server.apps.surveys.models import (
-    AnswerOption,
+from server.apps.surveys import (
+    choices,
+    models,
+    paginators,
+    serializers_list,
+    serializers_report,
 )
 from server.apps.users.models import CustomUser
 from tests.plugins import (
@@ -108,7 +112,7 @@ def test_response_with_text_answer(  # noqa: WPS211, WPS210
     department: Department,
     surveys_survey_result_factory: surveys_survey.SurveyResultFactory,
     surveys_user_answer_result_factory: surveys_survey.UserAnswerFactory,
-    surveys_answer_option_batch: Callable[[int], list[AnswerOption]],
+    surveys_answer_option_batch: Callable[[int], list[models.AnswerOption]],
     bunch: bool,  # noqa: FBT001
 ) -> None:
     """Test user_answer response for text_answer."""
@@ -120,13 +124,13 @@ def test_response_with_text_answer(  # noqa: WPS211, WPS210
         survey_result=surveys_survey_result_factory(user=user, survey=survey),
         question=surveys_question_factory(
             surveys={survey},
-            question_type=QuestionType.SCORE,
+            question_type=choices.QuestionType.SCORE,
         ),
         **user_answer_params,  # type: ignore[arg-type]
     )
     question = surveys_question_factory(
         surveys={survey},
-        question_type=QuestionType.SCORE,
+        question_type=choices.QuestionType.SCORE,
     )
     if bunch:
         options = surveys_answer_option_batch(2)
@@ -138,3 +142,25 @@ def test_response_with_text_answer(  # noqa: WPS211, WPS210
     expected_result = ['Option 0', 'Option 1'] if bunch else 'Some comment'
     assert serialized['result'] == expected_result
     assert serialized['employer'][ID_ATTR] == user.id
+
+
+@pytest.mark.django_db
+def test_get_survey_sec(
+    surveys_survey_result_factory: surveys_survey.SurveyResultFactory,
+    surveys_question_factory: Callable[..., models.Question],
+) -> None:
+    """Ensure serializer calculates time difference correctly."""
+    survey_result = surveys_survey_result_factory()
+    start_time = timezone.now()
+    t_delta = timedelta(seconds=1000)
+    end_time = start_time + t_delta
+    models.SurveyResult.objects.filter(pk=survey_result.pk).update(
+        current_question=surveys_question_factory(survey=survey_result.survey),
+        started_at=start_time,
+        updated_at=end_time,
+    )
+    survey_result.refresh_from_db()
+    serializer = serializers_report.SurveyTimeReportSerializer(
+        instance=survey_result
+    )
+    assert serializer.get_survey_sec(survey_result) == t_delta.total_seconds()
