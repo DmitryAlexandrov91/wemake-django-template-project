@@ -41,7 +41,7 @@ def employee_create_request(
         data={
             'full_name': 'Test Employee',
             'email': valid_request.data[email],
-            'department': department.pk,
+            'department_name': department.name,
             'tg_id': '123456789',
         }
     )

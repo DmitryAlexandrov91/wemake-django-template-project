@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from server.apps.users.serializers import EmployeeSerializer
+from server.apps.users.serializers import EmployeeReadSerializer
 
 User = get_user_model()
 EMPLOYEE_LIST_URL = 'employee'
@@ -33,7 +33,7 @@ def test_employee_serializer_fields(auth_user: Any, department: Any) -> None:
     """Test serializer fields."""
     auth_user.survey_count = 2
     auth_user.department = department
-    serializer = EmployeeSerializer(auth_user)
+    serializer = EmployeeReadSerializer(auth_user)
     serializer_data = serializer.data
     assert set(serializer_data.keys()) == {
         'id',

@@ -67,7 +67,7 @@ class UserShortSerializer(serializers.ModelSerializer[CustomUser]):
         )
 
 
-class EmployeeSerializer(serializers.ModelSerializer[Any]):
+class EmployeeReadSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for read employees."""
 
     department_name = serializers.CharField(
@@ -91,10 +91,15 @@ class EmployeeSerializer(serializers.ModelSerializer[Any]):
 class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for creating an empoyee."""
 
-    email = serializers.EmailField(validators=[EmailValidator()])
-    department = serializers.PrimaryKeyRelatedField(
+    full_name = serializers.CharField()
+    email = serializers.EmailField(
+        validators=[EmailValidator()], required=False
+    )
+    department_name = serializers.SlugRelatedField(
+        slug_field='name',
         queryset=Department.objects.all(),
         required=False,
+        source='department',
     )
 
     class Meta:
@@ -102,7 +107,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
         fields = (
             FULL_NAME_ATTR,
             EMAIL_ATTR,
-            'department',
+            'department_name',
             TG_ID_ATTR,
         )
 
@@ -116,26 +121,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
     @override
     def to_representation(self, employee: CustomUser) -> dict[str, Any]:
         """Employee serializer is applyed to return the new employee."""
-        return EmployeeSerializer(employee).to_representation(employee)
-
-
-class EmployeeResponseSerializer(serializers.ModelSerializer[CustomUser]):
-    """Serializer for patch response according to API spec."""
-
-    survey_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = CustomUser
-        fields: ClassVar[list[str]] = [
-            'id',
-            FULL_NAME_ATTR,
-            EMAIL_ATTR,
-            'department_id',
-            TG_ID_ATTR,
-            'survey_count',
-            'edited_at',
-        ]
-        read_only_fields: ClassVar[list[str]] = [TG_ID_ATTR]
+        return EmployeeReadSerializer(employee).to_representation(employee)
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
@@ -145,8 +131,8 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
         validators=[EmailValidator()], required=False
     )
     full_name = serializers.CharField(required=False)
-    department_id = serializers.PrimaryKeyRelatedField(
-        source='department', queryset=Department.objects.all(), required=False
+    department_name = serializers.SlugRelatedField(
+        slug_field='name', queryset=Department.objects.all(), required=False
     )
 
     class Meta:
@@ -154,7 +140,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
         fields: ClassVar[list[str]] = [
             FULL_NAME_ATTR,
             EMAIL_ATTR,
-            'department_id',
+            'department_name',
             TG_ID_ATTR,
         ]
 
@@ -168,4 +154,4 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
     @override
     def to_representation(self, instance: CustomUser) -> dict[str, Any]:
         """Convert to response format."""
-        return EmployeeResponseSerializer(instance).data
+        return EmployeeReadSerializer(instance).data

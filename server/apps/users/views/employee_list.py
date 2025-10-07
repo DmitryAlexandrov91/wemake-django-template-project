@@ -35,7 +35,7 @@ class EmployeeView(APIView):
         if sort and order == 'desc':
             sort = f'-{sort}'
         queryset = resolve(UserRepo).get_employees_with_survey_count(sort)
-        serializer = serializers.EmployeeSerializer(queryset, many=True)
+        serializer = serializers.EmployeeReadSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request: Request) -> Response:

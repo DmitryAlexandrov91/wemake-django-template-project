@@ -8,8 +8,7 @@ from rest_framework import serializers, status
 
 from server.apps.users.serializers import (
     EmployeeCreateSerializer,
-    EmployeeResponseSerializer,
-    EmployeeSerializer,
+    EmployeeReadSerializer,
     EmployeeUpdateSerializer,
 )
 
@@ -41,13 +40,13 @@ employee_view_schema = extend_schema_view(
                 default='asc',
             ),
         ],
-        responses=EmployeeSerializer(many=True),
+        responses=EmployeeReadSerializer(many=True),
     ),
     post=extend_schema(
         operation_id='employee_create',
         request=EmployeeCreateSerializer,
         responses={
-            status.HTTP_201_CREATED: EmployeeSerializer,
+            status.HTTP_201_CREATED: EmployeeReadSerializer,
         },
     ),
 )
@@ -57,7 +56,7 @@ employee_detail_schema = extend_schema_view(
         operation_id='employee_partial_update',
         request=EmployeeUpdateSerializer,
         responses={
-            status.HTTP_202_ACCEPTED: EmployeeResponseSerializer,
+            status.HTTP_202_ACCEPTED: EmployeeReadSerializer,
         },
     ),
     delete=extend_schema(

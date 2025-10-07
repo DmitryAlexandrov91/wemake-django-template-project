@@ -65,7 +65,7 @@ def test_create_employee_success(
 ) -> None:
     """Testing new employee creation."""
     CustomUser.objects.all().delete()
-    employee_create_request.data['department'] = department.id
+    employee_create_request.data['department_name'] = department.name
     response = auth_client.post(EMPLOYEE_URL, data=employee_create_request.data)
     assert response.status_code == status.HTTP_201_CREATED
     created_user = CustomUser.objects.get(
