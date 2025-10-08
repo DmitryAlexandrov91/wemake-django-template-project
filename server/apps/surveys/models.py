@@ -3,7 +3,11 @@ from typing import Any, override
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from server.apps.surveys.choices import QuestionType, SurveyStatus
+from server.apps.surveys.choices import (
+    QuestionType,
+    SurveyBotState,
+    SurveyStatus,
+)
 from server.common.constants import DATA_LENGHT
 
 
@@ -207,10 +211,21 @@ class SurveyResult(models.Model):
     completed_questions = models.PositiveSmallIntegerField(null=True, default=0)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    bot_state = models.CharField(
+        max_length=DATA_LENGHT,
+        choices=SurveyBotState.choices,
+        default=SurveyBotState.WAITING_START,
+    )
 
     class Meta:
         verbose_name = 'survey result'
         verbose_name_plural = 'survey results'
+        constraints = (
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_bot_state_valid',
+                condition=(models.Q(bot_state__in=SurveyBotState.values)),
+            ),
+        )
 
     @override
     def __str__(self) -> str:

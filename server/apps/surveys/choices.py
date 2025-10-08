@@ -15,3 +15,12 @@ class SurveyStatus(models.TextChoices):
     DRAFT = 'draft', 'Draft'
     ACTIVE = 'active', 'Active'
     COMPLETED = 'completed', 'Completed'
+
+
+class SurveyBotState(models.TextChoices):
+    """Choices for survey bot state."""
+
+    WAITING_START = 'waitingStart', 'Waiting start'
+    IN_SURVEY = 'inSurvey', 'In survey'
+    COMPLETED = 'completed', 'Completed'
+    EDITING = 'editing', 'Editing'

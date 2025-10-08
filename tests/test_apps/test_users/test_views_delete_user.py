@@ -21,5 +21,6 @@ def test_delete_employee(
 @pytest.mark.django_db
 def test_delete_not_found_user(auth_client: APIClient) -> None:
     """Test that deleting a nonexistent employee returns 404."""
-    response = auth_client.delete(f'{EMPLOYEE_URL}/1')
+    employee_count = CustomUser.objects.count() + 1
+    response = auth_client.delete(f'{EMPLOYEE_URL}/{employee_count}')
     assert response.status_code == status.HTTP_404_NOT_FOUND
