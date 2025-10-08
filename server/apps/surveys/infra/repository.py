@@ -93,6 +93,11 @@ class QuestionRepo:
 
         return queryset
 
+    def delete(self, pk: int) -> None:
+        """Delete an existing question."""
+        instance = Question.objects.get(pk=pk)
+        instance.delete()
+
 
 @final
 class SurveyRepo:

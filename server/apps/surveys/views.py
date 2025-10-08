@@ -29,13 +29,14 @@ class QuestionViewSet(  # noqa: WPS215
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet[Question],
 ):
     """ViewSet for managing questions."""
 
     serializer_class = QuestionCreateSerializer
     pagination_class = CustomPaginator
-    http_method_names = ('get', 'post', 'patch')
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     @override
     def get_queryset(self) -> QuerySet[Question]:
@@ -70,6 +71,15 @@ class QuestionViewSet(  # noqa: WPS215
             self.get_serializer(upd_qestion).data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @override
+    def destroy(self, request: Request, pk: int) -> Response:
+        """Delete question by primary key."""
+        try:
+            resolve(QuestionRepo).delete(pk)
+        except Question.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SurveyViewSet(viewsets.ModelViewSet[Survey]):
