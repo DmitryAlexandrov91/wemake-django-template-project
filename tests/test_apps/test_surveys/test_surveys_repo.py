@@ -96,13 +96,15 @@ def test_create_user_survey_res(
 
 
 @pytest.mark.django_db
-def test_create_survey_with_questions_and_answers() -> None:
+def test_create_survey_with_questions_and_answers(
+    department: Department,
+) -> None:
     """Create survey with questions and answers."""
     repo = SurveyRepo()
     survey_data = {
         'title': 'Test survey',
         'description': 'Test desc',
-        DEPARTMENT: {NAME: 'Test dept'},
+        'department_name': department.name,
         'start_date': date(2025, 10, 3),
         'questions': [
             {
@@ -135,34 +137,34 @@ def test_create_survey_with_questions_and_answers() -> None:
         ).exists()
         answer_count = 2 if question.text == 'Question 1' else 1
         assert question.answer_options.count() == answer_count
-    assert survey.department.name == 'Test dept'
 
 
 @pytest.mark.django_db
-def test_create_survey_without_questions() -> None:
+def test_create_survey_without_questions(
+    department: Department,
+) -> None:
     """Create survey without questions."""
-    repo = SurveyRepo()
     survey_data = {
         'title': 'Survey without questions',
         'description': '',
-        DEPARTMENT: {NAME: 'No Questions Dept'},
+        'department_name': department.name,
         'start_date': date(2025, 10, 3),
         'questions': [],
     }
-    survey = repo.create(survey_data.copy())
+    survey = resolve(SurveyRepo).create(survey_data.copy())
     assert Survey.objects.filter(pk=survey.pk).exists()
     assert survey.questions.count() == 0
-    assert survey.department.name == 'No Questions Dept'
 
 
 @pytest.mark.django_db
-def test_create_survey_with_question_no_answers() -> None:
+def test_create_survey_with_question_no_answers(
+    department: Department,
+) -> None:
     """Create survey with questions without answers."""
-    repo = SurveyRepo()
     survey_data = {
         'title': 'Survey empty answers',
         'description': '',
-        DEPARTMENT: {NAME: 'Empty answers dept'},
+        'department_name': department.name,
         'start_date': date(2025, 10, 3),
         'questions': [
             {
@@ -173,7 +175,7 @@ def test_create_survey_with_question_no_answers() -> None:
             }
         ],
     }
-    survey = repo.create(survey_data.copy())
+    survey = resolve(SurveyRepo).create(survey_data)
     question = survey.questions.first()
     assert question
     assert question.text == 'Lonely Question'

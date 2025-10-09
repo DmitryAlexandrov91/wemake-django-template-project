@@ -74,7 +74,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     started_at = serializers.DateField(source='start_date')
     finished_at = serializers.DateField(source='end_date')
     questions = QuestionAnswerOptionCreateSerializer(many=True, required=False)
-    department = DepartmentCreateSerializer()
+    department_name = serializers.CharField()
     status = serializers.ChoiceField(
         choices=SurveyStatus.choices,
         required=False,
@@ -91,7 +91,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
             'finished_at',
             IS_FAVORITE_ATTR,
             'questions',
-            'department',
+            'department_name',
         )
         read_only_fields = (ID_FIELD,)
 

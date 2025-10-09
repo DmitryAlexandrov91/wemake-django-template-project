@@ -107,9 +107,10 @@ class SurveyRepo:
     def create(self, survey_data: dict[str, Any]) -> Survey:  # noqa: WPS210
         """Create survey with nested params."""
         questions_data = survey_data.pop(QUESTIONS_ATTR, [])
-        department = Department.objects.create(
-            **survey_data.pop(DEPARTMENT),
+        department = Department.objects.get(
+            name=survey_data.pop('department_name'),
         )
+
         survey = Survey.objects.create(
             department=department,
             **survey_data,
