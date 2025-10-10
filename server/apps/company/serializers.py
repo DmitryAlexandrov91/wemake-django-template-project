@@ -4,7 +4,7 @@ from server.apps.company.models import Department
 from server.apps.users.models import CustomUser
 
 
-class DepartmentCreateSerializer(serializers.ModelSerializer['Department']):
+class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
     """Serializer for creating a Department.
 
     Accepts and returns `department_name` (maps to `Department.name` in DB).

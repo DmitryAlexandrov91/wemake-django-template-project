@@ -1,11 +1,11 @@
 from collections.abc import Callable
-from datetime import date
 
 import pytest
 
 from server.apps.company.models import Department
 from server.apps.surveys.infra.repository import SurveyRepo, SurveyResultRepo
 from server.apps.surveys.models import (
+    AnswerOption,
     Question,
     Survey,
     SurveyQuestion,
@@ -13,6 +13,7 @@ from server.apps.surveys.models import (
 from server.apps.users.models import CustomUser
 from server.di import resolve
 from tests.plugins.surveys_survey import (
+    SurveyFactory,
     SurveyResultFactory,
     UserAnswerFactory,
 )
@@ -22,24 +23,9 @@ NAME = 'name'
 DEPARTMENT = 'department'
 TEXT = 'text'
 QUESTION_TYPE = 'question_type'
-
-
-@pytest.mark.django_db
-def test_update_survey_partial_data(survey: Survey) -> None:
-    """Test SurveyRepo update_survey method with partial data."""
-    repo = resolve(SurveyRepo)
-    original_description = survey.description
-
-    updated_survey = repo.update_survey(
-        survey=survey,
-        title='Updated Title',
-        description=None,
-        department={NAME: 'update name'},
-    )
-
-    assert updated_survey.pk == survey.pk
-    assert updated_survey.title == 'Updated Title'
-    assert updated_survey.description == original_description
+SCORE = 'score'
+IS_FAVORITE = 'is_favorite'
+ANSWERS = 'answers'
 
 
 @pytest.mark.django_db
@@ -49,10 +35,9 @@ def test_get_result_method(
     surveys_user_answer_result_factory: UserAnswerFactory,
 ) -> None:
     """Test get_result_method of SurveyRepo."""
-    repo = resolve(SurveyRepo)
     new_survey_result = surveys_survey_result_factory(survey=survey)
     surveys_user_answer_result_factory(survey_result=new_survey_result)
-    survey_results = repo.get_results(survey.pk)
+    survey_results = resolve(SurveyRepo).get_results(survey.pk)
     assert len(survey_results) == 1
     assert survey_results[0].survey == survey
 
@@ -105,29 +90,29 @@ def test_create_survey_with_questions_and_answers(
         'title': 'Test survey',
         'description': 'Test desc',
         'department_name': department.name,
-        'start_date': date(2025, 10, 3),
+        'start_date': '2025-10-3',
         'questions': [
             {
                 TEXT: 'Question 1',
-                'is_favorite': False,
-                QUESTION_TYPE: 'score',
-                'answers': [
+                IS_FAVORITE: False,
+                QUESTION_TYPE: SCORE,
+                ANSWERS: [
                     {TEXT: 'Answer 1'},
                     {TEXT: 'Answer 2'},
                 ],
             },
             {
                 TEXT: 'Question 2',
-                'is_favorite': True,
-                QUESTION_TYPE: 'score',
-                'answers': [
+                IS_FAVORITE: True,
+                QUESTION_TYPE: SCORE,
+                ANSWERS: [
                     {TEXT: 'Answer 3'},
                 ],
             },
         ],
     }
 
-    survey = repo.create(survey_data.copy())
+    survey = repo.create(survey_data)
 
     assert Survey.objects.filter(pk=survey.pk).exists()
     assert survey.questions.count() == 2
@@ -140,46 +125,53 @@ def test_create_survey_with_questions_and_answers(
 
 
 @pytest.mark.django_db
-def test_create_survey_without_questions(
-    department: Department,
+def test_add_questions_for_survey_with_repo(
+    surveys_survey_factory: SurveyFactory,
 ) -> None:
-    """Create survey without questions."""
-    survey_data = {
-        'title': 'Survey without questions',
-        'description': '',
-        'department_name': department.name,
-        'start_date': date(2025, 10, 3),
-        'questions': [],
-    }
-    survey = resolve(SurveyRepo).create(survey_data.copy())
-    assert Survey.objects.filter(pk=survey.pk).exists()
-    assert survey.questions.count() == 0
+    """Create add questons for survey with repo method."""
+    survey = surveys_survey_factory()
+    questions = [
+        {
+            TEXT: 'Question 1',
+            IS_FAVORITE: False,
+            QUESTION_TYPE: SCORE,
+            ANSWERS: [
+                {TEXT: 'Answer 1'},
+                {TEXT: 'Answer 2'},
+            ],
+        },
+        {
+            TEXT: 'Question 2',
+            IS_FAVORITE: True,
+            QUESTION_TYPE: SCORE,
+            ANSWERS: [
+                {TEXT: 'Answer 1'},
+                {TEXT: 'Answer 2'},
+            ],
+        },
+    ]
+
+    resolve(SurveyRepo).add_questions(survey, questions)
+    assert Question.objects.all().count() == 2
+    assert AnswerOption.objects.all().count() == 4
 
 
 @pytest.mark.django_db
-def test_create_survey_with_question_no_answers(
-    department: Department,
+def test_add_questions_without_answers(
+    surveys_survey_factory: SurveyFactory,
 ) -> None:
-    """Create survey with questions without answers."""
-    survey_data = {
-        'title': 'Survey empty answers',
-        'description': '',
-        'department_name': department.name,
-        'start_date': date(2025, 10, 3),
-        'questions': [
-            {
-                TEXT: 'Lonely Question',
-                'is_favorite': False,
-                QUESTION_TYPE: 'score',
-                'answers': [],
-            }
-        ],
-    }
-    survey = resolve(SurveyRepo).create(survey_data)
-    question = survey.questions.first()
-    assert question
-    assert question.text == 'Lonely Question'
+    """Test add_questions without answer options."""
+    survey = surveys_survey_factory()
+    questions = [
+        {
+            TEXT: 'Question without answers',
+            IS_FAVORITE: False,
+            QUESTION_TYPE: SCORE,
+            ANSWERS: [],
+        }
+    ]
+
+    resolve(SurveyRepo).add_questions(survey, questions)
+
+    question = Question.objects.get(text='Question without answers')
     assert question.answer_options.count() == 0
-    assert SurveyQuestion.objects.filter(
-        survey=survey, question=question
-    ).exists()

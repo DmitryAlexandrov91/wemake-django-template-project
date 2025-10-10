@@ -107,6 +107,7 @@ class SurveyRepo:
     def create(self, survey_data: dict[str, Any]) -> Survey:  # noqa: WPS210
         """Create survey with nested params."""
         questions_data = survey_data.pop(QUESTIONS_ATTR, [])
+
         department = Department.objects.get(
             name=survey_data.pop('department_name'),
         )
@@ -129,7 +130,7 @@ class SurveyRepo:
     ) -> Survey:
         """Add questions and they answer options for survey instance."""
         for question_data in questions_data:
-            answers_data = question_data.pop('answer_options', [])
+            answers_data = question_data.pop('answers', [])
             question = Question.objects.create(**question_data)
             question.surveys.add(survey)
             if answers_data:
@@ -218,7 +219,7 @@ class SurveyRepo:
 
     def update_survey(self, survey: Survey, **kwargs: Any) -> Survey:
         """Update survey."""
-        department_data = kwargs.pop(DEPARTMENT, None)
+        department_name = kwargs.pop('department_name', None)
 
         mapped_data = {
             key: field_value
@@ -227,10 +228,11 @@ class SurveyRepo:
         }
 
         with transaction.atomic():
-            Department.objects.filter(pk=survey.department.pk).update(
-                **department_data
-            )
-            survey.department.refresh_from_db()
+            if department_name:
+                department = Department.objects.get(
+                    name=department_name,
+                )
+                mapped_data['department'] = department
 
             Survey.objects.filter(pk=survey.pk).update(**mapped_data)
             survey.refresh_from_db()

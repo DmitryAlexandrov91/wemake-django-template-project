@@ -2,7 +2,6 @@ from typing import Any, override
 
 from rest_framework import serializers
 
-from server.apps.company.serializers import DepartmentCreateSerializer
 from server.apps.surveys.choices import SurveyStatus
 from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import (
@@ -111,7 +110,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
     comment = serializers.CharField(source='description', required=False)
     started_at = serializers.DateField(source='start_date', required=False)
     finished_at = serializers.DateField(source='end_date', required=False)
-    department = DepartmentCreateSerializer(required=False)
+    department_name = serializers.CharField(required=False)
 
     class Meta:
         model = Survey
@@ -122,7 +121,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
-            'department',
+            'department_name',
         )
 
     @override
@@ -130,5 +129,4 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
         self, instance: Survey, validated_data: dict[str, Any]
     ) -> Survey:
         """Use repo for update operation with nested relations."""
-        repo = resolve(SurveyRepo)
-        return repo.update_survey(instance, **validated_data)
+        return resolve(SurveyRepo).update_survey(instance, **validated_data)
