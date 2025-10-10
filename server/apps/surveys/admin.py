@@ -8,6 +8,7 @@ from server.apps.surveys.infra.repository import QuestionRepo
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
+    Suggestion,
     Survey,
     SurveyQuestion,
     SurveyResult,
@@ -28,7 +29,7 @@ class SurveyAdmin(admin.ModelAdmin[Survey]):
 
     list_display = (
         'id',  # noqa: WPS226
-        'title',
+        'title',  # noqa: WPS226
         'start_date',
         'end_date',
     )
@@ -83,7 +84,7 @@ class SurveyResultAdmin(admin.ModelAdmin[SurveyResult]):
 
     list_display = (
         'id',
-        'user',
+        'user',  # noqa: WPS226
         'survey',
     )
     list_filter = ('survey',)
@@ -108,3 +109,21 @@ class UserAnswerAdmin(admin.ModelAdmin[UserAnswer]):
         'survey_result__survey',
         'question',
     )
+
+
+@admin.register(Suggestion)
+class SuggestionAdmin(admin.ModelAdmin[Suggestion]):
+    """Admin class for suggestions."""
+
+    list_display = (
+        'id',
+        'user',  # noqa: WPS226
+        'title',  # noqa: WPS226
+        'description',
+    )
+    search_fields = (
+        'user__username',
+        'title',  # noqa: WPS226
+        'description',
+    )
+    list_select_related = ('user',)

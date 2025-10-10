@@ -301,3 +301,39 @@ class UserAnswer(models.Model):
         True
         """
         return self.text_answer
+
+
+class Suggestion(models.Model):
+    """Suggestion model."""
+
+    user = models.ForeignKey(
+        to='users.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='suggestions',
+    )
+    title = models.CharField()
+    description = models.TextField()
+
+    class Meta:
+        verbose_name = 'suggestion'
+        verbose_name_plural = 'suggestions'
+
+    @override
+    def __str__(self) -> str:
+        """
+        Returns the UserAnswer object string representation.
+
+        >>> from server.apps.users.models import CustomUser
+        >>> user = CustomUser(
+        ...     email='test@example.com',
+        ...     full_name='test_name',
+        ... )
+        >>> user_suggestion = Suggestion(
+        ...     user=user,
+        ...     title='Suggestion title',
+        ...     description='Suggestion description',
+        ... )
+        >>> str(user_suggestion) == user_suggestion.title
+        True
+        """
+        return self.title
