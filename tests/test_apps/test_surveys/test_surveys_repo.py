@@ -89,7 +89,7 @@ def test_create_survey_with_questions_and_answers(
     survey_data = {
         'title': 'Test survey',
         'description': 'Test desc',
-        'department_name': department.name,
+        'department_name': department,
         'start_date': '2025-10-3',
         'questions': [
             {

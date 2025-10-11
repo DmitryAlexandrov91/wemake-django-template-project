@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from server.apps.company.models import Department
+from server.apps.users.api_validators import validate_unique_email
 from server.apps.users.infra.repository import UserRepoSave
 from server.apps.users.models import CustomUser
 from server.apps.users.services import AuthService
@@ -93,13 +94,11 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
 
     full_name = serializers.CharField()
     email = serializers.EmailField(
-        validators=[EmailValidator()], required=False
+        validators=[EmailValidator(), validate_unique_email],
     )
     department_name = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Department.objects.all(),
-        required=False,
-        source='department',
     )
 
     class Meta:
@@ -128,7 +127,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for updating an employee."""
 
     email = serializers.EmailField(
-        validators=[EmailValidator()], required=False
+        validators=[EmailValidator(), validate_unique_email], required=False
     )
     full_name = serializers.CharField(required=False)
     department_name = serializers.SlugRelatedField(

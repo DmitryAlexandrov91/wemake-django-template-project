@@ -23,7 +23,6 @@ def test_update_employee(auth_user: CustomUser, auth_client: APIClient) -> None:
         'id',
         'full_name',
         'email',
-        'department_name',
         'tg_username',
         'survey_count',
         'edited_at',

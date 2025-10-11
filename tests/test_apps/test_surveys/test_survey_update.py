@@ -14,7 +14,7 @@ def test_survey_update_serializer_integration(
     """Integration test for SurveyUpdateSerializer with actual repo."""
     validated_data = {
         'title': 'Updated Title',
-        'department_name': department.name,
+        'department_name': department,
     }
 
     serializer = SurveyUpdateSerializer()

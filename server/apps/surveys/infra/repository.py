@@ -4,7 +4,6 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.request import Request
 
-from server.apps.company.models import Department
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
@@ -108,9 +107,7 @@ class SurveyRepo:
         """Create survey with nested params."""
         questions_data = survey_data.pop(QUESTIONS_ATTR, [])
 
-        department = Department.objects.get(
-            name=survey_data.pop('department_name'),
-        )
+        department = survey_data.pop('department_name')
 
         survey = Survey.objects.create(
             department=department,
@@ -219,7 +216,7 @@ class SurveyRepo:
 
     def update_survey(self, survey: Survey, **kwargs: Any) -> Survey:
         """Update survey."""
-        department_name = kwargs.pop('department_name', None)
+        department = kwargs.pop('department_name', None)
 
         mapped_data = {
             key: field_value
@@ -228,10 +225,7 @@ class SurveyRepo:
         }
 
         with transaction.atomic():
-            if department_name:
-                department = Department.objects.get(
-                    name=department_name,
-                )
+            if department:
                 mapped_data['department'] = department
 
             Survey.objects.filter(pk=survey.pk).update(**mapped_data)
