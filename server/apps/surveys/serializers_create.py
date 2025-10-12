@@ -102,10 +102,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     @override
     def create(self, validated_data: dict[str, Any]) -> Survey:
         """Custom create for saving nested objects."""
-        repo = resolve(SurveyRepo)
-        questions = validated_data.pop('questions', [])
-        survey = repo.create(validated_data)
-        return repo.add_questions(survey, questions)
+        return resolve(SurveyRepo).create_survey_with_questions(validated_data)
 
 
 class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):

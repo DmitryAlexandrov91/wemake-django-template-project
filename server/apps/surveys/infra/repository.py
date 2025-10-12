@@ -8,7 +8,6 @@ from server.apps.surveys.models import (
     AnswerOption,
     Question,
     Survey,
-    SurveyQuestion,
     SurveyResult,
     UserAnswer,
 )
@@ -103,38 +102,27 @@ class SurveyRepo:
     """Repository fo Survey model operations."""
 
     @transaction.atomic
-    def create(self, survey_data: dict[str, Any]) -> Survey:  # noqa: WPS210
-        """Create survey with nested params."""
-        questions_data = survey_data.pop(QUESTIONS_ATTR, [])
-
-        department = survey_data.pop('department_name')
-
-        survey = Survey.objects.create(
-            department=department,
-            **survey_data,
-        )
-        for question_data in questions_data:
-            answers_data = question_data.pop('answers', [])
-            question = Question.objects.create(**question_data)
-            for answer_data in answers_data:
-                AnswerOption.objects.create(question=question, **answer_data)
-            SurveyQuestion.objects.create(survey=survey, question=question)
-        return survey
-
-    @transaction.atomic
-    def add_questions(
-        self, survey: Survey, questions_data: list[dict[str, Any]]
+    def create_survey_with_questions(
+        self, survey_data: dict[str, Any]
     ) -> Survey:
-        """Add questions and they answer options for survey instance."""
+        """Create survey with all questions in one transaction."""
+        questions_data = survey_data.pop('questions', [])
+        survey = Survey.objects.create(
+            department=survey_data.pop('department_name'), **survey_data
+        )
+
         for question_data in questions_data:
             answers_data = question_data.pop('answers', [])
             question = Question.objects.create(**question_data)
-            question.surveys.add(survey)
+
+            survey.questions.add(question)
+
             if answers_data:
                 AnswerOption.objects.bulk_create([
                     AnswerOption(question=question, **answer_data)
                     for answer_data in answers_data
                 ])
+
         return survey
 
     def build_survey_for_create_response(self, survey: Survey) -> Survey:
@@ -224,12 +212,11 @@ class SurveyRepo:
             if field_value is not None
         }
 
-        with transaction.atomic():
-            if department:
-                mapped_data['department'] = department
+        if department:
+            mapped_data['department'] = department
 
-            Survey.objects.filter(pk=survey.pk).update(**mapped_data)
-            survey.refresh_from_db()
+        Survey.objects.filter(pk=survey.pk).update(**mapped_data)
+        survey.refresh_from_db()
 
         return survey
 
