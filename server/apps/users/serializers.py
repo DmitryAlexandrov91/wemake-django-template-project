@@ -92,14 +92,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for creating an empoyee."""
 
     full_name = serializers.CharField()
-    email = serializers.EmailField(
-        validators=[
-            UniqueValidator(
-                queryset=CustomUser.objects.all(),
-                message='This email already exists',
-            ),
-        ],
-    )
+    email = serializers.EmailField()
     department_name = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Department.objects.all(),

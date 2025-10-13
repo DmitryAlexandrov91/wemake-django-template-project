@@ -8,6 +8,7 @@ from server.apps.surveys.models import (
     AnswerOption,
     Question,
     Survey,
+    SurveyQuestion,
     SurveyResult,
     UserAnswer,
 )
@@ -115,7 +116,7 @@ class SurveyRepo:
             answers_data = question_data.pop('answers', [])
             question = Question.objects.create(**question_data)
 
-            survey.questions.add(question)
+            SurveyQuestion.objects.create(survey=survey, question=question)
 
             if answers_data:
                 AnswerOption.objects.bulk_create([

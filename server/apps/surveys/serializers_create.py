@@ -1,5 +1,6 @@
 from typing import Any, override
 
+from django.db import transaction
 from rest_framework import serializers
 
 from server.apps.company.models import Department
@@ -102,7 +103,10 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     @override
     def create(self, validated_data: dict[str, Any]) -> Survey:
         """Custom create for saving nested objects."""
-        return resolve(SurveyRepo).create_survey_with_questions(validated_data)
+        with transaction.atomic():
+            return resolve(SurveyRepo).create_survey_with_questions(
+                validated_data
+            )
 
 
 class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
@@ -114,7 +118,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
     finished_at = serializers.DateField(source='end_date', required=False)
     department_name = serializers.SlugRelatedField(
         slug_field=NAME,
-        queryset=Department.objects.all(),
+        queryset=Department.objects.all().select_related(),
         required=False,
     )
 

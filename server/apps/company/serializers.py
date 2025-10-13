@@ -15,7 +15,7 @@ class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
         source='name',
         validators=[
             UniqueValidator(
-                queryset=Department.objects.all(),
+                queryset=Department.objects.all().select_related(),
                 message='This department name already exists',
             ),
         ],
