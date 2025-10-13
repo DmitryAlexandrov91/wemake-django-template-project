@@ -1,8 +1,9 @@
 from typing import Any, override
 
+from django.db import transaction
 from rest_framework import serializers
 
-from server.apps.company.serializers import DepartmentCreateSerializer
+from server.apps.company.models import Department
 from server.apps.surveys.choices import SurveyStatus
 from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import (
@@ -18,6 +19,7 @@ QUESTION_TYPE_ATTR = 'question_type'
 IS_FAVORITE_ATTR = 'is_favorite'
 SURVEY_FIELD = 'surveys'
 ID_FIELD = 'id'
+NAME = 'name'
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
@@ -74,7 +76,10 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
     started_at = serializers.DateField(source='start_date')
     finished_at = serializers.DateField(source='end_date')
     questions = QuestionAnswerOptionCreateSerializer(many=True, required=False)
-    department = DepartmentCreateSerializer()
+    department_name = serializers.SlugRelatedField(
+        slug_field=NAME,
+        queryset=Department.objects.all(),
+    )
     status = serializers.ChoiceField(
         choices=SurveyStatus.choices,
         required=False,
@@ -84,24 +89,24 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
         model = Survey
         fields = (
             ID_FIELD,
-            'name',
+            NAME,
             'status',
             'comment',
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
             'questions',
-            'department',
+            'department_name',
         )
         read_only_fields = (ID_FIELD,)
 
     @override
     def create(self, validated_data: dict[str, Any]) -> Survey:
         """Custom create for saving nested objects."""
-        repo = resolve(SurveyRepo)
-        questions = validated_data.pop('questions', [])
-        survey = repo.create(validated_data)
-        return repo.add_questions(survey, questions)
+        with transaction.atomic():
+            return resolve(SurveyRepo).create_survey_with_questions(
+                validated_data
+            )
 
 
 class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
@@ -111,18 +116,22 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
     comment = serializers.CharField(source='description', required=False)
     started_at = serializers.DateField(source='start_date', required=False)
     finished_at = serializers.DateField(source='end_date', required=False)
-    department = DepartmentCreateSerializer(required=False)
+    department_name = serializers.SlugRelatedField(
+        slug_field=NAME,
+        queryset=Department.objects.all().select_related(),
+        required=False,
+    )
 
     class Meta:
         model = Survey
         fields = (
             ID_FIELD,
-            'name',
+            NAME,
             'comment',
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
-            'department',
+            'department_name',
         )
 
     @override
@@ -130,5 +139,4 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
         self, instance: Survey, validated_data: dict[str, Any]
     ) -> Survey:
         """Use repo for update operation with nested relations."""
-        repo = resolve(SurveyRepo)
-        return repo.update_survey(instance, **validated_data)
+        return resolve(SurveyRepo).update_survey(instance, **validated_data)

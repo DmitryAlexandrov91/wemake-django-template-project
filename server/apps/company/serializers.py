@@ -1,16 +1,25 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from server.apps.company.models import Department
 from server.apps.users.models import CustomUser
 
 
-class DepartmentCreateSerializer(serializers.ModelSerializer['Department']):
+class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
     """Serializer for creating a Department.
 
     Accepts and returns `department_name` (maps to `Department.name` in DB).
     """
 
-    department_name = serializers.CharField(source='name')
+    department_name = serializers.CharField(
+        source='name',
+        validators=[
+            UniqueValidator(
+                queryset=Department.objects.all().select_related(),
+                message='This department name already exists',
+            ),
+        ],
+    )
 
     class Meta:
         model = Department

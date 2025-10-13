@@ -61,11 +61,15 @@ class UserRepoSave:
 
     def create_user(self, **kwargs: Any) -> CustomUser:
         """Creates a new user from keyword arguments."""
-        return CustomUser.objects.create(**kwargs)
+        department = kwargs.pop('department_name', None)
+        return CustomUser.objects.create(**kwargs, department=department)
 
     def update_user(self, user: CustomUser, **kwargs: Any) -> CustomUser:
         """Update an existing user."""
-        CustomUser.objects.filter(pk=user.pk).update(**kwargs)
+        department = kwargs.pop('department_name', None)
+        CustomUser.objects.filter(pk=user.pk).update(
+            **kwargs, department=department
+        )
         user.refresh_from_db()
         return user
 

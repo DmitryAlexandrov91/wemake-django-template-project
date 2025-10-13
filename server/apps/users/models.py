@@ -18,6 +18,7 @@ TELEGRAM_USERNAME_MAX_LENGTH = 33
 TELEGRAM_USERNAME_MIN_LENGTH = 6
 
 REGISTRATION_EMAIL_REQUIRED_ERROR = 'Email is required!'
+EMAIL = 'email'
 
 
 class _CustomUserManager(BaseUserManager['CustomUser']):
@@ -150,8 +151,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = _CustomUserManager()  # noqa: WPS110
 
-    USERNAME_FIELD = 'email'  # noqa: WPS115
-    EMAIL_FIELD = 'email'  # noqa: WPS115
+    USERNAME_FIELD = EMAIL  # noqa: WPS115
+    EMAIL_FIELD = EMAIL  # noqa: WPS115
     REQUIRED_FIELDS: ClassVar[list[str]] = ['full_name']  # noqa: WPS115
 
     class Meta:
@@ -165,7 +166,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = (
-            'email',
+            EMAIL,
             'full_name',
         )
         default_related_name = 'users'
@@ -174,7 +175,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                 fields=('tg_username',),
                 name='unique_tg_username_not_blank',
                 condition=~models.Q(tg_username=''),
-            )
+            ),
+            models.UniqueConstraint(
+                fields=(EMAIL,),
+                name='unique_email',
+                condition=~models.Q(email=''),
+            ),
         ]
 
     @override

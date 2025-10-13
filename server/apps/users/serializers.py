@@ -1,8 +1,8 @@
 from typing import Any, ClassVar, override
 
 from django.contrib.auth import get_user_model
-from django.core.validators import EmailValidator
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from server.apps.company.models import Department
@@ -92,14 +92,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for creating an empoyee."""
 
     full_name = serializers.CharField()
-    email = serializers.EmailField(
-        validators=[EmailValidator()], required=False
-    )
+    email = serializers.EmailField()
     department_name = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Department.objects.all(),
-        required=False,
-        source='department',
     )
 
     class Meta:
@@ -128,7 +124,12 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
     """Serializer for updating an employee."""
 
     email = serializers.EmailField(
-        validators=[EmailValidator()], required=False
+        validators=[
+            UniqueValidator(
+                queryset=CustomUser.objects.all(),
+                message='This email already exists',
+            ),
+        ],
     )
     full_name = serializers.CharField(required=False)
     department_name = serializers.SlugRelatedField(
