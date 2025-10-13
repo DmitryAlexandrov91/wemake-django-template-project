@@ -38,7 +38,7 @@ class UserRepo:
             survey_count=Count('survey_result')
         )
         if order_field:
-            queryset.order_by(order_field)
+            return queryset.order_by(order_field)
         return queryset
 
     def get_employee_with_survey_count(self, pk: int) -> CustomUser:
