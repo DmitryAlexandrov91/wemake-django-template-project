@@ -5,6 +5,8 @@ from django.db.models import Count, QuerySet
 
 from server.apps.users.models import CustomUser
 
+DEPARTMENT = 'department'
+
 
 @final
 class UserRepo:
@@ -12,7 +14,7 @@ class UserRepo:
 
     def get_users_with_department(self) -> QuerySet[CustomUser]:
         """Base queryset with department selection."""
-        return CustomUser.objects.select_related('department')
+        return CustomUser.objects.select_related(DEPARTMENT)
 
     def get_all(self) -> QuerySet[CustomUser]:
         """Return all User instances from DB."""
@@ -34,7 +36,7 @@ class UserRepo:
         self, order_field: str | None
     ) -> QuerySet[CustomUser]:
         """Get all employees with survey_count."""
-        queryset = CustomUser.objects.select_related('department').annotate(
+        queryset = CustomUser.objects.select_related(DEPARTMENT).annotate(
             survey_count=Count('survey_result')
         )
         if order_field:
@@ -44,7 +46,7 @@ class UserRepo:
     def get_employee_with_survey_count(self, pk: int) -> CustomUser:
         """Get one employee with survey_count annotation."""
         return (
-            CustomUser.objects.select_related('department')
+            CustomUser.objects.select_related(DEPARTMENT)
             .annotate(survey_count=Count('survey_result'))
             .get(pk=pk)
         )
@@ -67,9 +69,9 @@ class UserRepoSave:
     def update_user(self, user: CustomUser, **kwargs: Any) -> CustomUser:
         """Update an existing user."""
         department = kwargs.pop('department_name', None)
-        CustomUser.objects.filter(pk=user.pk).update(
-            **kwargs, department=department
-        )
+        if department is not None:
+            kwargs[DEPARTMENT] = department
+        CustomUser.objects.filter(pk=user.pk).update(**kwargs)
         user.refresh_from_db()
         return user
 

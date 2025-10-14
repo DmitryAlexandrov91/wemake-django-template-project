@@ -121,6 +121,10 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
         queryset=Department.objects.all().select_related(),
         required=False,
     )
+    status = serializers.ChoiceField(
+        choices=SurveyStatus.choices,
+        required=False,
+    )
 
     class Meta:
         model = Survey
@@ -132,6 +136,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
             'finished_at',
             IS_FAVORITE_ATTR,
             'department_name',
+            'status',
         )
 
     @override
