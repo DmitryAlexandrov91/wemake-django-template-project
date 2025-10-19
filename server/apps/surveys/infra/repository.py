@@ -68,6 +68,7 @@ class QuestionRepo:
         self,
         filter_param: str,
         order_param: str,
+        search_param: str | None = None,
     ) -> models.QuerySet[Question]:
         """Return optimized and filtered question's queryset."""
         queryset = Question.objects.prefetch_related(
@@ -79,6 +80,10 @@ class QuestionRepo:
             ),
             SURVEY_ATTR,
         )
+
+        if search_param:
+            queryset = queryset.filter(text__icontains=search_param)
+
         filter_mapping = {
             'favorite': queryset.filter(is_favorite=True),
             'all': queryset,

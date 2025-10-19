@@ -44,7 +44,10 @@ class QuestionViewSet(  # noqa: WPS215
         repo = resolve(QuestionRepo)
         filter_param = self.request.query_params.get('filter', ALL_PARAM)
         order_param = self.request.query_params.get('order', ASC_PARAM)
-        return repo.get_modified_questions_queryset(filter_param, order_param)
+        search_param = self.request.query_params.get('search')
+        return repo.get_modified_questions_queryset(
+            filter_param, order_param, search_param
+        )
 
     @override
     def get_serializer_class(  # noqa: WPS615

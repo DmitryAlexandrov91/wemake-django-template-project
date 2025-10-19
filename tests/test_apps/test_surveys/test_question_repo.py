@@ -61,3 +61,24 @@ def test_update_question_surveys(
     updated_surveys = list(consent_given_question.surveys.all())
     assert all(survey in updated_surveys for survey in two_surveys)
     assert consent_given_question.surveys.count() == len(two_surveys)
+
+
+@pytest.mark.django_db
+def test_search_param(surveys_question_factory: QuestionFactory) -> None:
+    """Test search param in get_modified_questions_queryset method."""
+    for question in ('First', 'Second', 'Third'):
+        surveys_question_factory(text=f'{question} question')
+
+    question_repo = resolve(QuestionRepo)
+
+    questions = question_repo.get_modified_questions_queryset(
+        filter_param='all', order_param='asc', search_param='First'
+    )
+    assert len(questions) == 1
+    assert questions[0].text == 'First question'
+
+    all_questions = question_repo.get_modified_questions_queryset(
+        filter_param='all', order_param='asc', search_param='question'
+    )
+
+    assert len(all_questions) == 3
