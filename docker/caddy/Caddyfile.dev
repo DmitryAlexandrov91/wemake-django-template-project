@@ -66,6 +66,7 @@ https://{$DOMAIN_NAME}:8000 {
   handle {
           root * /var/www/frontend
           file_server
+          try_files {path} {path}/ /index.html
   }
 
 	encode gzip

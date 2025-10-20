@@ -81,6 +81,7 @@ www.{$DOMAIN_NAME} {
   handle {
           root * /var/www/frontend
           file_server
+          try_files {path} {path}/ /index.html
   }
 
 
