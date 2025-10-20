@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import timedelta
-from typing import TYPE_CHECKING, Any, TypedDict, Unpack
+from typing import TYPE_CHECKING, TypedDict, Unpack
 
 import pytest
 from django.utils import timezone
 
 from server.apps.company.models import Department
 from server.apps.surveys.choices import QuestionType
-from server.apps.surveys.models import AnswerOption, Question, Survey
-from tests.plugins.department_factory import DepartmentFactory
-from tests.plugins.surveys_survey import SurveyFactory
+from server.apps.surveys.models import (
+    AnswerOption,
+    Question,
+    Survey,
+)
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
@@ -123,77 +124,3 @@ def questions_batch(
         return questions
 
     return factory  # type: ignore[return-value]
-
-
-@pytest.fixture
-def survey_with_question(
-    surveys_survey_factory: Callable[..., Survey],
-    surveys_question_factory: Callable[..., Question],
-) -> Callable[[dict[str, Any]], tuple[Survey, Question]]:
-    """Fixture for creating a survey with a question."""
-
-    def factory(
-        survey_params: dict[str, Any],
-    ) -> tuple[Survey, Question]:
-        survey = surveys_survey_factory(**survey_params)
-        question = surveys_question_factory(text='Question.')
-        question.surveys.add(survey)
-        return survey, question
-
-    return factory
-
-
-@pytest.fixture
-def create_surveys(
-    surveys_survey_factory: SurveyFactory,
-    department_factory: DepartmentFactory,
-) -> Callable[[Department], Survey]:
-    """Fixture for creating all survey types."""
-
-    def factory(department: Department) -> Survey:
-        today = timezone.now().date()
-        surveys_survey_factory(
-            title='Another department survey',
-            description='Another survey text',
-            start_date=today,
-            end_date=today + timedelta(days=30),
-            department=department_factory(name='Department1'),
-            is_favorite=False,
-        )
-        active_survey = surveys_survey_factory(
-            title='Active survey',
-            description='Active survey text',
-            start_date=today,
-            end_date=today + timedelta(days=30),
-            department=department,
-            is_favorite=False,
-        )
-        surveys_survey_factory(
-            title='Ended survey',
-            description='Ended survey text',
-            start_date=today - timedelta(days=60),
-            end_date=today - timedelta(days=30),
-            department=department,
-            is_favorite=False,
-        )
-        return active_survey
-
-    return factory
-
-
-@pytest.fixture
-def question_with_two_surveys(  # noqa: WPS234
-    surveys_question_factory: Callable[..., Question],
-    two_surveys: list[Survey],
-) -> Callable[[dict[str, Any]], tuple[Question, list[Survey]]]:  # noqa: WPS221
-    """Fixture for creating a question with two surveys."""
-
-    def factory(
-        question_params: dict[str, Any] | None = None,
-    ) -> tuple[Question, list[Survey]]:
-        params_data = question_params or {}
-        question = surveys_question_factory(**params_data)
-        question.surveys.set(two_surveys)
-        return question, two_surveys
-
-    return factory

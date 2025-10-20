@@ -1,0 +1,195 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+from datetime import timedelta
+from typing import Any
+from unittest import mock
+
+import pytest
+from django.utils import timezone
+from pytest_mock import MockerFixture
+
+from server.apps.company.models import Department
+from server.apps.surveys.models import Question, Survey, SurveyResult
+from server.apps.users.models import CustomUser
+from tests.plugins import department_factory, surveys_survey, users
+
+
+@pytest.fixture
+def survey_with_question(
+    surveys_survey_factory: Callable[..., Survey],
+    surveys_question_factory: Callable[..., Question],
+) -> Callable[[dict[str, Any]], tuple[Survey, Question]]:
+    """Fixture for creating a survey with a question."""
+
+    def factory(
+        survey_params: dict[str, Any],
+    ) -> tuple[Survey, Question]:
+        survey = surveys_survey_factory(**survey_params)
+        question = surveys_question_factory(text='Question.')
+        question.surveys.add(survey)
+        return survey, question
+
+    return factory
+
+
+@pytest.fixture
+def create_surveys(
+    surveys_survey_factory: surveys_survey.SurveyFactory,
+    department_factory: department_factory.DepartmentFactory,
+) -> Callable[[Department], Survey]:
+    """Fixture for creating all survey types."""
+
+    def factory(department: Department) -> Survey:
+        today = timezone.now().date()
+        surveys_survey_factory(
+            title='Another department survey',
+            description='Another survey text',
+            start_date=today,
+            end_date=today + timedelta(days=30),
+            department=department_factory(name='Department1'),
+            is_favorite=False,
+        )
+        active_survey = surveys_survey_factory(
+            title='Active survey',
+            description='Active survey text',
+            start_date=today,
+            end_date=today + timedelta(days=30),
+            department=department,
+            is_favorite=False,
+        )
+        surveys_survey_factory(
+            title='Ended survey',
+            description='Ended survey text',
+            start_date=today - timedelta(days=60),
+            end_date=today - timedelta(days=30),
+            department=department,
+            is_favorite=False,
+        )
+        return active_survey
+
+    return factory
+
+
+@pytest.fixture
+def question_with_two_surveys(  # noqa: WPS234
+    surveys_question_factory: Callable[..., Question],
+    two_surveys: list[Survey],
+) -> Callable[[dict[str, Any]], tuple[Question, list[Survey]]]:  # noqa: WPS221
+    """Fixture for creating a question with two surveys."""
+
+    def factory(
+        question_params: dict[str, Any] | None = None,
+    ) -> tuple[Question, list[Survey]]:
+        params_data = question_params or {}
+        question = surveys_question_factory(**params_data)
+        question.surveys.set(two_surveys)
+        return question, two_surveys
+
+    return factory
+
+
+@pytest.fixture
+def survey_result_with_three_questions(
+    surveys_survey_result_factory: Callable[[], SurveyResult],
+    surveys_question_factory: Callable[..., Question],
+) -> tuple[SurveyResult, list[Question]]:
+    """Fixture prepares survey result and three questions."""
+    survey_result = surveys_survey_result_factory()
+    questions = [
+        surveys_question_factory(),
+        surveys_question_factory(),
+        surveys_question_factory(),
+    ]
+    for question in questions:
+        question.surveys.add(survey_result.survey)
+        question.save()
+    survey_result.current_question = questions[0]
+    survey_result.save(update_fields=['current_question'])
+    return survey_result, questions
+
+
+@pytest.fixture
+def survey_results_for_user(
+    active_user: CustomUser,
+    surveys_survey_result_factory: Callable[[], SurveyResult],
+) -> tuple[CustomUser, int]:
+    """Fixture creates five completed SurveyResult objects for the user."""
+    now = timezone.now()
+    delta_sum = 0
+    questions = 0
+    for count in range(5):
+        survey_result = surveys_survey_result_factory()
+        survey_result.user = active_user
+        survey_result.current_question = None
+        survey_result.completed_questions = count + 1
+        survey_result.save()
+        SurveyResult.objects.filter(id=survey_result.id).update(
+            started_at=now - timedelta(days=count),
+            updated_at=(
+                now - timedelta(days=count) + timedelta(seconds=100 + count)
+            ),
+        )
+        delta_sum += 100 + count
+        questions += survey_result.completed_questions
+
+    return active_user, int(delta_sum // questions)
+
+
+@pytest.fixture
+def mock_statistics_mocks(mocker: MockerFixture) -> dict[str, mock.Mock]:
+    """Fixture for statistic mocks."""
+    mock_task = mocker.patch(
+        'server.apps.surveys.tasks.update_user_statistics_task.delay'
+    )
+    mock_get_stat_settings = mocker.patch(
+        'server.apps.surveys.infra.repository.UserStatisticsRepo.get_stat_settings'
+    )
+    mock_settings = mock.Mock()
+    mock_settings.survey_response_avg_period = 5
+    mock_get_stat_settings.return_value = mock_settings
+    return {'mock_task': mock_task, 'mock_settings': mock_settings}
+
+
+@pytest.fixture
+def three_active_users_one_inactive(
+    user_factory: users.UserFactory,
+    user_batch: users.UserBatchFactory,
+) -> list[CustomUser]:
+    """Fixture creates 4 users, one of them is inactive."""
+    active_users = user_batch(3)
+    user_factory(
+        is_active=False, username='inactive_user', email='inactive@email.ru'
+    )
+    return active_users
+
+
+@pytest.fixture
+def mock_celery_tasks(mocker: MockerFixture) -> dict[str, mock.Mock]:
+    """Mocking Celery."""
+    mock_group = mocker.patch('server.apps.surveys.tasks.group')
+    mock_update_task = mocker.patch(
+        'server.apps.surveys.tasks.update_user_statistics_task'
+    )
+    mock_signature = mocker.Mock()
+    mock_update_task.s = mocker.Mock(return_value=mock_signature)
+    return {
+        'group': mock_group,
+        'update_task': mock_update_task,
+        'signature': mock_signature,
+    }
+
+
+@pytest.fixture
+def mock_statist_service(
+    mocker: MockerFixture, three_active_users_one_inactive: list[CustomUser]
+) -> mock.Mock:
+    """Mocking user statistics service."""
+    mock_service = mocker.patch(
+        'server.apps.surveys.usecases.statistics_service.UserStatisticsService'
+    )
+    mock_service.return_value.get_statistics_period.return_value = 5
+    mock_service.return_value.get_user_ids.return_value = [
+        user.id for user in three_active_users_one_inactive
+    ]
+    return mock_service

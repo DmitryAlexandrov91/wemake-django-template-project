@@ -8,6 +8,7 @@ from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
     SurveyResultRepo,
+    UserStatisticsRepo,
 )
 from server.apps.tgbot.handlers.start import StartHandlerService
 from server.apps.tgbot.logic.usecases import (
@@ -51,6 +52,7 @@ def _inject_infra(container: punq.Container) -> None:
     container.register(UserRepoSave)
     container.register(SurveyRepo)
     container.register(SurveyResultRepo)
+    container.register(UserStatisticsRepo)
 
 
 def _inject_auth_service(container: punq.Container) -> None:

@@ -2,25 +2,21 @@ from typing import override
 
 from django.contrib import admin
 from django.db.models import QuerySet
+from django.forms.models import ModelForm
 from django.http import HttpRequest
 
+from server.apps.surveys.admin_common import QuestionInline
 from server.apps.surveys.infra.repository import QuestionRepo
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
+    StatisticSettings,
     Suggestion,
     Survey,
-    SurveyQuestion,
     SurveyResult,
     UserAnswer,
 )
-
-
-class QuestionInline(admin.TabularInline[SurveyQuestion, Survey]):
-    """Question in Surveys."""
-
-    model = SurveyQuestion
-    extra = 1
+from server.apps.surveys.tasks import update_user_statistics_task
 
 
 @admin.register(Survey)
@@ -127,3 +123,27 @@ class SuggestionAdmin(admin.ModelAdmin[Suggestion]):
         'description',
     )
     list_select_related = ('user',)
+
+
+@admin.register(StatisticSettings)
+class StatisticSettingsAdmin(admin.ModelAdmin[StatisticSettings]):
+    """Admin class for statistic settings."""
+
+    list_display = ('survey_response_avg_period',)
+
+    @override
+    def save_model(
+        self,
+        request: HttpRequest,
+        settings_obj: StatisticSettings,
+        form: ModelForm[StatisticSettings],
+        change: bool,
+    ) -> None:
+        """Save new statistic settings starts update user statistics."""
+        super().save_model(request, settings_obj, form, change)
+        if (
+            change
+            and form.has_changed()
+            and 'survey_response_avg_period' in form.changed_data
+        ):
+            update_user_statistics_task.delay()

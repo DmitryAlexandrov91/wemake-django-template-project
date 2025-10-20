@@ -1,9 +1,12 @@
 from collections.abc import Callable
 from typing import Final
+from unittest import mock
 
 import pytest
 
-from server.apps.surveys.infra.repository import SurveyResultRepo
+from server.apps.surveys.infra.repository import (
+    SurveyResultRepo,
+)
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
@@ -39,32 +42,22 @@ def test_save_answer_creates_user_answer(
 
 @pytest.mark.django_db
 def test_advance_to_next_question(
-    surveys_survey_result_factory: Callable[[], SurveyResult],
-    surveys_question_factory: Callable[..., Question],
+    survey_result_with_three_questions: tuple[SurveyResult, list[Question]],
+    mock_statistics_mocks: dict[str, mock.Mock],
 ) -> None:
-    """Test advancing sets next question or None if last."""
-    survey_result = surveys_survey_result_factory()
-
-    questions = [
-        surveys_question_factory(),
-        surveys_question_factory(),
-        surveys_question_factory(),
-    ]
-    for question in questions:
-        question.surveys.add(survey_result.survey)
-        question.save()
-
-    survey_result.current_question = questions[0]
-    survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
-
+    """Test advancing sets next question or None if last and triggers task."""
+    mock_task = mock_statistics_mocks['mock_task']
+    survey_result, questions = survey_result_with_three_questions
     usecase = AdvanceToNextQuestion()
-    updated_result = usecase(survey_result)
+    updated_result: SurveyResult = usecase(survey_result)
     assert updated_result.current_question == questions[1]
-
     updated_result = usecase(updated_result)
     assert updated_result.current_question == questions[2]
-
-    assert usecase(updated_result).current_question is None
+    assert mock_task.call_count == 0
+    updated_result = usecase(updated_result)
+    assert updated_result.current_question is None
+    mock_task.assert_called_once_with(user_id=survey_result.user.pk)
+    assert survey_result.completed_questions == len(questions)
 
 
 @pytest.mark.django_db

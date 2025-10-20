@@ -22,7 +22,7 @@ def check_json_data(json_data: Any) -> None:
         'full_name',
         'tg_username',
         'department_name',
-        'survey_count',
+        'average_answer_sec',
         'edited_at',
         'email',
     }
@@ -41,7 +41,7 @@ def test_employee_serializer_fields(auth_user: Any, department: Any) -> None:
         'department_name',
         'email',
         'tg_username',
-        'survey_count',
+        'average_answer_sec',
         'edited_at',
     }
 

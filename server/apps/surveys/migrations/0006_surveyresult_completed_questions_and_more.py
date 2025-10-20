@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='surveyresult',
             name='completed_questions',
-            field=models.PositiveSmallIntegerField(default=0, null=True),
+            field=models.PositiveSmallIntegerField(default=0),
         ),
         migrations.AddField(
             model_name='surveyresult',

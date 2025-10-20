@@ -1,12 +1,12 @@
 from django.db import transaction
 
 from server.apps.surveys.models import Question, SurveyResult
+from server.apps.surveys.tasks import update_user_statistics_task
 
 
 class AdvanceToNextQuestion:
     """Use-case for moving survey forward after answering."""
 
-    @transaction.atomic
     def __call__(self, survey_result: SurveyResult) -> SurveyResult:
         """
         Advance the given survey result to the next question.
@@ -32,7 +32,14 @@ class AdvanceToNextQuestion:
             .order_by('id')
             .first()
         )
+        with transaction.atomic():
+            survey_result.current_question = next_question
+            survey_result.completed_questions += 1
+            survey_result.save(
+                update_fields=['current_question', 'completed_questions']
+            )
 
-        survey_result.current_question = next_question
-        survey_result.save(update_fields=['current_question'])
+        if not next_question and survey_result.completed_questions > 0:
+            update_user_statistics_task.delay(user_id=survey_result.user.pk)
+
         return survey_result

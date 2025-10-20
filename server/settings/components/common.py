@@ -279,3 +279,5 @@ SPECTACULAR_SETTINGS = {
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
     'SERVE_AUTHENTICATION': [],
 }
+
+DEFAULT_USER_STAT_PERIOD = 50

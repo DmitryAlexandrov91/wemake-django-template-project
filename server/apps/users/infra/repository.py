@@ -14,7 +14,7 @@ class UserRepo:
 
     def get_users_with_department(self) -> QuerySet[CustomUser]:
         """Base queryset with department selection."""
-        return CustomUser.objects.select_related(DEPARTMENT)
+        return CustomUser.objects.select_related('department', 'statistics')
 
     def get_all(self) -> QuerySet[CustomUser]:
         """Return all User instances from DB."""
@@ -79,3 +79,9 @@ class UserRepoSave:
         """Delete an existing user."""
         instance = CustomUser.objects.get(pk=pk)
         instance.delete()
+
+    def get_active_user_ids(self) -> QuerySet[CustomUser, int]:
+        """Gets active user id's only."""
+        return CustomUser.objects.filter(is_active=True).values_list(
+            'id', flat=True
+        )

@@ -208,7 +208,7 @@ class SurveyResult(models.Model):
         blank=True,
         related_name='+',
     )
-    completed_questions = models.PositiveSmallIntegerField(null=True, default=0)
+    completed_questions = models.PositiveSmallIntegerField(default=0)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     bot_state = models.CharField(

@@ -73,7 +73,9 @@ class EmployeeReadSerializer(serializers.ModelSerializer[CustomUser]):
     department_name = serializers.CharField(
         source='department.name', read_only=True
     )
-    survey_count = serializers.IntegerField(read_only=True)
+    average_answer_sec = serializers.IntegerField(
+        source='statistics.average_answer_sec', read_only=True
+    )
 
     class Meta:
         model = User
@@ -83,7 +85,7 @@ class EmployeeReadSerializer(serializers.ModelSerializer[CustomUser]):
             'department_name',
             EMAIL_ATTR,
             TG_ID_ATTR,
-            'survey_count',
+            'average_answer_sec',
             'edited_at',
         ]
 

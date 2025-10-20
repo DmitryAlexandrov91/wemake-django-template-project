@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any, final
 
 from django.db import models, transaction
@@ -7,10 +8,12 @@ from rest_framework.request import Request
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
+    StatisticSettings,
     Survey,
     SurveyQuestion,
     SurveyResult,
     UserAnswer,
+    UserStatistics,
 )
 from server.apps.users.models import CustomUser
 
@@ -301,3 +304,48 @@ class SurveyResultRepo:
             user_answer.selected_options.set(selected_options)
 
         return user_answer
+
+    def get_user_survey_results_aggr(
+        self, user: CustomUser, limit: int
+    ) -> tuple[timedelta, int]:
+        """Returns the aggregated responded questions and time for user."""
+        res = (
+            user.survey_result.filter(
+                current_question__isnull=True, completed_questions__gt=0
+            )
+            .order_by('-updated_at')[:limit]
+            .aggregate(
+                total_time=models.Sum(
+                    models.ExpressionWrapper(
+                        models.F('updated_at') - models.F('started_at'),
+                        output_field=models.DurationField(),
+                    )
+                ),
+                total_questions=models.Sum('completed_questions'),
+            )
+        )
+        return res['total_time'], res['total_questions']
+
+
+@final
+class UserStatisticsRepo:
+    """Repository for user statistics."""
+
+    def get_stat_settings(self) -> StatisticSettings:
+        """Getting statistics settings."""
+        stat_settings, _ = StatisticSettings.objects.get_or_create(pk=1)
+        return stat_settings
+
+    def get_statistics(self, user: CustomUser) -> UserStatistics:
+        """Getting statistics for the user."""
+        user_statistics, _ = UserStatistics.objects.get_or_create(user=user)
+        return user_statistics
+
+    def save_statistics(
+        self, user: CustomUser, avg_answer_sec: int
+    ) -> UserStatistics:
+        """Save user statistics."""
+        instance, _ = UserStatistics.objects.get_or_create(user=user)
+        instance.average_answer_sec = avg_answer_sec
+        instance.save()
+        return instance
