@@ -14,7 +14,8 @@ from server.apps.tgbot.logic.usecases import (
     HandleStartCommandUseCase,
     ProcessTelegramUpdate,
 )
-from server.apps.tgbot.services import TelegramService
+from server.apps.tgbot.services.keyboard_builder import KeyboardBuilderService
+from server.apps.tgbot.services.services import TelegramService
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
 from server.settings.components import tgbot as tg_settings
@@ -34,6 +35,7 @@ def _inject_tg(container: punq.Container) -> None:
     container.register(ProcessTelegramUpdate)
     container.register(StartHandlerService)
     container.register(HandleStartCommandUseCase)
+    container.register(KeyboardBuilderService)
 
 
 def _inject_department_repo(container: punq.Container) -> None:

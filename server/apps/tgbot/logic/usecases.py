@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from telebot import TeleBot, types
 
 from server.apps.surveys.infra.repository import SurveyRepo, SurveyResultRepo
-from server.apps.tgbot.services import TelegramService
+from server.apps.tgbot.services.services import TelegramService
 from server.apps.users.infra.repository import UserRepo
 
 
