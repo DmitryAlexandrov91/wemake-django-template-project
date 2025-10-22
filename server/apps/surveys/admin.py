@@ -1,12 +1,11 @@
 from typing import override
 
 from django.contrib import admin
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
 from django.forms.models import ModelForm
 from django.http import HttpRequest
 
 from server.apps.surveys.admin_common import QuestionInline
-from server.apps.surveys.infra.repository import QuestionRepo
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
@@ -50,15 +49,18 @@ class QuestionAdmin(admin.ModelAdmin[Question]):
     @admin.display(description='Surveys')
     def get_surveys(self, question: Question) -> str:
         """Get surveys."""
-        repo = QuestionRepo()
-        question = repo.get_by_pk(question.pk)  # with prefetch surveys
         return ', '.join(survey.title for survey in question.surveys.all())
 
     @override
     def get_queryset(self, request: HttpRequest) -> QuerySet[Question]:
         """Get queryset with prefetch."""
-        qs = super().get_queryset(request)
-        return qs.prefetch_related('surveys')
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                Prefetch('surveys', queryset=Survey.objects.only('title'))
+            )
+        )
 
 
 @admin.register(AnswerOption)
