@@ -146,6 +146,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer[CustomUser]):
             EMAIL_ATTR,
             'department_name',
             TG_ID_ATTR,
+            'to_inactivate',
         ]
 
     @override

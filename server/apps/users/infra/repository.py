@@ -36,8 +36,10 @@ class UserRepo:
         self, order_field: str | None
     ) -> QuerySet[CustomUser]:
         """Get all employees with survey_count."""
-        queryset = CustomUser.objects.select_related(DEPARTMENT).annotate(
-            survey_count=Count('survey_result')
+        queryset = (
+            CustomUser.objects.select_related(DEPARTMENT)
+            .prefetch_related('statistics')
+            .annotate(survey_count=Count('survey_result'))
         )
         if order_field:
             return queryset.order_by(order_field)
