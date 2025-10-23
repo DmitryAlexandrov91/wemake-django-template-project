@@ -209,8 +209,11 @@ PERMISSIONS_POLICY: dict[str, str | list[str]] = {}
 EMAIL_TIMEOUT = 5
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'server.apps.users.auth.CookieJWTAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': (
         'server.apps.surveys.paginators.CustomPaginator'
