@@ -25,6 +25,7 @@ def check_json_data(json_data: Any) -> None:
         'average_answer_sec',
         'edited_at',
         'email',
+        'to_inactivate',
     }
 
 
@@ -43,6 +44,7 @@ def test_employee_serializer_fields(auth_user: Any, department: Any) -> None:
         'tg_username',
         'average_answer_sec',
         'edited_at',
+        'to_inactivate',
     }
 
 

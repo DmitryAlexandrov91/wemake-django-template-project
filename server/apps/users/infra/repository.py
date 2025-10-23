@@ -75,10 +75,26 @@ class UserRepoSave:
         user.refresh_from_db()
         return user
 
-    def delete(self, pk: int) -> None:
-        """Delete an existing user."""
-        instance = CustomUser.objects.get(pk=pk)
-        instance.delete()
+    def mark_to_inactivate(self, pk: int) -> None:
+        """Prepare user for a delayed inactivation."""
+        user = CustomUser.objects.get(pk=pk)
+        user.to_inactivate = True
+        user.save()
+
+    def get_all_to_inactivate_ids(self) -> list[int]:
+        """Returns all users for inactivation."""
+        return list(
+            CustomUser.objects.filter(
+                is_active=True,
+                to_inactivate=True,
+            ).values_list('id', flat=True)
+        )
+
+    def mark_inactive(self, pk: int) -> None:
+        """Inactivate single user."""
+        user = CustomUser.objects.get(pk=pk)
+        user.is_active = False
+        user.save()
 
     def get_active_user_ids(self) -> QuerySet[CustomUser, int]:
         """Gets active user id's only."""

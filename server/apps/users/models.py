@@ -127,6 +127,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         related_name='users',
         help_text="Select the user's department (optional): ",
     )
+    to_inactivate = models.BooleanField('Inactivated soon', default=False)
     is_active = models.BooleanField(
         'Active status',
         default=True,

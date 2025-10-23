@@ -27,6 +27,7 @@ def test_update_employee(auth_user: CustomUser, auth_client: APIClient) -> None:
         'tg_username',
         'average_answer_sec',
         'edited_at',
+        'to_inactivate',
     }
 
     assert response_data[FULL_NAME_ATTR] != auth_user.full_name

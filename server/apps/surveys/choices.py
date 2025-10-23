@@ -15,6 +15,7 @@ class SurveyStatus(models.TextChoices):
     DRAFT = 'draft', 'Draft'
     ACTIVE = 'active', 'Active'
     COMPLETED = 'completed', 'Completed'
+    ARCHIVED = 'archived', 'Archived'
 
 
 class SurveyBotState(models.TextChoices):

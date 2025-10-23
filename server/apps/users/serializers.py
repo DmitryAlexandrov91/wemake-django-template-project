@@ -83,6 +83,7 @@ class EmployeeReadSerializer(serializers.ModelSerializer[CustomUser]):
             'id',
             FULL_NAME_ATTR,
             'department_name',
+            'to_inactivate',
             EMAIL_ATTR,
             TG_ID_ATTR,
             'average_answer_sec',

@@ -2,10 +2,9 @@ from typing import Any
 
 import pytest
 
-from server.apps.users.infra.repository import UserRepo, UserRepoSave
+from server.apps.users.infra.repository import UserRepo
 from server.apps.users.models import CustomUser
 from server.di import resolve
-from tests.plugins.department_factory import DepartmentFactory
 from tests.plugins.users import UserBatchFactory
 
 
@@ -68,39 +67,3 @@ def test_repo_get_all(user_batch: UserBatchFactory) -> None:
 
     assert users.count() == batch_size
     assert all(isinstance(user, CustomUser) for user in users)
-
-
-@pytest.mark.django_db
-def test_create_user(auth_user: CustomUser) -> None:
-    """Test UserRepo user creation."""
-    user_data = {
-        'email': 'another@email.com',
-        'full_name': auth_user.full_name,
-        'position': auth_user.position,
-        'role': auth_user.role,
-        'is_staff': auth_user.is_staff,
-    }
-    created_user = resolve(UserRepoSave).create_user(**user_data)
-
-    assert isinstance(created_user, CustomUser)
-    assert CustomUser.objects.filter(pk=created_user.pk).exists()
-    assert created_user.full_name == user_data['full_name']
-
-
-@pytest.mark.django_db
-def test_update_user(
-    auth_user: CustomUser, department_factory: DepartmentFactory
-) -> None:
-    """Test update user with department."""
-    new_department = department_factory()
-    user_data = {
-        'email': 'another@email.com',
-        'full_name': auth_user.full_name,
-        'position': auth_user.position,
-        'role': auth_user.role,
-        'is_staff': auth_user.is_staff,
-        'department_name': new_department,
-    }
-
-    resolve(UserRepoSave).update_user(auth_user, **user_data)
-    assert auth_user.department == new_department

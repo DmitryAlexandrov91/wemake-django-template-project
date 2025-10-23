@@ -15,7 +15,7 @@ def test_delete_employee(
 ) -> None:
     """Test deleting an employee by primary key."""
     response = auth_client.delete(f'{EMPLOYEE_URL}/{active_user.id}')
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db

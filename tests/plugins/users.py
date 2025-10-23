@@ -34,6 +34,7 @@ class _UserFactoryParams(TypedDict, total=False):
     department: Any
     survey_count: int
     edited_at: str
+    to_inactivate: bool
 
 
 @pytest.fixture
@@ -52,10 +53,10 @@ def user_batch(
 ) -> UserBatchFactory:
     """Return a factory that creates `batch_size` User instances."""
 
-    def factory(batch_size: int) -> list[CustomUser]:
+    def factory(batch_size: int, **kwargs: Any) -> list[CustomUser]:
         return [
             user_factory(
-                username=f'user{user_number}',
+                username=f'user{user_number}',  # noqa: WPS226
                 email=f'user{user_number}@example.ru',
             )
             for user_number in range(batch_size)
@@ -109,3 +110,16 @@ def admin_user(db) -> Any:  # type: ignore[no-untyped-def]
     """Fixture for admin user."""
     user = get_user_model()
     return user.objects.create_superuser('admin', 'password')
+
+
+@pytest.fixture
+def three_users_to_inactivate(user_factory: UserFactory) -> list[CustomUser]:
+    """Fixture that creates three users with to_inactivate=True."""
+    return [
+        user_factory(
+            username=f'user{user_number}',
+            email=f'user{user_number}@example.ru',  # noqa: WPS226
+            to_inactivate=True,
+        )
+        for user_number in range(3)
+    ]

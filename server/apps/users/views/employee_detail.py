@@ -39,7 +39,7 @@ class EmployeeDetailView(APIView):
     def delete(self, request: Request, pk: int) -> Response:
         """Delete employee by primary key."""
         try:
-            resolve(UserRepoSave).delete(pk)
+            resolve(UserRepoSave).mark_to_inactivate(pk)
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)

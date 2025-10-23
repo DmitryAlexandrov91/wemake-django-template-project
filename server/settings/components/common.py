@@ -208,6 +208,7 @@ PERMISSIONS_POLICY: dict[str, str | list[str]] = {}
 
 EMAIL_TIMEOUT = 5
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'server.apps.users.auth.CookieJWTAuthentication',
