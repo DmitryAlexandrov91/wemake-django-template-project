@@ -4,8 +4,6 @@ from typing import Any
 from celery import Celery
 from celery.schedules import crontab
 
-from server.apps.users.tasks import inactivate_marked_users_task
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
 
 
@@ -19,6 +17,10 @@ app.autodiscover_tasks()
 @app.on_after_finalize.connect  # type: ignore[misc]
 def setup_periodic_tasks(sender: Celery, **kwargs: object) -> None:
     """Create the mid-night users inactivation task."""
+    from server.apps.users.tasks import (  # noqa: PLC0415
+        inactivate_marked_users_task,
+    )
+
     _create_periodic_task(
         sender, crontab(minute=0, hour=0), inactivate_marked_users_task
     )
