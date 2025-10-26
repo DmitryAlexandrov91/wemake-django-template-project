@@ -1,6 +1,5 @@
 import punq
 from django.conf import LazySettings, settings
-from telebot import TeleBot
 
 from server.apps.company.infra.repository import DepartmentRepo
 from server.apps.surveys.infra.repository import (
@@ -8,18 +7,12 @@ from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
     SurveyResultRepo,
+    UserAnswerRepo,
     UserStatisticsRepo,
 )
-from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.logic.usecases import (
-    HandleStartCommandUseCase,
-    ProcessTelegramUpdate,
-)
-from server.apps.tgbot.services.keyboard_builder import KeyboardBuilderService
-from server.apps.tgbot.services.services import TelegramService
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
-from server.settings.components import tgbot as tg_settings
+from server.di.tg import _inject_handlers, _inject_keyboards, _inject_tg
 
 
 def _inject_settings(container: punq.Container) -> None:
@@ -27,32 +20,21 @@ def _inject_settings(container: punq.Container) -> None:
     container.register(LazySettings, instance=settings, scope='singleton')
 
 
-def _inject_tg(container: punq.Container) -> None:
-    """Register TG."""
-    container.register(
-        TeleBot, instance=TeleBot(tg_settings.BOT_TOKEN), scope='singleton'
-    )
-    container.register(TelegramService)
-    container.register(ProcessTelegramUpdate)
-    container.register(StartHandlerService)
-    container.register(HandleStartCommandUseCase)
-    container.register(KeyboardBuilderService)
-
-
-def _inject_department_repo(container: punq.Container) -> None:
-    """Register DepartmentRepo."""
-    container.register(DepartmentRepo)
-
-
 def _inject_infra(container: punq.Container) -> None:
     """Register repositories."""
-    container.register(QuestionRepo)
-    container.register(AnswerOptionRepo)
     container.register(UserRepo)
     container.register(UserRepoSave)
+    container.register(DepartmentRepo)
+    container.register(UserAnswerRepo)
+    container.register(UserStatisticsRepo)
+
+
+def _inject_survey_infra(container: punq.Container) -> None:
+    """Register survey and relation repositories."""
     container.register(SurveyRepo)
     container.register(SurveyResultRepo)
-    container.register(UserStatisticsRepo)
+    container.register(QuestionRepo)
+    container.register(AnswerOptionRepo)
 
 
 def _inject_auth_service(container: punq.Container) -> None:
@@ -64,10 +46,12 @@ def create_container() -> punq.Container:
     """Create container."""
     container = punq.Container()
     _inject_tg(container)
-    _inject_department_repo(container)
     _inject_infra(container)
     _inject_auth_service(container)
     _inject_settings(container)
+    _inject_survey_infra(container)
+    _inject_handlers(container)
+    _inject_keyboards(container)
     return container
 
 

@@ -6,7 +6,9 @@ from django.http import (
     HttpResponse,
     HttpResponseForbidden,
 )
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 from server.apps.tgbot.logic.usecases import ProcessTelegramUpdate
 from server.di import resolve
@@ -14,6 +16,7 @@ from server.di import resolve
 settings = resolve(LazySettings)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class TelegramWebhookView(View):
     """Webhook telegram responses from bot."""
 

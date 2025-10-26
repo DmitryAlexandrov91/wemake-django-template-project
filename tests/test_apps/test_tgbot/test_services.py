@@ -1,26 +1,33 @@
-from typing import Any
-
-import pytest
 from telebot import types
 
-from server.apps.tgbot.services.keyboard_builder import KeyboardBuilderService
+from server.apps.tgbot.callbacks import answer_callback
+from server.apps.tgbot.services.keyboard_builder import (
+    ButtonBuilderService,
+    KeyboardBuilderService,
+)
 from server.di import resolve
 
 
-@pytest.mark.parametrize(
-    ('answers', 'question_id', 'row_width'),
-    [
-        (['Yes', 'No'], 1, 2),
-        (list(range(1, 10)), 5, 3),
-    ],
-)
-def test_build_multiple_choice_keyboard(
-    answers: list[Any], question_id: int, row_width: int
-) -> None:
-    """Test that multiple choice keyboard is built correctly."""
-    builder = resolve(KeyboardBuilderService)
-    keyboard = builder(
-        answers=answers, question_id=question_id, row_width=row_width
+def test_keyboar_builder_service() -> None:
+    """Test that keyboard builder service work correctly."""
+    keyboard = resolve(KeyboardBuilderService)()
+    assert isinstance(keyboard, types.InlineKeyboardMarkup)
+
+
+def test_button_builder_service() -> None:
+    """Test that button builder service work correctly."""
+    keyboard = resolve(KeyboardBuilderService)()
+    assert keyboard.keyboard == []
+
+    resolve(ButtonBuilderService)(
+        text='First_Button',
+        keyboard=keyboard,
+        callback=answer_callback,
+        callback_data={'answer_id': 1, 'survey_result_id': 1},
     )
 
-    assert isinstance(keyboard, types.InlineKeyboardMarkup)
+    assert keyboard.keyboard != []
+    added_button = keyboard.keyboard[0][0]
+    assert isinstance(added_button, types.InlineKeyboardButton)
+    assert added_button.text == 'First_Button'
+    assert added_button.callback_data == 'edit:1:1'

@@ -305,6 +305,23 @@ class SurveyResultRepo:
 
         return user_answer
 
+
+@final
+class UserAnswerRepo:
+    """Repository for user answers."""
+
+    def get_answers_by_survey_result(
+        self,
+        survey_result: SurveyResult,
+    ) -> models.QuerySet[UserAnswer]:
+        """Returns all answers for current survey result."""
+        return (
+            UserAnswer.objects.filter(survey_result=survey_result)
+            .select_related('survey_result', 'question')
+            .prefetch_related('selected_options')
+            .order_by('pk')
+        )
+
     def get_user_survey_results_aggr(
         self, user: CustomUser, limit: int
     ) -> tuple[timedelta, int]:
@@ -325,6 +342,13 @@ class SurveyResultRepo:
             )
         )
         return res['total_time'], res['total_questions']
+
+    def edit_text(self, answer_id: int, new_text_answer: str) -> UserAnswer:
+        """Edit UserAnsert text."""
+        instance = UserAnswer.objects.get(pk=answer_id)
+        instance.text_answer = new_text_answer
+        instance.save()
+        return instance
 
 
 @final

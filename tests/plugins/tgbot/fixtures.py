@@ -31,10 +31,11 @@ class _Chat(BaseModel):
 class MockMessage(BaseModel):
     """Message test DTO."""
 
+    id: int = Field(gt=0)
     message_id: int = Field(gt=0)
     from_user: _User | None
     chat: _Chat
-    text: str | None = None
+    text: str | None
     date: int
 
 
@@ -52,10 +53,53 @@ class TGApiAnswer(BaseModel):
     ok: bool = True
 
 
+class MockCallbackQuery(BaseModel):
+    """CallbackQuery test DTO."""
+
+    id: str = Field(min_length=1)
+    from_user: _User
+    message: MockMessage
+    chat_instance: str = Field(min_length=1)
+    data: str | None = None  # noqa: WPS110
+    inline_message_id: str
+
+
+class MockUpdateWithCallbackQuery(BaseModel):
+    """Update with CallbackQuery test DTO."""
+
+    update_id: int
+    callback_query: MockCallbackQuery
+
+
+class TGApiCallbackAnswer(BaseModel):
+    """TG Api callback answer test DTO."""
+
+    result: MockUpdateWithCallbackQuery  # noqa: WPS110
+    ok: bool = True
+
+
 @pytest.fixture
 def mock_bot_send_message(mocker: MockerFixture) -> MagicMock:
     """Mock the `telebot.TeleBot.send_message` method."""
     return mocker.patch('telebot.TeleBot.send_message')
+
+
+@pytest.fixture
+def mock_bot_edit_message_text(mocker: MockerFixture) -> MagicMock:
+    """Mock the `telebot.TeleBot.edit_message_text` method."""
+    return mocker.patch('telebot.TeleBot.edit_message_text')
+
+
+@pytest.fixture
+def mock_bot_delete_message(mocker: MockerFixture) -> MagicMock:
+    """Mock the `telebot.TeleBot.delete_message` method."""
+    return mocker.patch('telebot.TeleBot.delete_message')
+
+
+@pytest.fixture
+def mock_bot_answer_callback_query(mocker: MockerFixture) -> MagicMock:
+    """Mock the `telebot.TeleBot.answer_callback_query` method."""
+    return mocker.patch('telebot.TeleBot.answer_callback_query')
 
 
 @final
@@ -75,6 +119,15 @@ class _UserFactory(ModelFactory[_User]):
     __set_as_default_factory_for_type__ = True
     __check_model__ = False
     __allow_none_optionals__ = False
+
+
+@final
+@register_fixture(name='tg_callback_query_factory')
+class CallbackQueryFactory(ModelFactory[MockCallbackQuery]):
+    """Factory to create custom tg callback queries."""
+
+    __set_as_default_factory_for_type__ = True
+    __check_model__ = False
 
 
 @pytest.fixture
@@ -103,3 +156,16 @@ def tg_api_answer(
     If you need dict obj, use model_dump() method.
     """
     return tg_api_answer_factory.build()
+
+
+@pytest.fixture
+def mock_callback_query(
+    tg_callback_query_factory: CallbackQueryFactory,
+    tg_message_user_factory: _UserFactory,
+    message_with_user: MockMessage,
+) -> MockCallbackQuery:
+    """Get mock callback query with message and user."""
+    return tg_callback_query_factory.build(
+        from_user=tg_message_user_factory.build(),
+        message=message_with_user,
+    )

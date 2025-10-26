@@ -38,7 +38,7 @@ def test_start_handler_send_message(
         email='user1@mail.com',
         is_active=True,
         is_staff=False,
-        tg_username=tg_user.username,
+        tg_username=f'@{tg_user.username}',
         department=department,
     )
     survey_params = {

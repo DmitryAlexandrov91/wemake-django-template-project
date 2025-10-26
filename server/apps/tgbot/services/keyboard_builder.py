@@ -3,6 +3,8 @@ from typing import Any
 
 from telebot import types
 
+from server.apps.tgbot.callbacks import CallbackFactory
+
 
 @dataclass(frozen=True, slots=True)
 class KeyboardBuilderService:
@@ -10,18 +12,26 @@ class KeyboardBuilderService:
 
     def __call__(
         self,
-        answers: list[Any],
-        question_id: int,
-        row_width: int = 2,
+        row_width: int = 1,
     ) -> types.InlineKeyboardMarkup:
-        """Create inline-keyboard with answers."""
-        keyboard = types.InlineKeyboardMarkup(row_width=row_width)  # type: ignore[no-untyped-call]
-        buttons = [
-            types.InlineKeyboardButton(
-                text=answer,
-                callback_data=f'answer:{question_id}:{idx}',
-            )
-            for idx, answer in enumerate(answers, start=1)
-        ]
-        keyboard.add(*buttons)
-        return keyboard
+        """Create inline-keyboard."""
+        return types.InlineKeyboardMarkup(row_width=row_width)  # type: ignore[no-untyped-call]
+
+
+@dataclass(frozen=True, slots=True)
+class ButtonBuilderService:
+    """Service to adding buttons for inline keyboard."""
+
+    def __call__(
+        self,
+        text: str,
+        keyboard: types.InlineKeyboardMarkup,
+        callback: CallbackFactory,
+        callback_data: dict[str, Any],
+    ) -> None:
+        """Add button for keyboard."""
+        button = types.InlineKeyboardButton(
+            text=text,
+            callback_data=callback.factory.new(**callback_data),
+        )
+        keyboard.add(button)

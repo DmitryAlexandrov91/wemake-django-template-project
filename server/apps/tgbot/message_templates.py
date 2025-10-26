@@ -11,3 +11,8 @@ ANSWER_TEMPLATE = """
 Ваш ответ:
 <i>{answer_text}</i>
 """
+
+NO_ANSWERS = 'Ответов нет'
+EDIT_ANSWER_TEXT = 'Изменить ответ {answer_number}'
+PROCESS_NEW_ANSWER_TEXT = 'Введите новый ответ:'
+CANSEL_EDIT = 'Отмена'

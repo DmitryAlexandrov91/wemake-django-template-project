@@ -1,5 +1,5 @@
 from server.apps.surveys.infra.repository import (
-    SurveyResultRepo,
+    UserAnswerRepo,
     UserStatisticsRepo,
 )
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
@@ -16,7 +16,7 @@ class UserStatisticsService:
         """Updates statistics fot one user."""
         user = resolve(UserRepo).get_by_pk(pk=user_id)
         total_time, questions = resolve(
-            SurveyResultRepo
+            UserAnswerRepo
         ).get_user_survey_results_aggr(user=user, limit=limit)
         seconds_per_question = (
             int(total_time.total_seconds() // questions)
