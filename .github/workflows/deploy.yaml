@@ -107,6 +107,7 @@ jobs:
       DOCKER_TAG_WEB: ${{ vars.DOCKERHUB_IMAGE }}:kk-back-${{ github.run_id }}
       SECRET_DJANGO_SECRET_KEY: ${{ secrets.SECRET_DJANGO_SECRET_KEY }}
       SECRET_TG_BOT_TOKEN: ${{ secrets.SECRET_TG_BOT_TOKEN }}
+      SECRET_WEBHOOK_SECRET: ${{ secrets.SECRET_WEBHOOK_SECRET }}
       SECRET_POSTGRES_PASSWORD: ${{ secrets.SECRET_POSTGRES_PASSWORD }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -135,6 +136,8 @@ jobs:
             --strict SECRET_DJANGO_SECRET_KEY \
             --strict SECRET_TG_BOT_TOKEN \
             --strict SECRET_POSTGRES_PASSWORD \
+            --strict SECRET_TG_BOT_TOKEN \
+            --strict SECRET_WEBHOOK_SECRET \
           > config/.env
 
       - name: Copy deploy files to server

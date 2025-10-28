@@ -60,7 +60,9 @@ https://{$DOMAIN_NAME}:8000 {
   handle /admin/* {
           reverse_proxy web:8000
   }
-
+  handle /webhook/* {
+          reverse_proxy web:8000
+  }
 
   # Serve Frontend static files
   handle {

@@ -10,3 +10,4 @@ services:
       - ./docker/caddy/Caddyfile.dev:/etc/caddy/Caddyfile
     ports: !override
       - "8000:8000"
+      - "8443:8000"
