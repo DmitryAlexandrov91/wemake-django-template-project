@@ -1,11 +1,13 @@
+# flake8: noqa: WPS226
 from http import HTTPStatus
 
 import pytest
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from server.apps.surveys.models import Question
+from server.apps.surveys.models import Question, Survey
 
 QUESTION_TEXT = 'text'
 
@@ -28,19 +30,42 @@ def test_patch_success(
 
 
 @pytest.mark.django_db
-def test_delete_question(
+def test_mark_question_to_delete(
     consent_given_question: Question,
     auth_client: APIClient,
 ) -> None:
     """Test deleting an question by primary key."""
     url = reverse('questions-detail', kwargs={'pk': consent_given_question.pk})
     response = auth_client.delete(url)
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
+    consent_given_question.refresh_from_db()
+    assert consent_given_question.to_delete is True
 
 
 @pytest.mark.django_db
-def test_delete_not_found_question(auth_client: APIClient) -> None:
-    """Test that deleting a nonexistent question returns 404."""
+def test_mark_to_delete_nonexistent_question(auth_client: APIClient) -> None:
+    """Test that deleting a nonexistent question gives error."""
     url = reverse('questions-detail', kwargs={'pk': 1})
+    with pytest.raises(ObjectDoesNotExist):
+        auth_client.delete(url)
+
+
+@pytest.mark.django_db
+def test_mark_survey_to_delete(
+    survey: Survey,
+    auth_client: APIClient,
+) -> None:
+    """Test mark survey to delete by primary key."""
+    url = reverse('surveys-detail', kwargs={'pk': survey.pk})
     response = auth_client.delete(url)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.status_code == status.HTTP_200_OK
+    survey.refresh_from_db()
+    assert survey.to_delete is True
+
+
+@pytest.mark.django_db
+def test_mark_to_delete_nonexistent_survey(auth_client: APIClient) -> None:
+    """Test that deleting a nonexistent question gives error."""
+    url = reverse('surveys-detail', kwargs={'pk': 1})
+    with pytest.raises(ObjectDoesNotExist):
+        auth_client.delete(url)

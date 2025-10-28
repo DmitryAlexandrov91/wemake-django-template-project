@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from datetime import date
-from typing import TypedDict, Unpack
+from typing import Any, TypedDict, Unpack
 
 import pytest
 from django.urls import reverse
@@ -15,6 +15,7 @@ from server.apps.surveys.models import (
 )
 from server.apps.users.models import CustomUser
 from tests.plugins.fakery import FakeryM
+from tests.plugins.surveys import QuestionFactory
 
 GET_ALL_SURVEYS_URL = reverse('surveys-list')
 CREATE_SURVEY_URL = reverse('surveys-list')
@@ -35,6 +36,7 @@ class _SurveyFactoryParams(TypedDict, total=False):
     end_date: date
     department: Department
     is_favorite: bool
+    to_delete: bool
 
 
 class _SurveyResultFactoryParams(TypedDict, total=False):
@@ -99,4 +101,34 @@ def two_surveys(surveys_survey_factory: SurveyFactory) -> list[Survey]:
     return [
         surveys_survey_factory(title='Survey 1', description='Desription1'),
         surveys_survey_factory(title='Survey 2', description='Description2'),
+    ]
+
+
+@pytest.fixture
+def two_surveys_to_delete(
+    surveys_survey_factory: SurveyFactory,
+) -> list[Survey]:
+    """Fixture for two surveys with to_delete=True."""
+    return [
+        surveys_survey_factory(
+            title='Survey 1', description='Desription1', to_delete=True
+        ),
+        surveys_survey_factory(
+            title='Survey 2', description='Description2', to_delete=True
+        ),
+    ]
+
+
+@pytest.fixture
+def question(surveys_question_factory: QuestionFactory) -> Any:
+    """Create one question."""
+    return surveys_question_factory(text='Question1')
+
+
+@pytest.fixture
+def two_questions_to_delete(surveys_question_factory: QuestionFactory) -> Any:
+    """Create two questions with to_delete=True."""
+    return [
+        surveys_question_factory(text='Question1', to_delete=True),
+        surveys_question_factory(text='Question2', to_delete=True),
     ]

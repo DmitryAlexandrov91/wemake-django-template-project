@@ -23,7 +23,7 @@ class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
 
     class Meta:
         model = Department
-        fields = ('id', 'department_name')
+        fields = ('id', 'department_name', 'to_delete')
 
 
 class UserSerializer(serializers.ModelSerializer[CustomUser]):
@@ -43,4 +43,10 @@ class DepartmentSerializer(serializers.ModelSerializer[Department]):
 
     class Meta:
         model = Department
-        fields = ('id', 'department_name', 'employees_count', 'employees')
+        fields = (
+            'id',
+            'department_name',
+            'to_delete',
+            'employees_count',
+            'employees',
+        )

@@ -83,3 +83,11 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
     def get_repository(self) -> DepartmentRepo:
         """Return an instance of DepartmentRepo."""
         return resolve(DepartmentRepo)
+
+    @override
+    def destroy(self, request: Request, pk: int) -> Response:
+        """Mark department for deletion by primary key."""
+        repo = resolve(DepartmentRepo)
+        department = repo.get_by_pk(pk)
+        repo.update_department(department=department, to_delete=True)
+        return Response(status=status.HTTP_200_OK)

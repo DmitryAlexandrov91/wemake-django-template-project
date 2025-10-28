@@ -24,6 +24,7 @@ class Survey(models.Model):
         related_name='surveys',
     )
     is_favorite = models.BooleanField(default=False)
+    to_delete = models.BooleanField(default=0)
 
     status = models.CharField(
         max_length=DATA_LENGHT,
@@ -92,6 +93,7 @@ class Question(models.Model):
         choices=QuestionType.choices,
     )
     is_favorite = models.BooleanField(default=False)
+    to_delete = models.BooleanField(default=0)
 
     class Meta:
         ordering = ('id',)

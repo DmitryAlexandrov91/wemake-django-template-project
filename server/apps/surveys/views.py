@@ -5,7 +5,11 @@ from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from server.apps.surveys.infra.repository import QuestionRepo, SurveyRepo
+from server.apps.surveys.infra.repository import (
+    QuestionRepo,
+    SurveyRepo,
+    SurveySaveRepo,
+)
 from server.apps.surveys.models import Question, Survey
 from server.apps.surveys.paginators import CustomPaginator
 from server.apps.surveys.schemas import question_viewset_schema
@@ -77,19 +81,18 @@ class QuestionViewSet(  # noqa: WPS215
 
     @override
     def destroy(self, request: Request, pk: int) -> Response:
-        """Delete question by primary key."""
-        try:
-            resolve(QuestionRepo).delete(pk)
-        except Question.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        """Mark question for deletion by primary key."""
+        repo = resolve(QuestionRepo)
+        question = repo.get_by_pk(pk=pk)
+        repo.update_question(question=question, to_delete=True)
+        return Response(status=status.HTTP_200_OK)
 
 
 class SurveyViewSet(viewsets.ModelViewSet[Survey]):
     """ViewSet for Survey model."""
 
     pagination_class = CustomPaginator
-    http_method_names = ('get', 'post', 'patch')
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     @override
     def get_serializer_class(
@@ -145,3 +148,10 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
             SurveyListSerializer(updated_survey).data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @override
+    def destroy(self, request: Request, pk: int) -> Response:
+        """Mark survey for deletion by primary key."""
+        survey = resolve(SurveySaveRepo).get_by_pk(pk)
+        resolve(SurveyRepo).update_survey(survey=survey, to_delete=True)
+        return Response(status=status.HTTP_200_OK)

@@ -75,6 +75,7 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
             'id',
             TEXT_ATTR,
             'type',
+            'to_delete',
             'user_answers',
             'answer_options',
             'surveys',
@@ -93,7 +94,14 @@ class QuestionShortSerializer(SerializerIDFieldMixin[Question]):
 
     class Meta:
         model = Question
-        fields = ('id', TEXT_ATTR, QUESTION_TYPE_ATTR, 'is_favorite', 'surveys')
+        fields = (
+            'id',
+            TEXT_ATTR,
+            QUESTION_TYPE_ATTR,
+            'is_favorite',
+            'to_delete',
+            'surveys',
+        )
 
 
 class DepartmentListSerializer(SerializerIDFieldMixin[Department]):
@@ -131,6 +139,7 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
+            'to_delete',
             'question_count',
             'finished_count',
             'questions',

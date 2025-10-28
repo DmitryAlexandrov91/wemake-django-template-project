@@ -24,6 +24,7 @@ class _DepartmentFactoryParams(TypedDict, total=False):
     name: str
     description: str
     head: Any
+    to_delete: bool
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def department_batch(
 ) -> DepartmentBatchFactory:
     """Return a factory that creates `batch_size` Department instances."""
 
-    def factory(batch_size: int) -> list[Department]:
+    def factory(batch_size: int, **kwargs: Any) -> list[Department]:
         return [
             department_factory(name=f'Dep{dep_number}')
             for dep_number in range(batch_size)
@@ -55,3 +56,17 @@ def department_batch(
 def department(department_factory: DepartmentFactory) -> Department:
     """Return a single Department instance created."""
     return department_factory(name='Unique Department')
+
+
+@pytest.fixture
+def three_departments_to_delete(
+    department_factory: DepartmentFactory,
+) -> list[Department]:
+    """Fixture that creates three departments with to_delete=True."""
+    return [
+        department_factory(
+            name=f'Dep{department_number}',
+            to_delete=True,
+        )
+        for department_number in range(3)
+    ]

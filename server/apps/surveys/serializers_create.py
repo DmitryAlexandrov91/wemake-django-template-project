@@ -37,6 +37,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
             TEXT_ATTR,
             QUESTION_TYPE_ATTR,
             IS_FAVORITE_ATTR,
+            'to_delete',
         )
         read_only_fields = (ID_FIELD,)
         extra_kwargs = {  # noqa: RUF012
@@ -93,6 +94,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
+            'to_delete',
             'questions',
             'department_name',
         )
@@ -133,6 +135,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
             'started_at',
             'finished_at',
             IS_FAVORITE_ATTR,
+            'to_delete',
             'department_name',
             'status',
         )

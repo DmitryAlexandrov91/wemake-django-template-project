@@ -3,7 +3,11 @@ from collections.abc import Callable
 import pytest
 
 from server.apps.company.models import Department
-from server.apps.surveys.infra.repository import SurveyRepo, SurveyResultRepo
+from server.apps.surveys.infra.repository import (
+    SurveyRepo,
+    SurveyResultRepo,
+    SurveySaveRepo,
+)
 from server.apps.surveys.models import (
     Question,
     Survey,
@@ -154,3 +158,11 @@ def test_create_survey_with_questions_no_answers(
     assert survey.questions.count() == 2
     for question in survey.questions.all():
         assert question.answer_options.count() == 0
+
+
+@pytest.mark.django_db
+def test_get_by_pk(survey: Survey) -> None:
+    """Test the `get_by_pk()` method of DepartmentRepo."""
+    repo = resolve(SurveySaveRepo)
+    survey_obj = repo.get_by_pk(pk=survey.id)
+    assert survey_obj == survey

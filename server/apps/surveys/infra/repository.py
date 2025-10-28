@@ -100,14 +100,22 @@ class QuestionRepo:
 
         return queryset
 
+    def get_all_to_delete_ids(self) -> list[int]:
+        """Returns all the questions to delete."""
+        return list(
+            Question.objects.filter(to_delete=True).values_list(
+                ID_ATTR, flat=True
+            )
+        )
+
     def delete(self, pk: int) -> None:
         """Delete an existing question."""
-        instance = Question.objects.get(pk=pk)
-        instance.delete()
+        question = Question.objects.get(pk=pk)
+        question.delete()
 
 
 @final
-class SurveyRepo:
+class SurveyRepo:  # noqa: WPS214
     """Repository fo Survey model operations."""
 
     @transaction.atomic
@@ -165,7 +173,7 @@ class SurveyRepo:
                 models.Prefetch(
                     QUESTIONS_ATTR,
                     queryset=Question.objects.only(
-                        'id', 'text', QUESTION_TYPE
+                        ID_ATTR, 'text', QUESTION_TYPE
                     ).prefetch_related('surveys'),
                 ),
                 models.Prefetch(
@@ -262,6 +270,28 @@ class SurveyRepo:
                 | models.Q(end_date__isnull=True)
             )
             .latest('start_date')
+        )
+
+
+@final
+class SurveySaveRepo:
+    """Repository fot survey processing."""
+
+    def get_by_pk(self, pk: int) -> Survey:
+        """Returns one survey from DB by pk."""
+        return Survey.objects.get(pk=pk)
+
+    def delete(self, pk: int) -> None:
+        """Delete an existing survey."""
+        survey = Survey.objects.get(pk=pk)
+        survey.delete()
+
+    def get_all_to_delete_ids(self) -> list[int]:
+        """Returns all the surveys to delete."""
+        return list(
+            Survey.objects.filter(to_delete=True).values_list(
+                ID_ATTR, flat=True
+            )
         )
 
 

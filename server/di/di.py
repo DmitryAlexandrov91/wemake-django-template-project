@@ -7,6 +7,7 @@ from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
     SurveyResultRepo,
+    SurveySaveRepo,
     UserAnswerRepo,
     UserStatisticsRepo,
 )
@@ -33,6 +34,8 @@ def _inject_survey_infra(container: punq.Container) -> None:
     """Register survey and relation repositories."""
     container.register(SurveyRepo)
     container.register(SurveyResultRepo)
+    container.register(SurveySaveRepo)
+    container.register(UserStatisticsRepo)
     container.register(QuestionRepo)
     container.register(AnswerOptionRepo)
 

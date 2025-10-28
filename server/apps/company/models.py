@@ -18,3 +18,4 @@ class Department(models.Model):
         on_delete=models.SET_NULL,
         related_name='company_departments',
     )
+    to_delete = models.BooleanField(default=0)

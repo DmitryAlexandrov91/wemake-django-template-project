@@ -30,6 +30,7 @@ class _QuestionFactoryParams(TypedDict, total=False):
     question_type: QuestionType
     surveys: set[Survey]
     is_favorite: bool
+    to_delete: bool
 
 
 class _AnswerOptionFactoryParams(TypedDict, total=False):

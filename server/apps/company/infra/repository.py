@@ -40,3 +40,16 @@ class DepartmentRepo:
     def create(self, **kwargs: Any) -> Department:
         """Create and return a new Department instance."""
         return Department.objects.create(**kwargs)
+
+    def get_all_to_delete_ids(self) -> list[int]:
+        """Return department ids marked for deletion."""
+        return list(
+            Department.objects.filter(to_delete=True).values_list(
+                'id', flat=True
+            )
+        )
+
+    def delete(self, pk: int) -> None:
+        """Delete one department."""
+        department = Department.objects.get(pk=pk)
+        department.delete()
