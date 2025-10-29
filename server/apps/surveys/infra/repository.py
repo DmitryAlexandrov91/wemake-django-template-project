@@ -204,11 +204,15 @@ class SurveyRepo:  # noqa: WPS214
             )
             .select_related(DEPARTMENT)
         )
+        search_param = request.query_params.get('search')
+        if search_param:
+            queryset = queryset.filter(title__icontains=search_param)
         queryset = queryset.order_by(
             'start_date'
             if request.query_params.get('order', 'asc') == 'asc'
             else '-start_date'
         )
+
         now_date = timezone.now().date()
         filter_mapping = {
             'favorite': queryset.filter(is_favorite=True),

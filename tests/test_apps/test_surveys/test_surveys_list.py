@@ -19,10 +19,8 @@ from tests.plugins import (
     department_factory,
     surveys,
     surveys_survey,
-    users_auth,
 )
 from tests.test_apps.test_surveys.services import build_survey
-from tests.test_apps.test_users.services import get_user_json
 
 DATA_ATTR = 'data'
 NAME_ATTR = 'name'
@@ -32,11 +30,10 @@ ID_ATTR = 'id'
 
 @pytest.mark.django_db
 def test_get_all_surveys_response(
-    client: Client, user: CustomUser, password: str
+    auth_client: Client,
 ) -> None:
     """Test success response status of `api/surveys`."""
-    client.post(users_auth.LOGIN_URL, data=get_user_json(user.email, password))
-    response = client.get(surveys_survey.GET_ALL_SURVEYS_URL)
+    response = auth_client.get(surveys_survey.GET_ALL_SURVEYS_URL)
     assert response.status_code == HTTPStatus.OK
     response_data = response.json()
     surveys_data = response_data.get(DATA_ATTR, {})
@@ -57,14 +54,11 @@ def test_paginator_page_is_none() -> None:
 
 @pytest.mark.django_db
 def test_filter_query_params(  # noqa: WPS210
-    client: Client,
-    user: CustomUser,
-    password: str,
+    auth_client: Client,
     surveys_survey_factory: surveys_survey.SurveyFactory,
     department_factory: department_factory.DepartmentFactory,
 ) -> None:
     """Test filtering."""
-    client.post(users_auth.LOGIN_URL, data=get_user_json(user.email, password))
     favorite = build_survey(
         'favorite', department_factory, surveys_survey_factory
     )
@@ -75,17 +69,17 @@ def test_filter_query_params(  # noqa: WPS210
     archive = build_survey(
         'archive', department_factory, surveys_survey_factory
     )
-    favorite_response = client.get(
+    favorite_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'favorite'}
     )
     survey = favorite_response.json()[DATA_ATTR][0]
     assert survey[NAME_ATTR] == favorite.title
-    drafts_response = client.get(
+    drafts_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'drafts'}
     )
     survey = drafts_response.json()[DATA_ATTR][0]
     assert survey[NAME_ATTR] == drafts.title
-    finished_response = client.get(
+    finished_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'finished'}
     )
     surveys = finished_response.json()[DATA_ATTR]
@@ -93,12 +87,12 @@ def test_filter_query_params(  # noqa: WPS210
         survey[NAME_ATTR] in {archive.title, finished.title}
         for survey in surveys
     )
-    archive_response = client.get(
+    archive_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'archive'}
     )
     survey = archive_response.json()[DATA_ATTR][0]
     assert survey[NAME_ATTR] == archive.title
-    all_response = client.get(surveys_survey.GET_ALL_SURVEYS_URL)
+    all_response = auth_client.get(surveys_survey.GET_ALL_SURVEYS_URL)
     surveys = all_response.json()[DATA_ATTR]
     assert len(surveys) == 4
 
@@ -164,3 +158,22 @@ def test_get_survey_sec(
         instance=survey_result
     )
     assert serializer.get_survey_sec(survey_result) == t_delta.total_seconds()
+
+
+@pytest.mark.django_db
+def test_search_query_params(
+    surveys_survey_factory: surveys_survey.SurveyFactory, auth_client: Client
+) -> None:
+    """Test search param for survey."""
+    for title in ('First', 'Second', 'Third'):
+        surveys_survey_factory(title=f'{title} Survey')
+
+    response = auth_client.get(
+        surveys_survey.GET_ALL_SURVEYS_URL, {'search': 'survey'}
+    )
+    assert len(response.json()['data']) == 3
+
+    response = auth_client.get(
+        surveys_survey.GET_ALL_SURVEYS_URL, {'search': 'First'}
+    )
+    assert len(response.json()['data']) == 1
