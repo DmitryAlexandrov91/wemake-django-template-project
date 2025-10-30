@@ -86,8 +86,10 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
 
     @override
     def destroy(self, request: Request, pk: int) -> Response:
-        """Mark department for deletion by primary key."""
+        """Mark empty department for deletion by primary key."""
         repo = resolve(DepartmentRepo)
         department = repo.get_by_pk(pk)
+        if department.users.exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         repo.update_department(department=department, to_delete=True)
         return Response(status=status.HTTP_200_OK)

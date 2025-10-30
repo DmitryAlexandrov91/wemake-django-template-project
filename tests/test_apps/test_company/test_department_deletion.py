@@ -10,17 +10,30 @@ DEPARTMENTS_LIST_URL_NAME = 'departments-list'
 
 
 @pytest.mark.django_db
-def test_department_mark_to_delete(
+def test_empty_department_mark_to_delete(
+    department: Department,
+    auth_client_user_without_department: APIClient,
+) -> None:
+    """Test empty department mark to delete."""
+    url = reverse('departments-detail', kwargs={'pk': department.pk})
+    department_id = department.pk
+    assert not department.users.exists()
+    auth_client_user_without_department.delete(url)
+    deleted_department = Department.objects.get(pk=department_id)
+    assert deleted_department.to_delete is True
+
+
+@pytest.mark.django_db
+def test_non_empty_department_mark_to_delete(
     department: Department,
     auth_client: APIClient,
 ) -> None:
-    """Test department mark to delete."""
+    """Test non empty department mark to delete."""
     url = reverse('departments-detail', kwargs={'pk': department.pk})
     department_id = department.pk
     auth_client.delete(url)
     deleted_department = Department.objects.get(pk=department_id)
-    assert deleted_department is not None
-    assert deleted_department.to_delete is True
+    assert deleted_department.to_delete is False
 
 
 @pytest.mark.django_db
