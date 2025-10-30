@@ -1,3 +1,5 @@
+from typing import override
+
 from django.conf import settings
 from django.db import models
 
@@ -23,6 +25,17 @@ class StatisticSettings(models.Model):
             ),
         )
         default_related_name = 'stat_settings'
+
+    @override
+    def __str__(self) -> str:
+        """
+        Str method for statistic settings.
+
+        >>> instance = StatisticSettings()
+        >>> str(instance)
+        'Statistic settings'
+        """
+        return 'Statistic settings'
 
 
 class UserStatistics(models.Model):

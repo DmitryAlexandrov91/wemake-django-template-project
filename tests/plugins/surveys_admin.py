@@ -2,14 +2,27 @@ from typing import TypedDict
 
 import pytest
 from django.contrib import admin
+from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory
 
-from server.apps.surveys.admin import StatisticSettingsAdmin
+from server.apps.surveys.admin import (
+    QuestionAdmin,
+    StatisticSettingsAdmin,
+)
 from server.apps.surveys.infra.repository import UserStatisticsRepo
-from server.apps.surveys.models import StatisticSettings
+from server.apps.surveys.models import (
+    Question,
+    StatisticSettings,
+)
 from server.apps.users.models import CustomUser
 from server.di import resolve
 from tests.plugins.users import UserBatchFactory
+
+
+@pytest.fixture
+def question_admin() -> QuestionAdmin:
+    """QuestionAdmin fixture."""
+    return QuestionAdmin(Question, AdminSite())
 
 
 class AdminSetup(TypedDict):

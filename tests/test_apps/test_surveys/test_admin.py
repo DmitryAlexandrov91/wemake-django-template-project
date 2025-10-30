@@ -3,7 +3,6 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from django.contrib.admin.sites import AdminSite
 from django.forms import ModelForm
 from django.http import HttpRequest
 
@@ -12,12 +11,6 @@ from server.apps.surveys.models import Question, Survey
 from tests.plugins.surveys_admin import AdminSetup
 
 SURVEY_RESP_ATTR = 'survey_response_avg_period'
-
-
-@pytest.fixture
-def question_admin() -> QuestionAdmin:
-    """QuestionAdmin fixture."""
-    return QuestionAdmin(Question, AdminSite())
 
 
 @pytest.mark.django_db

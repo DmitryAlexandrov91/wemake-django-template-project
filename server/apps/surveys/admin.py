@@ -1,8 +1,9 @@
+# flake8: noqa: WPS226
 from typing import override
 
 from django.contrib import admin
 from django.db.models import Prefetch, QuerySet
-from django.forms.models import ModelForm
+from django.forms import models
 from django.http import HttpRequest
 
 from server.apps.surveys.admin_common import QuestionInline
@@ -23,8 +24,8 @@ class SurveyAdmin(admin.ModelAdmin[Survey]):
     """Admin class for surveys."""
 
     list_display = (
-        'id',  # noqa: WPS226
-        'title',  # noqa: WPS226
+        'id',
+        'title',
         'start_date',
         'end_date',
     )
@@ -39,9 +40,9 @@ class QuestionAdmin(admin.ModelAdmin[Question]):
 
     list_display = (
         'id',
-        'text',  # noqa: WPS226
+        'text',
         'question_type',
-        'get_surveys',  # noqa: WPS226
+        'get_surveys',
     )
     list_filter = ('question_type', 'surveys')
     search_fields = ('text',)
@@ -70,7 +71,7 @@ class AnswerOptionAdmin(admin.ModelAdmin[AnswerOption]):
     list_display = (
         'id',
         'text',
-        'question',  # noqa: WPS226
+        'question',
     )
     list_select_related = ('question',)
     search_fields = ('text', 'question__text')
@@ -82,7 +83,7 @@ class SurveyResultAdmin(admin.ModelAdmin[SurveyResult]):
 
     list_display = (
         'id',
-        'user',  # noqa: WPS226
+        'user',
         'survey',
     )
     list_filter = ('survey',)
@@ -96,17 +97,23 @@ class SurveyResultAdmin(admin.ModelAdmin[SurveyResult]):
 
 @admin.register(UserAnswer)
 class UserAnswerAdmin(admin.ModelAdmin[UserAnswer]):
-    """Admin class for user answer."""
+    """Admin interface for UserAnswer model."""
 
-    list_display = (
-        'survey_result',
-        'question',
-    )
+    list_display = ('survey_result', 'question', 'text_answer')
     list_select_related = (
         'survey_result__user',
         'survey_result__survey',
         'question',
     )
+    fields = ('text_answer', 'selected_options')
+
+    @override
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        """Creation of new user answers forbidden."""
+        return False
+
+    save_as = False
+    save_on_top = True
 
 
 @admin.register(Suggestion)
@@ -115,13 +122,13 @@ class SuggestionAdmin(admin.ModelAdmin[Suggestion]):
 
     list_display = (
         'id',
-        'user',  # noqa: WPS226
-        'title',  # noqa: WPS226
+        'user',
+        'title',
         'description',
     )
     search_fields = (
         'user__username',
-        'title',  # noqa: WPS226
+        'title',
         'description',
     )
     list_select_related = ('user',)
@@ -138,7 +145,7 @@ class StatisticSettingsAdmin(admin.ModelAdmin[StatisticSettings]):
         self,
         request: HttpRequest,
         settings_obj: StatisticSettings,
-        form: ModelForm[StatisticSettings],
+        form: models.ModelForm[StatisticSettings],
         change: bool,
     ) -> None:
         """Save new statistic settings starts update user statistics."""

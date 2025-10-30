@@ -1,3 +1,5 @@
+from typing import override
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -19,3 +21,14 @@ class Department(models.Model):
         related_name='company_departments',
     )
     to_delete = models.BooleanField(default=0)
+
+    @override
+    def __str__(self) -> str:
+        """
+        Str method for department.
+
+        >>> department = Department(name='Department1')
+        >>> str(department)
+        'Department1'
+        """
+        return self.name
