@@ -33,7 +33,7 @@ def test_edit_text(fakery_m: FakeryM[UserAnswer]) -> None:
 
     assert user_answer.text_answer == answer_text
 
-    updated_user_answer = resolve(UserAnswerRepo).edit_text(
+    updated_user_answer = resolve(UserAnswerRepo).edit_user_answer(
         answer_id=user_answer.pk,
         new_text_answer=new_answer_text,
     )

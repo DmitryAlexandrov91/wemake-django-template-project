@@ -377,12 +377,34 @@ class UserAnswerRepo:
         )
         return res['total_time'], res['total_questions']
 
-    def edit_text(self, answer_id: int, new_text_answer: str) -> UserAnswer:
-        """Edit UserAnsert text."""
+    def edit_user_answer(
+        self, answer_id: int, new_text_answer: str
+    ) -> UserAnswer:
+        """Edit user answer text."""
         instance = UserAnswer.objects.get(pk=answer_id)
         instance.text_answer = new_text_answer
         instance.save()
         return instance
+
+    @transaction.atomic
+    def save_user_answer(
+        self,
+        survey_result: SurveyResult,
+        question: Question,
+        text_answer: str,
+        selected_options: list[AnswerOption] | None = None,
+    ) -> UserAnswer:
+        """Create user answer instance."""
+        user_answer = UserAnswer.objects.create(
+            survey_result=survey_result,
+            question=question,
+            text_answer=text_answer,
+        )
+
+        if selected_options:
+            user_answer.selected_options.set(selected_options)
+
+        return user_answer
 
 
 @final

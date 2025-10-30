@@ -16,6 +16,7 @@ from server.apps.tgbot.logic.edit_handler_usecases import (
 from server.apps.tgbot.logic.usecases import (
     HandleStartCommandUseCase,
     ProcessTelegramUpdate,
+    SaveAnswerUseCase,
 )
 from server.apps.tgbot.services.keyboard_builder import (
     ButtonBuilderService,
@@ -42,6 +43,7 @@ def _inject_handlers(container: punq.Container) -> None:
     container.register(HandleEditResponseUseCase)
     container.register(HandleCancelEditResponseUseCase)
     container.register(HandleProcessEditResponseUseCase)
+    container.register(SaveAnswerUseCase)
 
 
 def _inject_keyboards(container: punq.Container) -> None:

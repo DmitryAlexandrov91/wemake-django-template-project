@@ -6,6 +6,12 @@ from telebot import TeleBot, types
 from server.apps.surveys.infra.repository import (
     SurveyRepo,
     SurveyResultRepo,
+    UserAnswerRepo,
+)
+from server.apps.surveys.models.surveys import (
+    AnswerOption,
+    Question,
+    SurveyResult,
 )
 from server.apps.tgbot.services.services import TelegramService
 from server.apps.users.infra.repository import UserRepo
@@ -43,4 +49,27 @@ class HandleStartCommandUseCase:
         self._survey_res_repo.get_or_create_user_survey_res(
             user=user,
             survey=current_survey,
+        )
+
+
+@dataclass
+class SaveAnswerUseCase:
+    """Usecase for user answers save."""
+
+    _bot: TeleBot
+    _user_answer_repo: UserAnswerRepo
+
+    def __call__(
+        self,
+        message: types.Message,
+        survey_result: SurveyResult,
+        question: Question,
+        selected_options: list[AnswerOption] | None = None,
+    ) -> None:
+        """Create answer object from message."""
+        self._user_answer_repo.save_user_answer(
+            survey_result=survey_result,
+            question=question,
+            text_answer=message.text or '',
+            selected_options=selected_options,
         )

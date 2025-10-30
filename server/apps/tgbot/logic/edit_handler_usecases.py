@@ -199,7 +199,7 @@ class HandleProcessEditResponseUseCase:
                 survey_result=survey_result
             )
 
-            self._user_answer_repo.edit_text(
+            self._user_answer_repo.edit_user_answer(
                 answer_id=state_data['answer_id'], new_text_answer=message.text
             )
 
