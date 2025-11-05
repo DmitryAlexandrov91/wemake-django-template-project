@@ -25,13 +25,11 @@ class ButtonBuilderService:
     def __call__(
         self,
         text: str,
-        keyboard: types.InlineKeyboardMarkup,
         callback: CallbackFactory,
         callback_data: dict[str, Any],
-    ) -> None:
+    ) -> types.InlineKeyboardButton:
         """Add button for keyboard."""
-        button = types.InlineKeyboardButton(
+        return types.InlineKeyboardButton(
             text=text,
             callback_data=callback.factory.new(**callback_data),
         )
-        keyboard.add(button)

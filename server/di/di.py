@@ -11,6 +11,9 @@ from server.apps.surveys.infra.repository import (
     UserAnswerRepo,
     UserStatisticsRepo,
 )
+from server.apps.surveys.usecases.statistics_service import (
+    UserStatisticsService,
+)
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
 from server.di.tg import _inject_handlers, _inject_keyboards, _inject_tg
@@ -43,6 +46,7 @@ def _inject_survey_infra(container: punq.Container) -> None:
 def _inject_auth_service(container: punq.Container) -> None:
     """Register AuthService."""
     container.register(AuthService)
+    container.register(UserStatisticsService)
 
 
 def create_container() -> punq.Container:

@@ -1,46 +1,48 @@
+from dataclasses import dataclass
+
 from server.apps.surveys.infra.repository import (
     UserAnswerRepo,
     UserStatisticsRepo,
 )
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
-from server.di import resolve
 
 
+@dataclass
 class UserStatisticsService:
     """Processing user statistics."""
+    _user_repo: UserRepo
+    _user_repo_save: UserRepoSave
+    _user_answer_repo: UserAnswerRepo
+    _user_statistic_repo: UserStatisticsRepo
 
-    @staticmethod
     def update_single_user_statistics(  # noqa: WPS602
-        user_id: int, limit: int
+        self, user_id: int, limit: int
     ) -> None:
         """Updates statistics fot one user."""
-        user = resolve(UserRepo).get_by_pk(pk=user_id)
-        total_time, questions = resolve(
-            UserAnswerRepo
-        ).get_user_survey_results_aggr(user=user, limit=limit)
+        user = self._user_repo.get_by_pk(pk=user_id)
+        total_time, questions = (
+            self._user_answer_repo.get_user_survey_results_aggr(
+                user=user, limit=limit
+            )
+        )
         seconds_per_question = (
             int(total_time.total_seconds() // questions)
             if questions and total_time
             else 0
         )
-        resolve(UserStatisticsRepo).save_statistics(
+        self._user_statistic_repo.save_statistics(
             user=user, avg_answer_sec=seconds_per_question
         )
 
-    @staticmethod
-    def get_user_ids(user_id: int | None = None) -> list[int]:  # noqa: WPS602
+    def get_user_ids(self, user_id: int | None = None) -> list[int]:  # noqa: WPS602
         """Gets list of user identifacators."""
         return (
             [user_id]
             if user_id
-            else list(resolve(UserRepoSave).get_active_user_ids())
+            else list(self._user_repo_save.get_active_user_ids())
         )
 
-    @staticmethod
-    def get_statistics_period() -> int:  # noqa: WPS602
+    def get_statistics_period(self) -> int:  # noqa: WPS602
         """Gets statistics settings."""
-        return (
-            resolve(UserStatisticsRepo)
-            .get_stat_settings()
-            .survey_response_avg_period
-        )
+        return self._user_statistic_repo.get_stat_settings().survey_response_avg_period
+

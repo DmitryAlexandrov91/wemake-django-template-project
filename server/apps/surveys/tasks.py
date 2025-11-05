@@ -14,7 +14,7 @@ TaskFunction = Callable[[str, str], bool]
 @shared_task  # type: ignore[misc]
 def update_one_user_statistics_task(user_id: int, period: int) -> None:
     """Celery task for updating one user statistics."""
-    UserStatisticsService.update_single_user_statistics(
+    resolve(UserStatisticsService).update_single_user_statistics(
         user_id=user_id, limit=period
     )
 
@@ -22,8 +22,9 @@ def update_one_user_statistics_task(user_id: int, period: int) -> None:
 @shared_task  # type: ignore[misc]
 def update_user_statistics_task(user_id: int | None = None) -> None:
     """Updates employee statistics when admin sets new statistic settings."""
-    period = UserStatisticsService.get_statistics_period()
-    user_ids = UserStatisticsService.get_user_ids(user_id)
+    service = resolve(UserStatisticsService)
+    period = service.get_statistics_period()
+    user_ids = service.get_user_ids(user_id)
     update_group = group(
         update_one_user_statistics_task.s(user_id=user_id, period=period)
         for user_id in user_ids
