@@ -9,27 +9,27 @@ from server.apps.tgbot.keyboards.edit_keyboard import (
     EditAnswerKeyboard,
 )
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
-from server.apps.tgbot.logic.edit_handler_usecases import (
-    HandleCancelEditResponseUseCase,
-    HandleEditCommandUseCase,
-    HandleEditResponseUseCase,
-    HandleProcessEditResponseUseCase,
-)
-from server.apps.tgbot.logic.survey_handler_usecases import (
-    HandleSurveyCallbackResponseUseCase,
-    HandleSurveyCommandUseCase,
-    HandleSurveyMessageResponseUseCase,
-)
-from server.apps.tgbot.logic.usecases import (
-    HandleStartCommandUseCase,
-    ProcessTelegramUpdate,
-    SaveAnswerUseCase,
-)
 from server.apps.tgbot.services.keyboard_builder import (
     ButtonBuilderService,
     KeyboardBuilderService,
 )
 from server.apps.tgbot.services.services import TelegramService
+from server.apps.tgbot.usecases import (
+    HandleStartCommandUseCase,
+    ProcessTelegramUpdate,
+    SaveAnswerUseCase,
+)
+from server.apps.tgbot.usecases.edit import (
+    HandleCancelEditResponseUseCase,
+    HandleEditCommandUseCase,
+    HandleEditResponseUseCase,
+    HandleProcessEditResponseUseCase,
+)
+from server.apps.tgbot.usecases.survey import (
+    HandleSurveyCallbackResponseUseCase,
+    HandleSurveyCommandUseCase,
+    HandleSurveyMessageResponseUseCase,
+)
 from server.settings.components import tgbot as tg_settings
 
 

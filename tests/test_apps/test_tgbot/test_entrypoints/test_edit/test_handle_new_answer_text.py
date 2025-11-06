@@ -4,7 +4,7 @@ import pytest
 from telebot import TeleBot
 
 from server.apps.surveys.models import UserAnswer
-from server.apps.tgbot.entrypoints import handle_new_answer_text
+from server.apps.tgbot.entrypoints.edit import handle_new_answer_text
 from server.di import resolve
 from tests.plugins.tgbot.fixtures import MockCallbackQuery, MockMessage
 

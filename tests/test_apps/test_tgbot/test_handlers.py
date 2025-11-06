@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.logic.usecases import HandleStartCommandUseCase
+from server.apps.tgbot.usecases import HandleStartCommandUseCase
 
 
 @patch('server.apps.users.infra.repository.UserRepo')

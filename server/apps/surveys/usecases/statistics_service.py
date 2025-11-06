@@ -10,6 +10,7 @@ from server.apps.users.infra.repository import UserRepo, UserRepoSave
 @dataclass
 class UserStatisticsService:
     """Processing user statistics."""
+
     _user_repo: UserRepo
     _user_repo_save: UserRepoSave
     _user_answer_repo: UserAnswerRepo
@@ -42,7 +43,6 @@ class UserStatisticsService:
             else list(self._user_repo_save.get_active_user_ids())
         )
 
-    def get_statistics_period(self) -> int:  # noqa: WPS602
+    def get_statistics_period(self) -> int:
         """Gets statistics settings."""
-        return self._user_statistic_repo.get_stat_settings().survey_response_avg_period
-
+        return self._user_statistic_repo.get_stat_settings().survey_response_avg_period  # noqa: E501

@@ -8,7 +8,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.surveys.models.surveys import SurveyResult, UserAnswer
 from server.apps.tgbot.callbacks import answer_cancel_callback
-from server.apps.tgbot.entrypoints import (
+from server.apps.tgbot.entrypoints.edit import (
     handle_cancel_edit_answer,
 )
 from server.apps.tgbot.message_templates import (

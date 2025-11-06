@@ -3,7 +3,7 @@ from __future__ import annotations
 import attrs
 from telebot import TeleBot, types
 
-from server.apps.tgbot.logic.survey_handler_usecases import (
+from server.apps.tgbot.usecases.survey import (
     HandleSurveyCallbackResponseUseCase,
     HandleSurveyCommandUseCase,
     HandleSurveyMessageResponseUseCase,

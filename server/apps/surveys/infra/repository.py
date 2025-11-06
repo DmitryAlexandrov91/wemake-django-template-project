@@ -309,6 +309,10 @@ class SurveySaveRepo:
 class SurveyResultRepo:
     """Repository for survey results."""
 
+    def get_by_pk(self, pk: int) -> SurveyResult:
+        """Returns one survey result from DB by pk."""
+        return SurveyResult.objects.get(pk=pk)
+
     def get_or_create_user_survey_res(
         self, user: CustomUser, survey: Survey
     ) -> SurveyResult:

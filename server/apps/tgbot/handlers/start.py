@@ -3,7 +3,7 @@ from __future__ import annotations
 import attrs
 from telebot import TeleBot, types
 
-from server.apps.tgbot.logic.usecases import HandleStartCommandUseCase
+from server.apps.tgbot.usecases.start import HandleStartCommandUseCase
 
 
 @attrs.define(frozen=True)

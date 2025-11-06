@@ -1,7 +1,6 @@
 from django.db import transaction
 
 from server.apps.surveys.models import Question, SurveyResult
-from server.apps.surveys.tasks import update_user_statistics_task
 
 
 class AdvanceToNextQuestion:
@@ -40,6 +39,10 @@ class AdvanceToNextQuestion:
             )
 
         if not next_question and survey_result.completed_questions > 0:
+            from server.apps.surveys.tasks import (  # noqa: PLC0415
+                update_user_statistics_task,
+            )
+
             update_user_statistics_task.delay(user_id=survey_result.user.pk)
 
         return survey_result
