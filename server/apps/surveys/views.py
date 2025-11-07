@@ -1,9 +1,14 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
-from rest_framework import mixins, serializers, status, viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
+from rest_framework import (
+    mixins,
+    request,
+    response,
+    serializers,
+    status,
+    viewsets,
+)
 
 from server.apps.surveys.infra.repository import (
     QuestionRepo,
@@ -22,6 +27,7 @@ from server.apps.surveys.serializers_list import (
     QuestionShortSerializer,
     SurveyListSerializer,
 )
+from server.apps.surveys.usecases.inform_recipients import survey_notification
 from server.di import resolve
 
 ALL_PARAM = 'all'
@@ -64,8 +70,8 @@ class QuestionViewSet(  # noqa: WPS215
 
     @override
     def partial_update(
-        self, request: Request, *args: Any, **kwargs: Any
-    ) -> Response:
+        self, request: request.Request, *args: Any, **kwargs: Any
+    ) -> response.Response:
         """Partial update question using repo."""
         repo = resolve(QuestionRepo)
         qestion = repo.get_by_pk(kwargs['pk'])
@@ -74,18 +80,18 @@ class QuestionViewSet(  # noqa: WPS215
         )
         serializer.is_valid(raise_exception=True)
         upd_qestion = repo.update_question(qestion, **serializer.validated_data)
-        return Response(
+        return response.Response(
             self.get_serializer(upd_qestion).data,
             status=status.HTTP_202_ACCEPTED,
         )
 
     @override
-    def destroy(self, request: Request, pk: int) -> Response:
+    def destroy(self, request: request.Request, pk: int) -> response.Response:
         """Mark question for deletion by primary key."""
         repo = resolve(QuestionRepo)
         question = repo.get_by_pk(pk=pk)
         repo.update_question(question=question, to_delete=True)
-        return Response(status=status.HTTP_200_OK)
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class SurveyViewSet(viewsets.ModelViewSet[Survey]):
@@ -112,25 +118,27 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
     @override
     def create(
         self,
-        request: Request,
+        request: request.Request,
         *args: tuple[Any, ...],
         **kwargs: dict[str, Any],  # noqa: WPS221
-    ) -> Response:
+    ) -> response.Response:
         create_serializer = self.get_serializer(data=request.data)
         create_serializer.is_valid(raise_exception=True)
-        return Response(
+        created_survey = create_serializer.save()
+        survey_notification(survey=created_survey)
+        return response.Response(
             SurveyListSerializer(
                 resolve(SurveyRepo).build_survey_for_create_response(
-                    create_serializer.save(),
-                ),
+                    created_survey
+                )
             ).data,
             status=status.HTTP_201_CREATED,
         )
 
     @override
     def partial_update(
-        self, request: Request, *args: Any, **kwargs: Any
-    ) -> Response:
+        self, request: request.Request, *args: Any, **kwargs: Any
+    ) -> response.Response:
         """Partial update survey using repo."""
         repo = resolve(SurveyRepo)
         survey = repo.get_modified_surveys_queryset(request).get(
@@ -144,14 +152,14 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
         serializer.is_valid(raise_exception=True)
         updated_survey = repo.update_survey(survey, **serializer.validated_data)
 
-        return Response(
+        return response.Response(
             SurveyListSerializer(updated_survey).data,
             status=status.HTTP_202_ACCEPTED,
         )
 
     @override
-    def destroy(self, request: Request, pk: int) -> Response:
+    def destroy(self, request: request.Request, pk: int) -> response.Response:
         """Mark survey for deletion by primary key."""
         survey = resolve(SurveySaveRepo).get_by_pk(pk)
         resolve(SurveyRepo).update_survey(survey=survey, to_delete=True)
-        return Response(status=status.HTTP_200_OK)
+        return response.Response(status=status.HTTP_200_OK)

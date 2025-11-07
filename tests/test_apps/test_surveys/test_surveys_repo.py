@@ -166,3 +166,21 @@ def test_get_by_pk(survey: Survey) -> None:
     repo = resolve(SurveySaveRepo)
     survey_obj = repo.get_by_pk(pk=survey.id)
     assert survey_obj == survey
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(DEPARTMENT, ['Department2'], indirect=True)
+def test_get_active_survey_for_user_by_id(
+    department: Department,
+    auth_user: CustomUser,
+    create_surveys: Callable[[Department], Survey],
+) -> None:
+    """Test getting active survey by user and id."""
+    repo = resolve(SurveyRepo)
+    active_survey = create_surveys(department)
+    assert (
+        repo.get_active_survey_for_user_by_id(
+            user=auth_user, survey_id=active_survey.pk
+        )
+        == active_survey
+    )

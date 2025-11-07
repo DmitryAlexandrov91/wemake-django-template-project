@@ -15,5 +15,5 @@ class StartHandlerService:
 
     def __call__(self, message: types.Message) -> None:
         """Send Hello message."""
-        self._handle_start_use_case.execute(message)
+        self._handle_start_use_case(message)
         self._bot.send_message(chat_id=message.chat.id, text='Hello!')
