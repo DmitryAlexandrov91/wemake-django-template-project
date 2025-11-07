@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from telebot import TeleBot
 
 from server.apps.surveys.infra.repository import (
+    QuestionRepo,
+    SurveyResultRepo,
     UserAnswerRepo,
 )
 from server.apps.surveys.models.surveys import (
@@ -10,8 +12,8 @@ from server.apps.surveys.models.surveys import (
     Question,
     SurveyResult,
 )
-from server.apps.tgbot.logic.validators import (
-    recognize_survey_id,
+from server.apps.surveys.usecases.advance_to_next_question import (
+    AdvanceToNextQuestion,
 )
 from server.apps.tgbot.services.services import TelegramService
 
@@ -51,32 +53,27 @@ class SaveAnswerUseCase:
 
 
 @dataclass
-class HandleStartCommandUseCase:
-    """Usecase for survey_res_creation."""
+class ProcessingAnswerUseCase:
+    """Usecase for proceccing answer to question."""
 
-    _user_repo: UserRepo
-    _survey_repo: SurveyRepo
-    _survey_res_repo: SurveyResultRepo
     _bot: TeleBot
+    _survey_result_repo: SurveyResultRepo
+    _question_repo: QuestionRepo
+    _save_answer_use_case: SaveAnswerUseCase
+    _advance_to_next_question: AdvanceToNextQuestion
 
-    def __call__(self, message: types.Message) -> None:
-        """Create survey result."""
-        tg_user = message.from_user
-        if not tg_user or not tg_user.username:
-            raise ValidationError('TG user(name) is not recognized.')
-        user = self._user_repo.get_by_tg_username(
-            tg_username=f'@{tg_user.username}'
+    def __call__(
+        self,
+        survey_result_id: int,
+        question_id: int,
+        answer_option: str,
+    ) -> SurveyResult:
+        """Proceccing answer for question, returns SurveyResult."""
+        survey_result = self._survey_result_repo.get_by_pk(pk=survey_result_id)
+        question = self._question_repo.get_by_pk(pk=question_id)
+        self._save_answer_use_case(
+            survey_result=survey_result,
+            question=question,
+            answer_text=answer_option,
         )
-
-        survey_id = recognize_survey_id(message.text) if message.text else None
-        if survey_id:
-            survey = self._survey_repo.get_active_survey_for_user_by_id(
-                user=user, survey_id=survey_id
-            )
-        else:
-            survey = self._survey_repo.get_active_survey_for_user(user=user)
-
-        self._survey_res_repo.get_or_create_user_survey_res(
-            user=user,
-            survey=survey,
-        )
+        return self._advance_to_next_question(survey_result=survey_result)

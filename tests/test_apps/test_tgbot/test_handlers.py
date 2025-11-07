@@ -9,9 +9,9 @@ from server.apps.surveys.infra.repository import (
     SurveyResultRepo,
 )
 from server.apps.surveys.models import Question, Survey
-from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.usecases import HandleStartCommandUseCase
 from server.apps.tgbot import usecases
+from server.apps.tgbot.handlers.start import StartHandlerService
+from server.apps.tgbot.usecases.validators import recognize_survey_id
 from server.apps.users.infra.repository import UserRepo
 from server.apps.users.models import CustomUser
 from server.common.layouts import SURVEY_KEY
@@ -69,7 +69,7 @@ def test_start_handler_service_new(
 )
 def test_recognize_survey_id_found(input_text: str, expected_id: int) -> None:
     """Test survey key recognized."""
-    assert validators.recognize_survey_id(input_text) == expected_id
+    assert recognize_survey_id(input_text) == expected_id
 
 
 @pytest.mark.django_db

@@ -7,11 +7,6 @@ from telebot import TeleBot, types
 
 from server.apps.surveys.infra.repository import (
     AnswerOptionRepo,
-    QuestionRepo,
-    SurveyResultRepo,
-)
-from server.apps.surveys.usecases.advance_to_next_question import (
-    AdvanceToNextQuestion,
 )
 from server.apps.tgbot.callbacks import survey_callback
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
@@ -19,7 +14,9 @@ from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
     SURVEY_CONTINUE,
 )
-from server.apps.tgbot.usecases.common import SaveAnswerUseCase
+from server.apps.tgbot.usecases.common import (
+    ProcessingAnswerUseCase,
+)
 
 
 @dataclass
@@ -27,12 +24,9 @@ class HandleSurveyMessageResponseUseCase:
     """Usecase to handle text response for survey answer."""
 
     _bot: TeleBot
-    _question_repo: QuestionRepo
-    _save_answer_use_case: SaveAnswerUseCase
-    _advance_to_next_question: AdvanceToNextQuestion
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
-    _survey_result_repo: SurveyResultRepo
+    _processing_answer_use_case: ProcessingAnswerUseCase
 
     def __call__(self, message: types.Message) -> Any:
         """Handle message text response."""
@@ -41,19 +35,10 @@ class HandleSurveyMessageResponseUseCase:
         with self._bot.retrieve_data(  # type: ignore[union-attr]
             message.from_user.id, message.chat.id
         ) as state_data:
-            survey_result = self._survey_result_repo.get_by_pk(
-                pk=state_data['survey_result_id']
-            )
-            question = self._question_repo.get_by_pk(
-                pk=state_data['question_id']
-            )
-            self._save_answer_use_case(
-                survey_result=survey_result,
-                question=question,
-                answer_text=message.text,
-            )
-            updated_survey_result = self._advance_to_next_question(
-                survey_result=survey_result
+            updated_survey_result = self._processing_answer_use_case(
+                survey_result_id=state_data['survey_result_id'],
+                question_id=state_data['question_id'],
+                answer_option=message.text,
             )
 
             message_id = state_data['message_id']
