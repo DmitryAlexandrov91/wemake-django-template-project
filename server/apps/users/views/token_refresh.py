@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.views import TokenViewBase
 
-from server.apps.users import auth, services
+from server.apps.users import services
 from server.di import resolve
 
 
@@ -16,7 +16,6 @@ class CookieTokenRefreshView(TokenViewBase):
 
     serializer_class = TokenRefreshSerializer
     permission_classes = (permissions.AllowAny,)  # type: ignore[assignment]
-    authentication_classes = (auth.CookieJWTAuthentication,)  # type: ignore[assignment]
 
     @override
     def post(
