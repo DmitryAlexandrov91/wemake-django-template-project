@@ -66,7 +66,7 @@ class ProcessingAnswerUseCase:
         self,
         survey_result_id: int,
         question_id: int,
-        answer_option: str,
+        answer_text: str,
     ) -> SurveyResult:
         """Proceccing answer for question, returns SurveyResult."""
         survey_result = self._survey_result_repo.get_by_pk(pk=survey_result_id)
@@ -74,6 +74,6 @@ class ProcessingAnswerUseCase:
         self._save_answer_use_case(
             survey_result=survey_result,
             question=question,
-            answer_text=answer_option,
+            answer_text=answer_text,
         )
         return self._advance_to_next_question(survey_result=survey_result)

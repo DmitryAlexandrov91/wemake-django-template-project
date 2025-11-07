@@ -38,7 +38,7 @@ def handle_cancel_edit_answer(
     resolve(EditHandlerService).cancel(call=call)
 
 
-@bot.message_handler(
+@bot.message_handler(  # type: ignore[misc]
     state=EditState.waiting_for_new_answer,
 )
 def handle_new_answer_text(message: Message) -> None:

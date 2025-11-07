@@ -42,7 +42,7 @@ class AnswerOptionRepo:
         return AnswerOption.objects.select_related(QUESTION_ATTR).get(pk=pk)
 
     def get_by_question(
-        self, question: Question
+        self, question: Question | None
     ) -> models.QuerySet[AnswerOption]:
         """Returns all answer options by question."""
         return self.get_all().filter(question=question)

@@ -17,7 +17,7 @@ def survey_handler(message: Message) -> None:
     resolve(SurveyHandlerService)(message=message)
 
 
-@bot.message_handler(
+@bot.message_handler(  # type: ignore[misc]
     state=SurveyResponseState.survey_response,
 )
 def handle_survey_text_answer_response(message: Message) -> None:

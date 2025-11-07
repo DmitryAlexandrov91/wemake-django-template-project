@@ -38,9 +38,9 @@ class HandleSurveyCallbackResponseUseCase:
         parsed_data = survey_callback.factory.parse(call.data)
 
         updated_survey_result = self._processing_answer_use_case(
-            survey_result_id=parsed_data['survey_result_id'],
-            question_id=parsed_data['question_id'],
-            answer_option=parsed_data['answer_option'],
+            survey_result_id=int(parsed_data['survey_result_id']),
+            question_id=int(parsed_data['question_id']),
+            answer_text=parsed_data['answer_option'],
         )
 
         answer_options = self._answer_option_repo.get_by_question(
@@ -51,7 +51,7 @@ class HandleSurveyCallbackResponseUseCase:
             call.from_user.id, call.message.chat.id
         ) as state_data:
             state_data['question_id'] = (
-                updated_survey_result.current_question.pk
+                updated_survey_result.current_question.pk  # type: ignore[union-attr]
             )
 
         self._bot.edit_message_text(
@@ -62,7 +62,9 @@ class HandleSurveyCallbackResponseUseCase:
             )
             if updated_survey_result.current_question
             else SURVEY_COMPLITED,
-            reply_markup=self._keyboard_builder(
+            reply_markup=None
+            if updated_survey_result.current_question is None
+            else self._keyboard_builder(
                 answer_options=answer_options,
                 survey_result=updated_survey_result,
                 current_question=updated_survey_result.current_question,

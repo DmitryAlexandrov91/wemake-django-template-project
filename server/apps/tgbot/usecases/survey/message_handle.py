@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from django.core.exceptions import ValidationError
 from telebot import TeleBot, types
 
 from server.apps.surveys.infra.repository import (
@@ -32,13 +33,17 @@ class HandleSurveyMessageResponseUseCase:
         """Handle message text response."""
         self._bot.delete_message(message_id=message.id, chat_id=message.chat.id)
 
+        tg_user = message.from_user
+        if tg_user is None or tg_user.username is None:
+            raise ValidationError('TG user(name) is not recognized.')
+
         with self._bot.retrieve_data(  # type: ignore[union-attr]
-            message.from_user.id, message.chat.id
+            tg_user.id, message.chat.id
         ) as state_data:
             updated_survey_result = self._processing_answer_use_case(
                 survey_result_id=state_data['survey_result_id'],
                 question_id=state_data['question_id'],
-                answer_option=message.text,
+                answer_text=message.text or '',
             )
 
             message_id = state_data['message_id']
@@ -48,9 +53,7 @@ class HandleSurveyMessageResponseUseCase:
         )
 
         if updated_survey_result.current_question is None:
-            self._bot.delete_state(
-                user_id=message.from_user.id, chat_id=message.chat.id
-            )
+            self._bot.delete_state(user_id=tg_user.id, chat_id=message.chat.id)
 
         self._bot.edit_message_text(
             chat_id=message.chat.id,
@@ -60,7 +63,9 @@ class HandleSurveyMessageResponseUseCase:
             else SURVEY_CONTINUE.format(
                 question=updated_survey_result.current_question
             ),
-            reply_markup=self._keyboard_builder(
+            reply_markup=None
+            if updated_survey_result.current_question is None
+            else self._keyboard_builder(
                 answer_options=answer_options,
                 survey_result=updated_survey_result,
                 current_question=updated_survey_result.current_question,
@@ -70,8 +75,8 @@ class HandleSurveyMessageResponseUseCase:
         )
 
         with self._bot.retrieve_data(  # type: ignore[union-attr]
-            message.from_user.id, message.chat.id
+            tg_user.id, message.chat.id
         ) as state_data:
             state_data['question_id'] = (
-                updated_survey_result.current_question.pk
+                updated_survey_result.current_question.pk  # type: ignore[union-attr]
             )

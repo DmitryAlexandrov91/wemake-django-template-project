@@ -1,9 +1,6 @@
 import punq
 from telebot import TeleBot
 
-from server.apps.tgbot.handlers.edit import EditHandlerService
-from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.handlers.survey import SurveyHandlerService
 from server.apps.tgbot.keyboards.edit_keyboard import (
     CancelEditAnswerKeyboard,
     EditAnswerKeyboard,
@@ -15,21 +12,14 @@ from server.apps.tgbot.services.keyboard_builder import (
 )
 from server.apps.tgbot.services.services import TelegramService
 from server.apps.tgbot.usecases import (
-    HandleStartCommandUseCase,
     ProcessTelegramUpdate,
-    SaveAnswerUseCase,
 )
-from server.apps.tgbot.usecases.common import ProcessingAnswerUseCase
-from server.apps.tgbot.usecases.edit import (
-    HandleCancelEditResponseUseCase,
-    HandleEditCommandUseCase,
-    HandleEditResponseUseCase,
-    HandleProcessEditResponseUseCase,
-)
-from server.apps.tgbot.usecases.survey import (
-    HandleSurveyCallbackResponseUseCase,
-    HandleSurveyCommandUseCase,
-    HandleSurveyMessageResponseUseCase,
+from server.di.tg.handlers import (
+    _inject_common_usecases,
+    _inject_edit_usecases,
+    _inject_entrypoints,
+    _inject_start_usecases,
+    _inject_survey_usecases,
 )
 from server.settings.components import tgbot as tg_settings
 
@@ -44,22 +34,16 @@ def _inject_tg(container: punq.Container) -> None:
 
 
 def _inject_handlers(container: punq.Container) -> None:
-    container.register(StartHandlerService)
-    container.register(HandleStartCommandUseCase)
-    container.register(EditHandlerService)
-    container.register(HandleEditCommandUseCase)
-    container.register(HandleEditResponseUseCase)
-    container.register(HandleCancelEditResponseUseCase)
-    container.register(HandleProcessEditResponseUseCase)
-    container.register(SaveAnswerUseCase)
-    container.register(SurveyHandlerService)
-    container.register(HandleSurveyCommandUseCase)
-    container.register(HandleSurveyMessageResponseUseCase)
-    container.register(HandleSurveyCallbackResponseUseCase)
-    container.register(ProcessingAnswerUseCase)
+    """Register handlers."""
+    _inject_survey_usecases(container)
+    _inject_common_usecases(container)
+    _inject_edit_usecases(container)
+    _inject_entrypoints(container)
+    _inject_start_usecases(container)
 
 
 def _inject_keyboards(container: punq.Container) -> None:
+    """Register keyboards."""
     container.register(KeyboardBuilderService)
     container.register(ButtonBuilderService)
     container.register(EditAnswerKeyboard)
