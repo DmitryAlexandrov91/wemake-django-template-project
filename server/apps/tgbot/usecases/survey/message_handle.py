@@ -58,16 +58,11 @@ class HandleSurveyMessageResponseUseCase:
 
             message_id = state_data['message_id']
 
-        text = SURVEY_CONTINUE.format(
-            question=updated_survey_result.current_question
-        )
-
         answer_options = self._answer_option_repo.get_by_question(
             question=updated_survey_result.current_question
         )
 
         if updated_survey_result.current_question is None:
-            text = SURVEY_COMPLITED
             self._bot.delete_state(
                 user_id=message.from_user.id, chat_id=message.chat.id
             )
@@ -75,7 +70,11 @@ class HandleSurveyMessageResponseUseCase:
         self._bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=message_id,
-            text=text,
+            text=SURVEY_COMPLITED
+            if updated_survey_result.current_question is None
+            else SURVEY_CONTINUE.format(
+                question=updated_survey_result.current_question
+            ),
             reply_markup=self._keyboard_builder(
                 answer_options=answer_options,
                 survey_result=updated_survey_result,

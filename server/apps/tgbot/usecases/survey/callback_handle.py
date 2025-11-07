@@ -59,17 +59,21 @@ class HandleSurveyCallbackResponseUseCase:
             question=updated_survey_result.current_question
         )
 
-        text = SURVEY_CONTINUE.format(
-            question=updated_survey_result.current_question
-        )
-
-        if updated_survey_result.current_question is None:
-            text = SURVEY_COMPLITED
+        with self._bot.retrieve_data(  # type: ignore[union-attr]
+            call.from_user.id, call.message.chat.id
+        ) as state_data:
+            state_data['question_id'] = (
+                updated_survey_result.current_question.pk
+            )
 
         self._bot.edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            text=text,
+            text=SURVEY_CONTINUE.format(
+                question=updated_survey_result.current_question
+            )
+            if updated_survey_result.current_question
+            else SURVEY_COMPLITED,
             reply_markup=self._keyboard_builder(
                 answer_options=answer_options,
                 survey_result=updated_survey_result,

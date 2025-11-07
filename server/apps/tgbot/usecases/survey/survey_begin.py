@@ -44,9 +44,9 @@ class HandleSurveyCommandUseCase:
             raise ValidationError('TG user(name) is not recognized.')
 
         user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
-        active_survey = self._survey_repo.get_active_survey_for_user(user=user)
         survey_result = self._survey_res_repo.get_or_create_user_survey_res(
-            user=user, survey=active_survey
+            user=user,
+            survey=self._survey_repo.get_active_survey_for_user(user=user),
         )
 
         self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
@@ -56,27 +56,24 @@ class HandleSurveyCommandUseCase:
             message.chat.id,
         )
 
-        text = SURVEY_START.format(
-            full_name=user.full_name,
-            question=survey_result.current_question,
-        )
-
         if survey_result.current_question is None:
             self._bot.delete_state(
                 user_id=message.from_user.id, chat_id=message.chat.id
             )
-            text = SURVEY_COMPLITED
-
-        answer_options = self._answer_option_repo.get_by_question(
-            question=survey_result.current_question
-        )
 
         sent_message = self._bot.send_message(
             chat_id=message.chat.id,
-            text=text,
+            text=SURVEY_COMPLITED
+            if survey_result.current_question is None
+            else SURVEY_START.format(
+                full_name=user.full_name,
+                question=survey_result.current_question,
+            ),
             parse_mode='HTML',
             reply_markup=self._keyboard_builder(
-                answer_options=answer_options,
+                answer_options=self._answer_option_repo.get_by_question(
+                    question=survey_result.current_question
+                ),
                 survey_result=survey_result,
                 current_question=survey_result.current_question,
                 callback=survey_callback,
