@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 from celery import group, shared_task
+from django.core.mail import send_mail
 
 from server.apps.surveys.infra.repository import QuestionRepo, SurveySaveRepo
 from server.apps.surveys.usecases.statistics_service import (
@@ -63,3 +64,20 @@ def delete_marked_questions_task() -> None:
         for question_id in questions_ids
     )
     update_group.apply_async()
+
+
+@shared_task  # type: ignore[misc]
+def email_survey_invitation_task(
+    subject: str,
+    message: str,
+    from_email: str,
+    to_emails: list[str],
+) -> None:
+    """Celery task to send survey inviatation email."""
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=from_email,
+        recipient_list=to_emails,
+        fail_silently=True,
+    )

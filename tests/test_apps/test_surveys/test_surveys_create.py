@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 
 from server.apps.company.models import Department
 from server.apps.surveys.models import Question, Survey, SurveyQuestion
+from server.apps.surveys.usecases.inform_recipients import survey_notification
 from tests.plugins.surveys_survey import CREATE_SURVEY_URL
 
 
@@ -50,3 +51,17 @@ def test_survey_question_unique_text_violation(
         ValidationError, match='already has a question with this text'
     ):
         survey_question.save()
+
+
+@pytest.mark.django_db
+def test_survey_notification_no_bot_username(
+    monkeypatch: pytest.MonkeyPatch,
+    survey: Survey,
+) -> None:
+    """Test survey_notification raises ValueError if bot username is None."""
+    monkeypatch.setattr(
+        'server.apps.surveys.usecases.inform_recipients.get_bot_username',
+        lambda: None,
+    )
+    with pytest.raises(ValueError, match=r'No bot username received\.'):
+        survey_notification(survey)

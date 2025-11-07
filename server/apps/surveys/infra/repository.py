@@ -276,6 +276,27 @@ class SurveyRepo:  # noqa: WPS214
             .latest('start_date')
         )
 
+    def get_survey_recipients(
+        self,
+        survey: Survey,
+    ) -> models.QuerySet[CustomUser]:
+        """Returns users to participate in the survey."""
+        return survey.department.users.all()
+
+    def get_active_survey_for_user_by_id(
+        self, user: CustomUser, survey_id: int
+    ) -> Survey:
+        """Returns survey by id."""
+        now_date = timezone.now().date()
+        return (
+            Survey.objects.filter(
+                department=user.department,
+                start_date__lte=now_date,
+            )
+            .exclude(end_date__lt=now_date, end_date__isnull=False)
+            .get(pk=survey_id)
+        )
+
 
 @final
 class SurveySaveRepo:

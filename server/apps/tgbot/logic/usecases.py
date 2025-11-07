@@ -13,6 +13,9 @@ from server.apps.surveys.models.surveys import (
     Question,
     SurveyResult,
 )
+from server.apps.tgbot.logic.validators import (
+    recognize_survey_id,
+)
 from server.apps.tgbot.services.services import TelegramService
 from server.apps.users.infra.repository import UserRepo
 
@@ -26,30 +29,6 @@ class ProcessTelegramUpdate:
     def __call__(self, request_body: bytes) -> None:
         """Use service for bot update."""
         self._telegram_service.process_update(request_body)
-
-
-@dataclass
-class HandleStartCommandUseCase:
-    """Usecase for survey_res_creation."""
-
-    _user_repo: UserRepo
-    _survey_repo: SurveyRepo
-    _survey_res_repo: SurveyResultRepo
-    _bot: TeleBot
-
-    def execute(self, message: types.Message) -> None:
-        """Create survey result."""
-        tg_user = message.from_user
-        if not tg_user or not tg_user.username:
-            raise ValidationError('TG user(name) is not recognized.')
-        user = self._user_repo.get_by_tg_username(
-            tg_username=f'@{tg_user.username}'
-        )
-        current_survey = self._survey_repo.get_active_survey_for_user(user=user)
-        self._survey_res_repo.get_or_create_user_survey_res(
-            user=user,
-            survey=current_survey,
-        )
 
 
 @dataclass
@@ -72,4 +51,36 @@ class SaveAnswerUseCase:
             question=question,
             text_answer=message.text or '',
             selected_options=selected_options,
+        )
+
+
+@dataclass
+class HandleStartCommandUseCase:
+    """Usecase for survey_res_creation."""
+
+    _user_repo: UserRepo
+    _survey_repo: SurveyRepo
+    _survey_res_repo: SurveyResultRepo
+    _bot: TeleBot
+
+    def __call__(self, message: types.Message) -> None:
+        """Create survey result."""
+        tg_user = message.from_user
+        if not tg_user or not tg_user.username:
+            raise ValidationError('TG user(name) is not recognized.')
+        user = self._user_repo.get_by_tg_username(
+            tg_username=f'@{tg_user.username}'
+        )
+
+        survey_id = recognize_survey_id(message.text) if message.text else None
+        if survey_id:
+            survey = self._survey_repo.get_active_survey_for_user_by_id(
+                user=user, survey_id=survey_id
+            )
+        else:
+            survey = self._survey_repo.get_active_survey_for_user(user=user)
+
+        self._survey_res_repo.get_or_create_user_survey_res(
+            user=user,
+            survey=survey,
         )
