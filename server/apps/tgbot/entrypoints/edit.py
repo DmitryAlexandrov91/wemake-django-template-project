@@ -1,7 +1,6 @@
 import telebot
 from telebot.types import Message
 
-<<<<<<<< HEAD:server/apps/tgbot/entrypoints/edit.py
 from server.apps.tgbot.callbacks import (
     answer_callback,
     answer_cancel_callback,
@@ -12,14 +11,6 @@ from server.di import resolve
 
 bot = resolve(telebot.TeleBot)
 
-========
-from server.apps.tgbot.bot_instance import bot
-from server.apps.tgbot.callbacks import answer_callback, answer_cancel_callback
-from server.apps.tgbot.handlers.edit import EditHandlerService
-from server.apps.tgbot.states import EditStates
-from server.di import resolve
-
->>>>>>>> origin/dev:server/apps/tgbot/entrypoints/edit_answers.py
 
 @bot.message_handler(commands=['edit'])  # type: ignore[misc]
 def responses_edit_handler(message: Message) -> None:
