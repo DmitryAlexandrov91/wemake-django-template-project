@@ -11,4 +11,4 @@ class TgbotConfig(AppConfig):
 
     @override
     def ready(self) -> None:
-        from server.apps.tgbot import entrypoints  # noqa: F401, PLC0415
+        from server.apps.tgbot import entrypoints  # noqa: PLC0415,F401

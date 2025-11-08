@@ -3,7 +3,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from server.apps.tgbot.callbacks import answer_callback
-from server.apps.tgbot.entrypoints import (
+from server.apps.tgbot.entrypoints.edit_answers import (
     handle_edit_answer,
 )
 from server.apps.tgbot.message_templates import (

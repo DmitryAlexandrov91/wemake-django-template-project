@@ -13,7 +13,12 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
-from server.di.tg import _inject_handlers, _inject_keyboards, _inject_tg
+from server.di.tg import (
+    _inject_handlers,
+    _inject_keyboards,
+    _inject_menu,
+    _inject_tg,
+)
 
 
 def _inject_settings(container: punq.Container) -> None:
@@ -55,6 +60,7 @@ def create_container() -> punq.Container:
     _inject_survey_infra(container)
     _inject_handlers(container)
     _inject_keyboards(container)
+    _inject_menu(container)
     return container
 
 

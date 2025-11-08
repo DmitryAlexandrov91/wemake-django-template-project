@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from server.apps.surveys import models
-from server.apps.tgbot.entrypoints import start_handler
+from server.apps.tgbot.entrypoints.start import start_handler
 from tests.plugins import department_factory, users
 
 if TYPE_CHECKING:

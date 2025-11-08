@@ -5,6 +5,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.request import Request
 
+from server.apps.surveys.choices import SurveyBotState
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
@@ -27,6 +28,7 @@ ASC_PARAM = 'asc'
 ALL_PARAM = 'all'
 DEPARTMENT = 'department'
 SURVEY_ATTR = 'surveys'
+SURVYE_FIELD = 'survey'
 
 
 @final
@@ -359,6 +361,19 @@ class SurveyResultRepo:
             user_answer.selected_options.set(selected_options)
 
         return user_answer
+
+    def get_completed_surveys(
+        self, user: CustomUser
+    ) -> models.QuerySet[SurveyResult]:
+        """Return all completed survey results for the given user."""
+        return (
+            SurveyResult.objects.filter(
+                user=user,
+                bot_state=SurveyBotState.COMPLETED,
+            )
+            .select_related(SURVYE_FIELD)
+            .prefetch_related('user_answers__question')
+        )
 
 
 @final

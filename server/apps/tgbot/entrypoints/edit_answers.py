@@ -1,19 +1,11 @@
 import telebot
 from telebot.types import Message
 
+from server.apps.tgbot.bot_instance import bot
 from server.apps.tgbot.callbacks import answer_callback, answer_cancel_callback
 from server.apps.tgbot.handlers.edit import EditHandlerService
-from server.apps.tgbot.handlers.start import StartHandlerService
 from server.apps.tgbot.states import EditStates
 from server.di import resolve
-
-bot = resolve(telebot.TeleBot)
-
-
-@bot.message_handler(commands=['start'])  # type: ignore[misc]
-def start_handler(message: Message) -> None:
-    """Entrypoint for command `/start`."""
-    resolve(StartHandlerService)(message)
 
 
 @bot.message_handler(commands=['edit'])  # type: ignore[misc]

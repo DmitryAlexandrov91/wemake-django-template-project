@@ -42,6 +42,7 @@ class _SurveyFactoryParams(TypedDict, total=False):
 class _SurveyResultFactoryParams(TypedDict, total=False):
     user: CustomUser
     survey: Survey
+    bot_state: str
 
 
 class _UserAnswerFactoryParams(TypedDict, total=False):
