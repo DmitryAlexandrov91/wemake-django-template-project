@@ -5,19 +5,20 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
+from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
 from pytest_mock import MockFixture
 
-from server.apps.users.models import CustomUser
+from server.apps.users import admin, models
 from server.common.constants import DATA_LENGHT
 from tests.plugins.users_requests import RequestMock
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
 
-type UserFactory = Callable[[Unpack[_UserFactoryParams]], CustomUser]
+type UserFactory = Callable[[Unpack[_UserFactoryParams]], models.CustomUser]
 
-type UserBatchFactory = Callable[[int], list[CustomUser]]
+type UserBatchFactory = Callable[[int], list[models.CustomUser]]
 
 
 class _UserFactoryParams(TypedDict, total=False):
@@ -38,11 +39,11 @@ class _UserFactoryParams(TypedDict, total=False):
 
 
 @pytest.fixture
-def user_factory(fakery_m: FakeryM[CustomUser]) -> UserFactory:
+def user_factory(fakery_m: FakeryM[models.CustomUser]) -> UserFactory:
     """Factory fixture for creating User instances."""
 
-    def factory(**kwargs: Unpack[_UserFactoryParams]) -> CustomUser:
-        return fakery_m(CustomUser)(**kwargs)
+    def factory(**kwargs: Unpack[_UserFactoryParams]) -> models.CustomUser:
+        return fakery_m(models.CustomUser)(**kwargs)
 
     return factory
 
@@ -53,7 +54,7 @@ def user_batch(
 ) -> UserBatchFactory:
     """Return a factory that creates `batch_size` User instances."""
 
-    def factory(batch_size: int, **kwargs: Any) -> list[CustomUser]:
+    def factory(batch_size: int, **kwargs: Any) -> list[models.CustomUser]:
         return [
             user_factory(
                 username=f'user{user_number}',  # noqa: WPS226
@@ -66,7 +67,7 @@ def user_batch(
 
 
 @pytest.fixture
-def auth_user(user_factory: UserFactory, department: Any) -> CustomUser:
+def auth_user(user_factory: UserFactory, department: Any) -> models.CustomUser:
     """Fixture that create a single User instance."""
     return user_factory(
         username='testuser',
@@ -94,11 +95,11 @@ def mocked_send_mail(mocker: MockFixture) -> Any:
 
 @pytest.fixture
 def active_user(
-    valid_request: RequestMock, fakery_m: FakeryM[CustomUser]
-) -> CustomUser:
+    valid_request: RequestMock, fakery_m: FakeryM[models.CustomUser]
+) -> models.CustomUser:
     """Fixture for creating an active user."""
     original_password = secrets.token_urlsafe(DATA_LENGHT)
-    return fakery_m(CustomUser)(
+    return fakery_m(models.CustomUser)(
         email=valid_request.data['email'],
         password=original_password,
         is_active=True,
@@ -113,7 +114,9 @@ def admin_user(db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def three_users_to_inactivate(user_factory: UserFactory) -> list[CustomUser]:
+def three_users_to_inactivate(
+    user_factory: UserFactory,
+) -> list[models.CustomUser]:
     """Fixture that creates three users with to_inactivate=True."""
     return [
         user_factory(
@@ -123,3 +126,9 @@ def three_users_to_inactivate(user_factory: UserFactory) -> list[CustomUser]:
         )
         for user_number in range(3)
     ]
+
+
+@pytest.fixture
+def user_admin() -> admin.CustomUserAdmin:
+    """UserAdmin fixture."""
+    return admin.CustomUserAdmin(models.CustomUser, AdminSite())

@@ -244,10 +244,10 @@ class SurveyResult(models.Model):
         ...     user=user,
         ...     survey=survey,
         ... )
-        >>> str(survey_result) == f'Result {user} for survey "{survey}"'
+        >>> str(survey_result) == f'Result {user} for survey id={survey.id}'
         True
         """
-        return f'Result {self.user} for survey "{self.survey}"'
+        return f'Result {self.user} for survey id={self.survey_id}'
 
 
 class UserAnswer(models.Model):

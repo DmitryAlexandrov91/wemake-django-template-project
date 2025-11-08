@@ -2,14 +2,17 @@ from typing import Any, Final, override
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.db.models import Prefetch, QuerySet
 from django.http import HttpRequest
 
 from server.apps.surveys.models import UserStatistics
+from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.users.models import CustomUser
 
 _EMAIL_FIELD: Final = 'email'
 _FULL_NAME_FIELD: Final = 'full_name'
 _FIELDS: Final = 'fields'
+_DEPARTMENT_FIELD = 'department'
 
 
 @admin.register(CustomUser)
@@ -27,12 +30,12 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
         'is_staff',
         'is_active',
         'groups',
-        'department',
+        _DEPARTMENT_FIELD,
     )
     search_fields = (_EMAIL_FIELD, _FULL_NAME_FIELD)
     ordering = (_EMAIL_FIELD,)
     filter_horizontal = ('groups', 'user_permissions')
-    list_select_related = ('department', 'statistics')
+    list_select_related = (_DEPARTMENT_FIELD, 'statistics')
 
     fieldsets = (
         (None, {_FIELDS: (_EMAIL_FIELD, 'password')}),
@@ -43,7 +46,7 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
                     _FULL_NAME_FIELD,
                     'position',
                     'role',
-                    'department',
+                    _DEPARTMENT_FIELD,
                     'tg_username',
                 )
             },
@@ -81,6 +84,19 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
             return user.statistics.average_answer_sec
         except Exception:
             return 0
+
+    @override
+    def get_queryset(self, request: HttpRequest) -> QuerySet[CustomUser]:
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                Prefetch(
+                    'survey_result',
+                    queryset=SurveyResult.objects.select_related('survey'),
+                )
+            )
+        )
 
 
 @admin.register(UserStatistics)
