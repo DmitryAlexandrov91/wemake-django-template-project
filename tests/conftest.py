@@ -21,6 +21,8 @@ pytest_plugins = [
     'plugins.users_auth',
     'plugins.surveys_survey',
     'plugins.tgbot.fixtures',
+    'plugins.tgbot.menu.bot_state_factory',
+    'plugins.tgbot.menu.user_message_factory',
     'plugins.users_requests',
     'plugins.users_for_tg',
     'plugins.celery_set',

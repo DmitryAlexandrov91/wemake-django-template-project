@@ -14,3 +14,10 @@ class SurveyResponseState(StatesGroup):
     """State for handle survey answer response."""
 
     survey_response = State()
+
+
+class SurveyPeriodStates(StatesGroup):
+    """States for handling the survey results period input from the user."""
+
+    waiting_for_start_date = State()
+    waiting_for_end_date = State()

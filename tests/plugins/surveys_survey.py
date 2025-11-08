@@ -42,6 +42,7 @@ class _SurveyFactoryParams(TypedDict, total=False):
 class _SurveyResultFactoryParams(TypedDict, total=False):
     user: CustomUser
     survey: Survey
+    bot_state: str
 
 
 class _UserAnswerFactoryParams(TypedDict, total=False):
@@ -91,7 +92,9 @@ def surveys_user_answer_result_factory(
 def survey(surveys_survey_factory: SurveyFactory) -> Survey:
     """Return a single Survey instance created."""
     return surveys_survey_factory(
-        title='Original Title', description='Original Description'
+        title='Original Title',
+        description='Original Description',
+        start_date=date(2025, 10, 15),
     )
 
 
