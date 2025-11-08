@@ -178,6 +178,7 @@ class HandleProcessEditResponseUseCase:
     _bot: TeleBot
     _keyboard_builder: EditAnswerKeyboard
     _user_answer_repo: UserAnswerRepo
+    _survey_result_repo: SurveyResultRepo
 
     def __call__(self, message: types.Message) -> None:
         """Process answer text edit."""
@@ -189,7 +190,7 @@ class HandleProcessEditResponseUseCase:
         with self._bot.retrieve_data(  # type: ignore[union-attr]
             message.from_user.id, message.chat.id
         ) as state_data:
-            survey_result = SurveyResult.objects.get(
+            survey_result = self._survey_result_repo.get_by_pk(
                 pk=state_data[SURVEY_RESULT_ID]
             )
             user_answers = self._user_answer_repo.get_answers_by_survey_result(

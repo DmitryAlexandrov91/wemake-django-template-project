@@ -88,6 +88,12 @@ def mock_bot_send_message(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
+def mock_bot_delete_state(mocker: MockerFixture) -> MagicMock:
+    """Mock the `telebot.TeleBot.delete_state` method."""
+    return mocker.patch('telebot.TeleBot.delete_state')
+
+
+@pytest.fixture
 def mock_bot_edit_message_text(mocker: MockerFixture) -> MagicMock:
     """Mock the `telebot.TeleBot.edit_message_text` method."""
     return mocker.patch('telebot.TeleBot.edit_message_text')

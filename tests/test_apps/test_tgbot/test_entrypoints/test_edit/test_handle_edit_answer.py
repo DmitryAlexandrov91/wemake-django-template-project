@@ -42,4 +42,5 @@ def test_handle_edit_answer_with_none_data(
     """Ensure handle_edit_answer do nothing without call.data."""
     mock_callback_query.data = None
     handle_edit_answer(call=mock_callback_query)
+    mock_bot_answer_callback_query.assert_called_once()
     mock_bot_edit_message_text.assert_not_called()

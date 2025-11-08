@@ -31,11 +31,31 @@ def test_repo_get_all(
     surveys_answer_option_batch: Callable[[int], list[AnswerOption]],
 ) -> None:
     """Test AnswerOptionRepo get_all method."""
-    repo = resolve(AnswerOptionRepo)
     batch_size = 3
     created_options = surveys_answer_option_batch(batch_size)
-    options = repo.get_all()
+    options = resolve(AnswerOptionRepo).get_all()
 
     assert options.count() == batch_size
     assert all(isinstance(option, AnswerOption) for option in options)
     assert set(options) == set(created_options)
+
+
+@pytest.mark.django_db
+def test_repo_get_by_question(
+    consent_given_question: Question,
+    surveys_answer_option_factory: AnswerOptionFactory,
+) -> None:
+    """Test AnswerOptionRepo get_by_question method."""
+    batch = 3
+    expected_answer_option = surveys_answer_option_factory(
+        question=consent_given_question
+    )
+    for _ in range(batch):
+        surveys_answer_option_factory()
+
+    expected_answer_options = resolve(AnswerOptionRepo).get_by_question(
+        question=consent_given_question
+    )
+
+    assert len(expected_answer_options) == 1
+    assert expected_answer_options.first() == expected_answer_option

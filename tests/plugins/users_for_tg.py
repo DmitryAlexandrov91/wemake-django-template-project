@@ -3,6 +3,7 @@ from django.db import models
 
 from server.apps.company.models import Department
 from server.apps.surveys.models import SurveyQuestion, SurveyResult, UserAnswer
+from server.apps.surveys.models.surveys import Question
 from tests.plugins.fakery import FakeryM
 from tests.plugins.surveys_survey import SurveyFactory
 from tests.plugins.tgbot.fixtures import MockMessage
@@ -28,8 +29,7 @@ def user_from_message_with_relations(
     )
     survey = surveys_survey_factory(department=department)
     survey_result = fakery_m(SurveyResult)(
-        user=user,
-        survey=survey,
+        user=user, survey=survey, current_question=fakery_m(Question)()
     )
     fakery_m(SurveyQuestion)(survey=survey)
     for _ in range(3):

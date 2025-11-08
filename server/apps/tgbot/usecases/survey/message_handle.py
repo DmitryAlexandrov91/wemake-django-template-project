@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from django.core.exceptions import ValidationError
 from telebot import TeleBot, types
 
 from server.apps.surveys.infra.repository import (
@@ -34,8 +33,8 @@ class HandleSurveyMessageResponseUseCase:
         self._bot.delete_message(message_id=message.id, chat_id=message.chat.id)
 
         tg_user = message.from_user
-        if tg_user is None or tg_user.username is None:
-            raise ValidationError('TG user(name) is not recognized.')
+        if tg_user is None or tg_user.username is None or message.text is None:
+            return
 
         with self._bot.retrieve_data(  # type: ignore[union-attr]
             tg_user.id, message.chat.id
@@ -43,7 +42,7 @@ class HandleSurveyMessageResponseUseCase:
             updated_survey_result = self._processing_answer_use_case(
                 survey_result_id=state_data['survey_result_id'],
                 question_id=state_data['question_id'],
-                answer_text=message.text or '',
+                answer_text=message.text,
             )
 
             message_id = state_data['message_id']

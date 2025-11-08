@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from django.core.exceptions import ValidationError
 from telebot import TeleBot, types
 from telebot.custom_filters import StateFilter
 
@@ -40,8 +39,8 @@ class HandleSurveyCommandUseCase:
     def __call__(self, message: types.Message) -> Any:
         """Start survey handle with current question."""
         tg_user = message.from_user
-        if tg_user is None or tg_user.username is None:
-            raise ValidationError('TG user(name) is not recognized.')
+        if tg_user is None or message.text is None:
+            return
 
         user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
         survey_result = self._survey_res_repo.get_or_create_user_survey_res(
