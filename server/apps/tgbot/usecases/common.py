@@ -15,18 +15,6 @@ from server.apps.surveys.models.surveys import (
 from server.apps.surveys.usecases.advance_to_next_question import (
     AdvanceToNextQuestion,
 )
-from server.apps.tgbot.services.services import TelegramService
-
-
-@dataclass
-class ProcessTelegramUpdate:
-    """Usecase for process update bot."""
-
-    _telegram_service: TelegramService
-
-    def __call__(self, request_body: bytes) -> None:
-        """Use service for bot update."""
-        self._telegram_service.process_update(request_body)
 
 
 @dataclass

@@ -14,8 +14,11 @@ from server.apps.surveys.infra.repository import (
 from server.apps.surveys.usecases.advance_to_next_question import (
     AdvanceToNextQuestion,
 )
-from server.apps.surveys.usecases.statistics_service import (
-    UserStatisticsService,
+from server.apps.surveys.usecases.statistics_services import (
+    GetStatisticPeriod,
+    GetUserIds,
+    UpdateSingleUserStatistic,
+    UpdateStatisticScheduler,
 )
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.services import AuthService
@@ -49,8 +52,11 @@ def _inject_survey_infra(container: punq.Container) -> None:
 def _inject_services(container: punq.Container) -> None:
     """Register services."""
     container.register(AuthService)
-    container.register(UserStatisticsService)
     container.register(AdvanceToNextQuestion)
+    container.register(UpdateStatisticScheduler)
+    container.register(UpdateSingleUserStatistic)
+    container.register(GetUserIds)
+    container.register(GetStatisticPeriod)
 
 
 def create_container() -> punq.Container:

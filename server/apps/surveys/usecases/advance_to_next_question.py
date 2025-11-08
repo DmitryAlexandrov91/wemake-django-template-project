@@ -1,10 +1,18 @@
+from dataclasses import dataclass
+
 from django.db import transaction
 
 from server.apps.surveys.models import Question, SurveyResult
+from server.apps.surveys.usecases.statistics_services import (
+    UpdateStatisticScheduler,
+)
 
 
+@dataclass(frozen=True)
 class AdvanceToNextQuestion:
     """Use-case for moving survey forward after answering."""
+
+    _sheduler: UpdateStatisticScheduler
 
     def __call__(self, survey_result: SurveyResult) -> SurveyResult:
         """
@@ -39,10 +47,6 @@ class AdvanceToNextQuestion:
             )
 
         if not next_question and survey_result.completed_questions > 0:
-            from server.apps.surveys.tasks import (  # noqa: PLC0415
-                update_user_statistics_task,
-            )
-
-            update_user_statistics_task.delay(user_id=survey_result.user.pk)
+            self._sheduler(user_id=survey_result.user.pk)
 
         return survey_result

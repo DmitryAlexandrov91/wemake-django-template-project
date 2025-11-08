@@ -11,9 +11,6 @@ from server.apps.tgbot.services.keyboard_builder import (
     KeyboardBuilderService,
 )
 from server.apps.tgbot.services.services import TelegramService
-from server.apps.tgbot.usecases import (
-    ProcessTelegramUpdate,
-)
 from server.di.tg.handlers import (
     _inject_common_usecases,
     _inject_edit_usecases,
@@ -30,7 +27,6 @@ def _inject_tg(container: punq.Container) -> None:
         TeleBot, instance=TeleBot(tg_settings.BOT_TOKEN), scope='singleton'
     )
     container.register(TelegramService)
-    container.register(ProcessTelegramUpdate)
 
 
 def _inject_handlers(container: punq.Container) -> None:

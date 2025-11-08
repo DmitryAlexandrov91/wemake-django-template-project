@@ -12,7 +12,7 @@ from pytest_mock import MockerFixture
 from server.apps.company.models import Department
 from server.apps.surveys.models import Question, Survey, SurveyResult
 from server.apps.users.models import CustomUser
-from tests.plugins import department_factory, surveys_survey, users
+from tests.plugins import department_factory, surveys_survey
 
 
 @pytest.fixture
@@ -152,19 +152,6 @@ def mock_statistics_mocks(mocker: MockerFixture) -> dict[str, mock.Mock]:
 
 
 @pytest.fixture
-def three_active_users_one_inactive(
-    user_factory: users.UserFactory,
-    user_batch: users.UserBatchFactory,
-) -> list[CustomUser]:
-    """Fixture creates 4 users, one of them is inactive."""
-    active_users = user_batch(3)
-    user_factory(
-        is_active=False, username='inactive_user', email='inactive@email.ru'
-    )
-    return active_users
-
-
-@pytest.fixture
 def mock_celery_tasks(mocker: MockerFixture) -> dict[str, mock.Mock]:
     """Mocking Celery."""
     mock_group = mocker.patch('server.apps.surveys.tasks.group')
@@ -178,18 +165,3 @@ def mock_celery_tasks(mocker: MockerFixture) -> dict[str, mock.Mock]:
         'update_task': mock_update_task,
         'signature': mock_signature,
     }
-
-
-@pytest.fixture
-def mock_statist_service(
-    mocker: MockerFixture, three_active_users_one_inactive: list[CustomUser]
-) -> mock.Mock:
-    """Mocking user statistics service."""
-    mock_service = mocker.patch(
-        'server.apps.surveys.usecases.statistics_service.UserStatisticsService'
-    )
-    mock_service.return_value.get_statistics_period.return_value = 5
-    mock_service.return_value.get_user_ids.return_value = [
-        user.id for user in three_active_users_one_inactive
-    ]
-    return mock_service

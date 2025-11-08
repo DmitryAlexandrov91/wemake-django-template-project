@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from server.apps.tgbot.usecases import ProcessTelegramUpdate
+from server.apps.tgbot.services.services import TelegramService
 from server.di import resolve
 
 settings = resolve(LazySettings)
@@ -32,7 +32,6 @@ class TelegramWebhookView(View):
         if secret_token != settings.WEBHOOK_SECRET:
             return HttpResponseForbidden('Invalid secret token')
 
-        process_update = resolve(ProcessTelegramUpdate)
-        process_update(request.body)
+        resolve(TelegramService)(request.body)
 
         return HttpResponse('ok', status=HTTPStatus.OK)

@@ -43,8 +43,6 @@ def test_update_user_statistics_task_empty_qset(
 @pytest.mark.django_db
 def test_bulk_update_user_statistics_task(
     mock_celery_tasks: dict[str, mock.Mock],
-    mock_statist_service: mock.Mock,
-    three_active_users_one_inactive: list[CustomUser],
 ) -> None:
     """Test bulk statistics update."""
     update_user_statistics_task()
