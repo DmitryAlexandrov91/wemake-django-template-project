@@ -10,7 +10,7 @@ from server.apps.tgbot.services.keyboard_builder import (
     ButtonBuilderService,
     KeyboardBuilderService,
 )
-from server.apps.tgbot.services.services import TelegramService
+from server.apps.tgbot.services.telegram_service import TelegramService
 from server.di.tg.handlers import (
     _inject_common_usecases,
     _inject_edit_usecases,

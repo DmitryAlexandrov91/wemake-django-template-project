@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from server.apps.tgbot.services.services import TelegramService
+from server.apps.tgbot.services.telegram_service import TelegramService
 from server.di import resolve
 
 settings = resolve(LazySettings)

@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any
 
 from telebot import TeleBot, types
 from telebot.custom_filters import StateFilter
@@ -13,6 +10,7 @@ from server.apps.surveys.infra.repository import (
     SurveyResultRepo,
     UserAnswerRepo,
 )
+from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.callbacks import survey_callback
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
@@ -20,7 +18,9 @@ from server.apps.tgbot.message_templates import (
     SURVEY_START,
 )
 from server.apps.tgbot.states import SurveyResponseState
+from server.apps.tgbot.usecases.validators import recognize_survey_id
 from server.apps.users.infra.repository import UserRepo
+from server.apps.users.models import CustomUser
 
 
 @dataclass
@@ -36,34 +36,53 @@ class HandleSurveyCommandUseCase:
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
 
-    def __call__(self, message: types.Message) -> Any:
+    def __call__(self, message: types.Message) -> None:
         """Start survey handle with current question."""
         tg_user = message.from_user
         if tg_user is None or message.text is None:
             return
 
         user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
-        survey_result = self._survey_res_repo.get_or_create_user_survey_res(
-            user=user,
-            survey=self._survey_repo.get_active_survey_for_user(user=user),
+        survey_result = self._recognise_survey(
+            message_text=message.text, user=user
         )
-
-        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
-        self._bot.set_state(
-            tg_user.id,
-            SurveyResponseState.survey_response,
-            message.chat.id,
-        )
+        self._configure_state(user_id=tg_user.id, chat_id=message.chat.id)
 
         if survey_result.current_question is None:
             self._bot.delete_state(user_id=tg_user.id, chat_id=message.chat.id)
 
-        sent_message = self._bot.send_message(
+        sent_message = self._send_and_return_message(
             chat_id=message.chat.id,
+            survey_result=survey_result,
+            full_name=user.full_name,
+        )
+        self._retrieve_data(
+            user_id=tg_user.id,
+            chat_id=message.chat.id,
+            survey_result=survey_result,
+            user=user,
+            sent_message=sent_message,
+        )
+
+    def _configure_state(self, user_id: int, chat_id: int | None) -> None:
+        """Add custom filter and set state."""
+        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
+        self._bot.set_state(
+            user_id=user_id,
+            state=SurveyResponseState.survey_response,
+            chat_id=chat_id,
+        )
+
+    def _send_and_return_message(
+        self, chat_id: int | str, survey_result: SurveyResult, full_name: str
+    ) -> types.Message:
+        """Send and returns Message."""
+        return self._bot.send_message(
+            chat_id=chat_id,
             text=SURVEY_COMPLITED
             if survey_result.current_question is None
             else SURVEY_START.format(
-                full_name=user.full_name,
+                full_name=full_name,
                 question=survey_result.current_question,
             ),
             parse_mode='HTML',
@@ -79,8 +98,34 @@ class HandleSurveyCommandUseCase:
             ),
         )
 
+    def _recognise_survey(
+        self, message_text: str, user: CustomUser
+    ) -> SurveyResult:
+        """Recognize survey and returns SurveyResult."""
+        survey_id = recognize_survey_id(message_text)
+        survey = (
+            self._survey_repo.get_active_survey_for_user_by_id(
+                user=user, survey_id=survey_id
+            )
+            if survey_id
+            else self._survey_repo.get_active_survey_for_user(user=user)
+        )
+        return self._survey_res_repo.get_or_create_user_survey_res(
+            user=user,
+            survey=survey,
+        )
+
+    def _retrieve_data(
+        self,
+        user_id: int,
+        chat_id: int | None,
+        survey_result: SurveyResult,
+        user: CustomUser,
+        sent_message: types.Message,
+    ) -> None:
+        """Retrieve data after processing is complete."""
         with self._bot.retrieve_data(  # type: ignore[union-attr]
-            tg_user.id, message.chat.id
+            user_id=user_id, chat_id=chat_id
         ) as state_data:
             state_data['question_id'] = survey_result.current_question.pk  # type: ignore[union-attr]
             state_data['survey_result_id'] = survey_result.pk

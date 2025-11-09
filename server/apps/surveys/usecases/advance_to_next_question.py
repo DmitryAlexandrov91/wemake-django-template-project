@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from django.db import transaction
 
 from server.apps.surveys.models import Question, SurveyResult
-from server.apps.surveys.usecases.statistics_services import (
-    UpdateStatisticScheduler,
-)
+
+if TYPE_CHECKING:
+    from server.apps.surveys.usecases.statistics_services import (
+        UpdateStatisticScheduler,
+    )
 
 
 @dataclass(frozen=True)

@@ -56,9 +56,9 @@ def _inject_survey_infra(container: punq.Container) -> None:
 
 def _inject_services(container: punq.Container) -> None:
     """Register services."""
+    container.register(UpdateStatisticScheduler)
     container.register(AuthService)
     container.register(AdvanceToNextQuestion)
-    container.register(UpdateStatisticScheduler)
     container.register(UpdateSingleUserStatistic)
     container.register(GetUserIds)
     container.register(GetStatisticPeriod)
