@@ -51,6 +51,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     'rest_framework_simplejwt',
     'django_celery_beat',
     'drf_spectacular',
+    'django_filters',
 )
 
 MIDDLEWARE: tuple[str, ...] = (
@@ -221,6 +222,9 @@ REST_FRAMEWORK = {
     ),
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }
 
 # Cookie

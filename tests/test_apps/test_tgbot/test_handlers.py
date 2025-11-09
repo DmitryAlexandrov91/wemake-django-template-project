@@ -64,6 +64,7 @@ def test_start_handler_service_new(
         (f'{START_PREFIX}{SURVEY_KEY}1', 1),
         (f'{START_PREFIX}{SURVEY_KEY}10', 10),
         (f'{START_PREFIX}{SURVEY_KEY}999abrakadabra', 999),
+        ('Text without numbers', None),
     ],
 )
 def test_recognize_survey_id_found(input_text: str, expected_id: int) -> None:

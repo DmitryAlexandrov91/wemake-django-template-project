@@ -1,6 +1,7 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (
     mixins,
     request,
@@ -10,13 +11,13 @@ from rest_framework import (
     viewsets,
 )
 
+from server.apps.surveys import models, paginators
+from server.apps.surveys.filters import SurveyFilter
 from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
     SurveySaveRepo,
 )
-from server.apps.surveys.models import Question, Survey
-from server.apps.surveys.paginators import CustomPaginator
 from server.apps.surveys.schemas import question_viewset_schema
 from server.apps.surveys.serializers_create import (
     QuestionCreateSerializer,
@@ -40,16 +41,16 @@ class QuestionViewSet(  # noqa: WPS215
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet[Question],
+    viewsets.GenericViewSet[models.Question],
 ):
     """ViewSet for managing questions."""
 
     serializer_class = QuestionCreateSerializer
-    pagination_class = CustomPaginator
+    pagination_class = paginators.CustomPaginator
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     @override
-    def get_queryset(self) -> QuerySet[Question]:
+    def get_queryset(self) -> QuerySet[models.Question]:
         """Get queryset using repo."""
         repo = resolve(QuestionRepo)
         filter_param = self.request.query_params.get('filter', ALL_PARAM)
@@ -62,7 +63,7 @@ class QuestionViewSet(  # noqa: WPS215
     @override
     def get_serializer_class(  # noqa: WPS615
         self,
-    ) -> type[serializers.BaseSerializer[Question]]:
+    ) -> type[serializers.BaseSerializer[models.Question]]:
         """Return serializer class depending on action."""
         if self.action == 'list':
             return QuestionShortSerializer
@@ -94,16 +95,18 @@ class QuestionViewSet(  # noqa: WPS215
         return response.Response(status=status.HTTP_200_OK)
 
 
-class SurveyViewSet(viewsets.ModelViewSet[Survey]):
+class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
     """ViewSet for Survey model."""
 
-    pagination_class = CustomPaginator
+    pagination_class = paginators.CustomPaginator
     http_method_names = ('get', 'post', 'patch', 'delete')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = SurveyFilter
 
     @override
     def get_serializer_class(
         self,
-    ) -> type[serializers.BaseSerializer[Survey]]:
+    ) -> type[serializers.BaseSerializer[models.Survey]]:
         """Method for selecting serializer."""
         return {
             'create': SurveyCreateSerializer,
@@ -111,7 +114,7 @@ class SurveyViewSet(viewsets.ModelViewSet[Survey]):
         }.get(self.action, SurveyListSerializer)
 
     @override
-    def get_queryset(self) -> QuerySet[Survey]:
+    def get_queryset(self) -> QuerySet[models.Survey]:
         """Return modificated Survey`s queryset."""
         return resolve(SurveyRepo).get_modified_surveys_queryset(self.request)
 
