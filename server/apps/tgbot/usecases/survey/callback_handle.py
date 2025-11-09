@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from django.db import models
 from telebot import TeleBot, types
 
 from server.apps.surveys.infra.repository import (
     AnswerOptionRepo,
 )
+from server.apps.surveys.models.surveys import AnswerOption, SurveyResult
 from server.apps.tgbot.callbacks import survey_callback
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
@@ -35,12 +37,8 @@ class HandleSurveyCallbackResponseUseCase:
         if call.data is None:
             return
 
-        parsed_data = survey_callback.factory.parse(call.data)
-
-        updated_survey_result = self._processing_answer_use_case(
-            survey_result_id=int(parsed_data['survey_result_id']),
-            question_id=int(parsed_data['question_id']),
-            answer_text=parsed_data['answer_option'],
+        updated_survey_result = self._parse_data_and_process_answer(
+            call_data=call.data
         )
 
         answer_options = self._answer_option_repo.get_by_question(
@@ -54,14 +52,29 @@ class HandleSurveyCallbackResponseUseCase:
                 updated_survey_result.current_question.pk  # type: ignore[union-attr]
             )
 
-        self._bot.edit_message_text(
+        self._edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            text=SURVEY_CONTINUE.format(
+            updated_survey_result=updated_survey_result,
+            answer_options=answer_options,
+        )
+
+    def _edit_message_text(
+        self,
+        chat_id: int | str | None,
+        message_id: int | None,
+        updated_survey_result: SurveyResult,
+        answer_options: models.QuerySet[AnswerOption],
+    ) -> None:
+        """Method for edit message text."""
+        self._bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=SURVEY_COMPLITED
+            if updated_survey_result.current_question is None
+            else SURVEY_CONTINUE.format(
                 question=updated_survey_result.current_question
-            )
-            if updated_survey_result.current_question
-            else SURVEY_COMPLITED,
+            ),
             reply_markup=None
             if updated_survey_result.current_question is None
             else self._keyboard_builder(
@@ -71,4 +84,14 @@ class HandleSurveyCallbackResponseUseCase:
                 callback=survey_callback,
             ),
             parse_mode='HTML',
+        )
+
+    def _parse_data_and_process_answer(self, call_data: str) -> SurveyResult:
+        """Parce data from call, process answer and returns SurveyResult."""
+        parsed_data = survey_callback.factory.parse(call_data)
+
+        return self._processing_answer_use_case(
+            survey_result_id=int(parsed_data['survey_result_id']),
+            question_id=int(parsed_data['question_id']),
+            answer_text=parsed_data['answer_option'],
         )

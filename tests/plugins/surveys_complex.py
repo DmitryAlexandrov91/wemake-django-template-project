@@ -16,24 +16,6 @@ from tests.plugins import department_factory, surveys_survey
 
 
 @pytest.fixture
-def survey_with_question(
-    surveys_survey_factory: Callable[..., Survey],
-    surveys_question_factory: Callable[..., Question],
-) -> Callable[[dict[str, Any]], tuple[Survey, Question]]:
-    """Fixture for creating a survey with a question."""
-
-    def factory(
-        survey_params: dict[str, Any],
-    ) -> tuple[Survey, Question]:
-        survey = surveys_survey_factory(**survey_params)
-        question = surveys_question_factory(text='Question.')
-        question.surveys.add(survey)
-        return survey, question
-
-    return factory
-
-
-@pytest.fixture
 def create_surveys(
     surveys_survey_factory: surveys_survey.SurveyFactory,
     department_factory: department_factory.DepartmentFactory,

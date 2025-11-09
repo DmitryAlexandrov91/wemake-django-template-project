@@ -14,7 +14,6 @@ from server.apps.tgbot.services.services import TelegramService
 from server.di.tg.handlers import (
     _inject_common_usecases,
     _inject_edit_usecases,
-    _inject_entrypoints,
     _inject_start_usecases,
     _inject_survey_usecases,
 )
@@ -34,7 +33,6 @@ def _inject_handlers(container: punq.Container) -> None:
     _inject_survey_usecases(container)
     _inject_common_usecases(container)
     _inject_edit_usecases(container)
-    _inject_entrypoints(container)
     _inject_start_usecases(container)
 
 

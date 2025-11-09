@@ -5,8 +5,13 @@ from server.apps.tgbot.callbacks import (
     answer_callback,
     answer_cancel_callback,
 )
-from server.apps.tgbot.handlers.edit import EditHandlerService
 from server.apps.tgbot.states import EditState
+from server.apps.tgbot.usecases.edit import (
+    HandleCancelEditResponseUseCase,
+    HandleEditCommandUseCase,
+    HandleEditResponseUseCase,
+    HandleProcessEditResponseUseCase,
+)
 from server.di import resolve
 
 bot = resolve(telebot.TeleBot)
@@ -15,7 +20,7 @@ bot = resolve(telebot.TeleBot)
 @bot.message_handler(commands=['edit'])  # type: ignore[misc]
 def responses_edit_handler(message: Message) -> None:
     """Entrypoint for command `/edit`."""
-    resolve(EditHandlerService)(message)
+    resolve(HandleEditCommandUseCase)(message)
 
 
 @bot.callback_query_handler(
@@ -25,7 +30,7 @@ def handle_edit_answer(
     call: telebot.types.CallbackQuery,
 ) -> None:
     """Handle edit answer."""
-    resolve(EditHandlerService).enter_new_text(call=call)
+    resolve(HandleEditResponseUseCase)(call)
 
 
 @bot.callback_query_handler(  # type: ignore[misc, no-untyped-call]
@@ -35,7 +40,7 @@ def handle_cancel_edit_answer(
     call: telebot.types.CallbackQuery,
 ) -> None:
     """Handle edit cancel button."""
-    resolve(EditHandlerService).cancel(call=call)
+    resolve(HandleCancelEditResponseUseCase)(call)
 
 
 @bot.message_handler(  # type: ignore[misc]
@@ -43,4 +48,4 @@ def handle_cancel_edit_answer(
 )
 def handle_new_answer_text(message: Message) -> None:
     """Handle new answer text input when in waiting state."""
-    resolve(EditHandlerService).process_new_answer_text(message)
+    resolve(HandleProcessEditResponseUseCase)(message)

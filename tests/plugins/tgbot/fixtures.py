@@ -1,20 +1,11 @@
 from typing import final
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 import pytest
 from polyfactory.factories.pydantic_factory import ModelFactory
 from polyfactory.pytest_plugin import register_fixture
 from pydantic import BaseModel, Field
 from pytest_mock import MockerFixture
-from telebot import TeleBot
-
-from server.apps.users.models import CustomUser
-
-
-@pytest.fixture
-def mock_bot() -> Mock:
-    """Returns mock tg bot."""
-    return Mock(TeleBot)
 
 
 class _User(BaseModel):
@@ -178,19 +169,3 @@ def mock_callback_query(
         from_user=tg_message_user_factory.build(),
         message=message_with_user,
     )
-
-
-@pytest.fixture
-def mock_start_message_with_auth_user(
-    auth_user: CustomUser,
-) -> Mock:
-    """Mocks the start tg message with given user and survey."""
-    message = Mock()
-    message.chat = Mock(id=12345)
-    message.text = '/start'
-    message.from_user = Mock(
-        id=auth_user.id,
-        username=auth_user.tg_username[1:],
-        first_name=auth_user.full_name,
-    )
-    return message

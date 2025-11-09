@@ -7,7 +7,6 @@ from server.apps.surveys.infra.repository import (
     SurveyRepo,
     SurveyResultRepo,
 )
-from server.apps.tgbot.usecases.validators import recognize_survey_id
 from server.apps.users.infra.repository import UserRepo
 
 
@@ -29,13 +28,7 @@ class HandleStartCommandUseCase:
             tg_username=f'@{tg_user.username}'
         )
 
-        survey_id = recognize_survey_id(message.text) if message.text else None
-        if survey_id:
-            survey = self._survey_repo.get_active_survey_for_user_by_id(
-                user=user, survey_id=survey_id
-            )
-        else:
-            survey = self._survey_repo.get_active_survey_for_user(user=user)
+        survey = self._survey_repo.get_active_survey_for_user(user=user)
 
         self._survey_res_repo.get_or_create_user_survey_res(
             user=user,

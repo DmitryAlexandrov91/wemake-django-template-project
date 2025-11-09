@@ -1,8 +1,5 @@
 import punq
 
-from server.apps.tgbot.handlers.edit import EditHandlerService
-from server.apps.tgbot.handlers.start import StartHandlerService
-from server.apps.tgbot.handlers.survey import SurveyHandlerService
 from server.apps.tgbot.usecases import (
     HandleStartCommandUseCase,
     SaveAnswerUseCase,
@@ -19,13 +16,6 @@ from server.apps.tgbot.usecases.survey import (
     HandleSurveyCommandUseCase,
     HandleSurveyMessageResponseUseCase,
 )
-
-
-def _inject_entrypoints(container: punq.Container) -> None:
-    """Register entryponts."""
-    container.register(StartHandlerService)
-    container.register(EditHandlerService)
-    container.register(SurveyHandlerService)
 
 
 def _inject_start_usecases(container: punq.Container) -> None:
