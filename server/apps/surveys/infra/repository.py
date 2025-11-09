@@ -181,7 +181,7 @@ class SurveyRepo:  # noqa: WPS214
                 models.Prefetch(
                     QUESTIONS_ATTR,
                     queryset=Question.objects.only(
-                        ID_ATTR, 'text', QUESTION_TYPE
+                        ID_ATTR, 'text', QUESTION_TYPE, 'to_delete'
                     ).prefetch_related('surveys'),
                 ),
                 models.Prefetch(

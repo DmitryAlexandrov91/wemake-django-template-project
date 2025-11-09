@@ -49,6 +49,7 @@ polyfactory = "^2.22.2"
 pytest-mock = "^3.14.1"
 mimesis = "^18.0.0"
 drf-spectacular = "^0.28.0"
+django-filter = "^25.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -84,6 +85,7 @@ dump-env = "^1.5"
 ipython = "^9.4"
 factory-boy = "^3.3.3"
 pre-commit = "^4.3.0"
+types-django-filter = "^25.2.0.20251010"
 
 [tool.poetry.group.docs]
 optional = true
