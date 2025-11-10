@@ -43,6 +43,12 @@ class AnswerOptionRepo:
         """Returns one answer option from DB by pk."""
         return AnswerOption.objects.select_related(QUESTION_ATTR).get(pk=pk)
 
+    def get_by_question(
+        self, question: Question | None
+    ) -> models.QuerySet[AnswerOption]:
+        """Returns all answer options by question."""
+        return self.get_all().filter(question=question)
+
 
 @final
 class QuestionRepo:
@@ -325,6 +331,10 @@ class SurveySaveRepo:
 @final
 class SurveyResultRepo:
     """Repository for survey results."""
+
+    def get_by_pk(self, pk: int) -> SurveyResult:
+        """Returns one survey result from DB by pk."""
+        return SurveyResult.objects.get(pk=pk)
 
     def get_or_create_user_survey_res(
         self, user: CustomUser, survey: Survey

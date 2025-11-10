@@ -19,13 +19,12 @@ def test_button_builder_service() -> None:
     keyboard = resolve(KeyboardBuilderService)()
     assert keyboard.keyboard == []
 
-    resolve(ButtonBuilderService)(
+    button = resolve(ButtonBuilderService)(
         text='First_Button',
-        keyboard=keyboard,
         callback=answer_callback,
         callback_data={'answer_id': 1, 'survey_result_id': 1},
     )
-
+    keyboard.add(button)
     assert keyboard.keyboard != []
     added_button = keyboard.keyboard[0][0]
     assert isinstance(added_button, types.InlineKeyboardButton)

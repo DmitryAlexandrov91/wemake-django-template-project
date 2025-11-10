@@ -21,7 +21,7 @@ from server.apps.tgbot.message_templates import (
     PROCESS_NEW_ANSWER_TEXT,
     SURVEY_RESULTS_TEMPLATE,
 )
-from server.apps.tgbot.states import EditStates
+from server.apps.tgbot.states import EditState
 from server.apps.users.infra.repository import UserRepo
 
 SURVEY_RESULT_ID = 'survey_result_id'
@@ -102,7 +102,7 @@ class HandleEditResponseUseCase:
         self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
         self._bot.set_state(
             call.from_user.id,
-            EditStates.waiting_for_new_answer,
+            EditState.waiting_for_new_answer,
             call.message.chat.id,
         )
 
@@ -178,13 +178,11 @@ class HandleProcessEditResponseUseCase:
     _bot: TeleBot
     _keyboard_builder: EditAnswerKeyboard
     _user_answer_repo: UserAnswerRepo
+    _survey_result_repo: SurveyResultRepo
 
     def __call__(self, message: types.Message) -> None:
         """Process answer text edit."""
-        self._bot.delete_message(
-            chat_id=message.chat.id,
-            message_id=message.id,
-        )
+        self._bot.delete_message(chat_id=message.chat.id, message_id=message.id)
 
         if message.from_user is None or message.text is None:
             return
@@ -192,7 +190,7 @@ class HandleProcessEditResponseUseCase:
         with self._bot.retrieve_data(  # type: ignore[union-attr]
             message.from_user.id, message.chat.id
         ) as state_data:
-            survey_result = SurveyResult.objects.get(
+            survey_result = self._survey_result_repo.get_by_pk(
                 pk=state_data[SURVEY_RESULT_ID]
             )
             user_answers = self._user_answer_repo.get_answers_by_survey_result(
@@ -226,3 +224,7 @@ class HandleProcessEditResponseUseCase:
                     callback=answer_callback,
                 ),
             )
+
+        self._bot.delete_state(
+            user_id=message.from_user.id, chat_id=message.chat.id
+        )

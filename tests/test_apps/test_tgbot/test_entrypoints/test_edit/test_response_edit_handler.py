@@ -8,7 +8,7 @@ from server.apps.surveys.infra.repository import (
     SurveyResultRepo,
     UserAnswerRepo,
 )
-from server.apps.tgbot.entrypoints.edit_answers import (
+from server.apps.tgbot.entrypoints.edit import (
     responses_edit_handler,
 )
 from server.apps.tgbot.message_templates import (

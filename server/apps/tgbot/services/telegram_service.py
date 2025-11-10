@@ -9,7 +9,7 @@ class TelegramService:
 
     _bot: telebot.TeleBot
 
-    def process_update(self, request_body: bytes) -> None:
+    def __call__(self, request_body: bytes) -> None:
         """Deserialize data and transfer it to bot."""
         update = telebot.types.Update.de_json(request_body.decode('utf-8'))  # type: ignore[no-untyped-call]
         self._bot.process_new_updates([update])

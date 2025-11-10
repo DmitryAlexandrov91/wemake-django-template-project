@@ -6,7 +6,7 @@ from server.apps.surveys.models.surveys import (
     Question,
     SurveyResult,
 )
-from server.apps.tgbot.logic.usecases import SaveAnswerUseCase
+from server.apps.tgbot.usecases import SaveAnswerUseCase
 from server.di import resolve
 from tests.plugins.fakery import FakeryM
 from tests.plugins.tgbot.fixtures import MockMessage
@@ -29,7 +29,7 @@ def test_save_answer_usecase(
     resolve(SaveAnswerUseCase)(
         survey_result=survey_result,  # type: ignore[arg-type]
         question=question,  # type: ignore[arg-type]
-        message=message_with_user,  # type: ignore[arg-type]
+        answer_text=message_with_user.text,
         selected_options=answer_options,  # type: ignore[arg-type]
     )
 
@@ -54,7 +54,7 @@ def test_save_answer_without_answer_options(
     resolve(SaveAnswerUseCase)(
         survey_result=survey_result,  # type: ignore[arg-type]
         question=question,  # type: ignore[arg-type]
-        message=message_with_user,  # type: ignore[arg-type]
+        answer_text=message_with_user.text,
     )
 
     survey_result = SurveyResult.objects.get(pk=survey_result.pk)

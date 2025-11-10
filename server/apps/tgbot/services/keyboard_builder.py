@@ -14,7 +14,7 @@ class KeyboardBuilderService:
         self,
         row_width: int = 1,
     ) -> types.InlineKeyboardMarkup:
-        """Create inline-keyboard."""
+        """Create InlineKeyboardMarkup obj."""
         return types.InlineKeyboardMarkup(row_width=row_width)  # type: ignore[no-untyped-call]
 
 
@@ -25,13 +25,11 @@ class ButtonBuilderService:
     def __call__(
         self,
         text: str,
-        keyboard: types.InlineKeyboardMarkup,
         callback: CallbackFactory,
         callback_data: dict[str, Any],
-    ) -> None:
-        """Add button for keyboard."""
-        button = types.InlineKeyboardButton(
+    ) -> types.InlineKeyboardButton:
+        """Create InlineKeyboardButton obj."""
+        return types.InlineKeyboardButton(
             text=text,
             callback_data=callback.factory.new(**callback_data),
         )
-        keyboard.add(button)

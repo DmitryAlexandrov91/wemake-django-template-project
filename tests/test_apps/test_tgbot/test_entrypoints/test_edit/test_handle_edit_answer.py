@@ -3,7 +3,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from server.apps.tgbot.callbacks import answer_callback
-from server.apps.tgbot.entrypoints.edit_answers import (
+from server.apps.tgbot.entrypoints.edit import (
     handle_edit_answer,
 )
 from server.apps.tgbot.message_templates import (
@@ -42,4 +42,5 @@ def test_handle_edit_answer_with_none_data(
     """Ensure handle_edit_answer do nothing without call.data."""
     mock_callback_query.data = None
     handle_edit_answer(call=mock_callback_query)
+    mock_bot_answer_callback_query.assert_called_once()
     mock_bot_edit_message_text.assert_not_called()

@@ -29,17 +29,19 @@ class EditAnswerKeyboard:
     ) -> types.InlineKeyboardMarkup:
         """KB for edit UserAnswers."""
         keyboard = self._keyboard_builder(row_width=row_width)
+        buttons = []
         for answer in answers:
-            self._button_builder(
+            button = self._button_builder(
                 text=EDIT_ANSWER_TEXT.format(answer_number=answer.pk),
                 callback=callback,
                 callback_data={
                     'answer_id': answer.pk,
                     'survey_result_id': survey_result_id,
                 },
-                keyboard=keyboard,
             )
+            buttons.append(button)
 
+        keyboard.add(*buttons)
         return keyboard
 
 
@@ -59,14 +61,15 @@ class CancelEditAnswerKeyboard:
         """Keyboard for cancel edit answer."""
         keyboard = self._keyboard_builder(row_width=row_width)
 
-        self._button_builder(
-            keyboard=keyboard,
-            text=CANSEL_EDIT,
-            callback_data={
-                'answer_id': parsed_data['answer_id'],
-                'survey_result_id': parsed_data['survey_result_id'],
-            },
-            callback=callback,
+        keyboard.add(
+            self._button_builder(
+                text=CANSEL_EDIT,
+                callback_data={
+                    'answer_id': parsed_data['answer_id'],
+                    'survey_result_id': parsed_data['survey_result_id'],
+                },
+                callback=callback,
+            ),
         )
 
         return keyboard

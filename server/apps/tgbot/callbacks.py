@@ -23,3 +23,10 @@ answer_callback = CallbackFactory(
 answer_cancel_callback = CallbackFactory(
     'answer_id', 'survey_result_id', prefix='cancel', config={}
 )
+survey_callback = CallbackFactory(
+    'survey_result_id',
+    'question_id',
+    'answer_option',
+    prefix='survey',
+    config={},
+)

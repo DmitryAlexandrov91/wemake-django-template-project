@@ -16,6 +16,7 @@ from server.apps.surveys.models import (
 from server.apps.surveys.usecases.advance_to_next_question import (
     AdvanceToNextQuestion,
 )
+from server.di import resolve
 
 _CURRENT_QUESTION_FIELD: Final = 'current_question'
 
@@ -32,8 +33,9 @@ def test_save_answer_creates_user_answer(
     survey_result.current_question = question
     survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
 
-    repo = SurveyResultRepo()
-    answer = repo.save_answer(survey_result, text_answer='Hello')
+    answer = resolve(SurveyResultRepo).save_answer(
+        survey_result, text_answer='Hello'
+    )
 
     assert UserAnswer.objects.count() == 1
     assert answer.text_answer == 'Hello'
@@ -48,7 +50,7 @@ def test_advance_to_next_question(
     """Test advancing sets next question or None if last and triggers task."""
     mock_task = mock_statistics_mocks['mock_task']
     survey_result, questions = survey_result_with_three_questions
-    usecase = AdvanceToNextQuestion()
+    usecase = resolve(AdvanceToNextQuestion)
     updated_result: SurveyResult = usecase(survey_result)
     assert updated_result.current_question == questions[1]
     updated_result = usecase(updated_result)
@@ -69,9 +71,8 @@ def test_save_answer_raises_if_no_question(
     survey_result.current_question = None
     survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
 
-    repo = SurveyResultRepo()
     with pytest.raises(ValueError, match='Survey has no current question'):
-        repo.save_answer(survey_result, text_answer='test')
+        resolve(SurveyResultRepo).save_answer(survey_result, text_answer='test')
 
 
 @pytest.mark.django_db
@@ -83,8 +84,7 @@ def test_advance_with_no_current_question(
     survey_result.current_question = None
     survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
 
-    usecase = AdvanceToNextQuestion()
-    updated_result = usecase(survey_result)
+    updated_result = resolve(AdvanceToNextQuestion)(survey_result)
 
     assert updated_result.current_question is None
 
@@ -107,7 +107,7 @@ def test_save_answer_with_selected_options(
     survey_result.current_question = question
     survey_result.save(update_fields=[_CURRENT_QUESTION_FIELD])
 
-    user_answer = SurveyResultRepo().save_answer(
+    user_answer = resolve(SurveyResultRepo).save_answer(
         survey_result,
         selected_options=options,
     )

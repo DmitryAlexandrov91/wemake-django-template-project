@@ -4,8 +4,10 @@ from celery import group, shared_task
 from django.core.mail import send_mail
 
 from server.apps.surveys.infra.repository import QuestionRepo, SurveySaveRepo
-from server.apps.surveys.usecases.statistics_service import (
-    UserStatisticsService,
+from server.apps.surveys.usecases.statistics_services import (
+    GetStatisticPeriod,
+    GetUserIds,
+    UpdateSingleUserStatistic,
 )
 from server.di import resolve
 
@@ -15,16 +17,14 @@ TaskFunction = Callable[[str, str], bool]
 @shared_task  # type: ignore[misc]
 def update_one_user_statistics_task(user_id: int, period: int) -> None:
     """Celery task for updating one user statistics."""
-    UserStatisticsService.update_single_user_statistics(
-        user_id=user_id, limit=period
-    )
+    resolve(UpdateSingleUserStatistic)(user_id=user_id, limit=period)
 
 
 @shared_task  # type: ignore[misc]
 def update_user_statistics_task(user_id: int | None = None) -> None:
     """Updates employee statistics when admin sets new statistic settings."""
-    period = UserStatisticsService.get_statistics_period()
-    user_ids = UserStatisticsService.get_user_ids(user_id)
+    period = resolve(GetStatisticPeriod)()
+    user_ids = resolve(GetUserIds)(user_id)
     update_group = group(
         update_one_user_statistics_task.s(user_id=user_id, period=period)
         for user_id in user_ids

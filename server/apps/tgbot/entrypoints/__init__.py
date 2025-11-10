@@ -1,4 +1,7 @@
-from server.apps.tgbot.entrypoints.edit_answers import (  # noqa: F401
+from server.apps.tgbot.entrypoints import edit as edit
+from server.apps.tgbot.entrypoints import start as start
+from server.apps.tgbot.entrypoints import survey as survey
+from server.apps.tgbot.entrypoints.edit import (  # noqa: F401
     handle_cancel_edit_answer,
     handle_edit_answer,
     handle_new_answer_text,

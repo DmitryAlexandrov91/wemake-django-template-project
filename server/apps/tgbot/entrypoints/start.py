@@ -1,11 +1,13 @@
+from telebot import TeleBot
 from telebot.types import Message
 
-from server.apps.tgbot.bot_instance import bot
-from server.apps.tgbot.handlers.start import StartHandlerService
+from server.apps.tgbot.usecases.start import HandleStartCommandUseCase
 from server.di import resolve
+
+bot = resolve(TeleBot)
 
 
 @bot.message_handler(commands=['start'])  # type: ignore[misc]
 def start_handler(message: Message) -> None:
     """Entrypoint for command `/start`."""
-    resolve(StartHandlerService)(message)
+    resolve(HandleStartCommandUseCase)(message)
