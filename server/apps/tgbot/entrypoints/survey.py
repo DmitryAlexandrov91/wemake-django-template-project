@@ -1,6 +1,7 @@
 import telebot
 from telebot.types import Message
 
+from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.callbacks import (
     survey_callback,
 )
@@ -20,9 +21,11 @@ bot = resolve(telebot.TeleBot)
 
 
 @bot.message_handler(commands=['survey'])  # type: ignore[misc]
-def survey_handler(message: Message) -> None:
+def survey_handler(message: Message, survey_result: SurveyResult) -> None:
     """Handle completing the survey."""
-    resolve(HandleSurveyCommandUseCase)(message)
+    resolve(HandleSurveyCommandUseCase)(
+        message=message, survey_result=survey_result
+    )
 
 
 @bot.message_handler(  # type: ignore[misc]

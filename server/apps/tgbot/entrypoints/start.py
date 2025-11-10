@@ -11,4 +11,3 @@ bot = resolve(telebot.TeleBot)
 def start_handler(message: Message) -> None:
     """Entrypoint for command `/start`."""
     resolve(HandleStartCommandUseCase)(message)
-    bot.send_message(chat_id=message.chat.id, text='Hello!')

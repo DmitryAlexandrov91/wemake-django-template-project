@@ -7,6 +7,10 @@ from server.apps.surveys.infra.repository import (
     SurveyRepo,
     SurveyResultRepo,
 )
+from server.apps.tgbot.usecases.survey.survey_begin import (
+    HandleSurveyCommandUseCase,
+)
+from server.apps.tgbot.usecases.validators import recognize_survey_id
 from server.apps.users.infra.repository import UserRepo
 
 
@@ -18,6 +22,7 @@ class HandleStartCommandUseCase:
     _survey_repo: SurveyRepo
     _survey_res_repo: SurveyResultRepo
     _bot: TeleBot
+    _survey_command_use_case: HandleSurveyCommandUseCase
 
     def __call__(self, message: types.Message) -> None:
         """Create survey result."""
@@ -28,9 +33,20 @@ class HandleStartCommandUseCase:
             tg_username=f'@{tg_user.username}'
         )
 
-        survey = self._survey_repo.get_active_survey_for_user(user=user)
+        survey_id = recognize_survey_id(message.text) if message.text else None
 
-        self._survey_res_repo.get_or_create_user_survey_res(
+        survey = (
+            self._survey_repo.get_active_survey_for_user_by_id(
+                user=user, survey_id=survey_id
+            )
+            if survey_id
+            else self._survey_repo.get_active_survey_for_user(user=user)
+        )
+
+        survey_result = self._survey_res_repo.get_or_create_user_survey_res(
             user=user,
             survey=survey,
+        )
+        self._survey_command_use_case(
+            message=message, survey_result=survey_result
         )

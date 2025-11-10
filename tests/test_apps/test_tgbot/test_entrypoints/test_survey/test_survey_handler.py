@@ -4,6 +4,7 @@ import pytest
 from telebot import TeleBot
 
 from server.apps.surveys.infra.repository import SurveyRepo, SurveyResultRepo
+from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.entrypoints.survey import survey_handler
 from server.apps.tgbot.message_templates import SURVEY_COMPLITED
 from server.apps.users.infra.repository import UserRepo
@@ -30,7 +31,10 @@ def test_survey_handler(
         state='response_state',
     )
 
-    survey_handler(message=user_from_message_with_relations)
+    survey_handler(
+        message=user_from_message_with_relations,
+        survey_result=SurveyResult.objects.first(),
+    )
     mock_bot_delete_state.assert_not_called()
     mock_bot_send_message.assert_called_once()
 
@@ -45,7 +49,10 @@ def test_survey_handler_with_none_user(
     user_from_message_with_relations.from_user = None
     user_from_message_with_relations.text = '/survey'
 
-    survey_handler(message=user_from_message_with_relations)
+    survey_handler(
+        message=user_from_message_with_relations,
+        survey_result=SurveyResult.objects.first(),
+    )
 
     mock_bot_delete_state.assert_not_called()
     mock_bot_send_message.assert_not_called()
@@ -72,7 +79,9 @@ def test_survey_handler_with_none_question(
     survey_result.refresh_from_db()
     assert survey_result.current_question is None
 
-    survey_handler(message=user_from_message_with_relations)
+    survey_handler(
+        message=user_from_message_with_relations, survey_result=survey_result
+    )
     mock_bot_delete_state.assert_called_once_with(
         user_id=tg_user.id, chat_id=user_from_message_with_relations.chat.id
     )

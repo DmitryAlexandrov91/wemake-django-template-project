@@ -18,7 +18,6 @@ from server.apps.tgbot.message_templates import (
     SURVEY_START,
 )
 from server.apps.tgbot.states import SurveyResponseState
-from server.apps.tgbot.usecases.validators import recognize_survey_id
 from server.apps.users.infra.repository import UserRepo
 from server.apps.users.models import CustomUser
 
@@ -36,16 +35,14 @@ class HandleSurveyCommandUseCase:
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
 
-    def __call__(self, message: types.Message) -> None:
+    def __call__(
+        self, message: types.Message, survey_result: SurveyResult
+    ) -> None:
         """Start survey handle with current question."""
         tg_user = message.from_user
         if tg_user is None or message.text is None:
             return
 
-        user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
-        survey_result = self._recognise_survey(
-            message_text=message.text, user=user
-        )
         self._configure_state(user_id=tg_user.id, chat_id=message.chat.id)
 
         if survey_result.current_question is None:
@@ -54,13 +51,13 @@ class HandleSurveyCommandUseCase:
         sent_message = self._send_and_return_message(
             chat_id=message.chat.id,
             survey_result=survey_result,
-            full_name=user.full_name,
+            full_name=survey_result.user.full_name,
         )
         self._retrieve_data(
             user_id=tg_user.id,
             chat_id=message.chat.id,
             survey_result=survey_result,
-            user=user,
+            user=survey_result.user,
             sent_message=sent_message,
         )
 
@@ -96,23 +93,6 @@ class HandleSurveyCommandUseCase:
                 current_question=survey_result.current_question,
                 callback=survey_callback,
             ),
-        )
-
-    def _recognise_survey(
-        self, message_text: str, user: CustomUser
-    ) -> SurveyResult:
-        """Recognize survey and returns SurveyResult."""
-        survey_id = recognize_survey_id(message_text)
-        survey = (
-            self._survey_repo.get_active_survey_for_user_by_id(
-                user=user, survey_id=survey_id
-            )
-            if survey_id
-            else self._survey_repo.get_active_survey_for_user(user=user)
-        )
-        return self._survey_res_repo.get_or_create_user_survey_res(
-            user=user,
-            survey=survey,
         )
 
     def _retrieve_data(
