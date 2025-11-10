@@ -1,5 +1,5 @@
-import telebot
-from telebot.types import Message
+from telebot import TeleBot
+from telebot.types import CallbackQuery, Message
 
 from server.apps.tgbot.callbacks import (
     answer_callback,
@@ -14,7 +14,7 @@ from server.apps.tgbot.usecases.edit import (
 )
 from server.di import resolve
 
-bot = resolve(telebot.TeleBot)
+bot = resolve(TeleBot)
 
 
 @bot.message_handler(commands=['edit'])  # type: ignore[misc]
@@ -27,7 +27,7 @@ def responses_edit_handler(message: Message) -> None:
     func=answer_callback.filter.check  # type: ignore[misc, no-untyped-call]
 )
 def handle_edit_answer(
-    call: telebot.types.CallbackQuery,
+    call: CallbackQuery,
 ) -> None:
     """Handle edit answer."""
     resolve(HandleEditResponseUseCase)(call)
@@ -37,7 +37,7 @@ def handle_edit_answer(
     func=answer_cancel_callback.filter.check
 )
 def handle_cancel_edit_answer(
-    call: telebot.types.CallbackQuery,
+    call: CallbackQuery,
 ) -> None:
     """Handle edit cancel button."""
     resolve(HandleCancelEditResponseUseCase)(call)

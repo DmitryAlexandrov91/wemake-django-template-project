@@ -1,10 +1,10 @@
-import telebot
+from telebot import TeleBot
 from telebot.types import Message
 
 from server.apps.tgbot.usecases.start import HandleStartCommandUseCase
 from server.di import resolve
 
-bot = resolve(telebot.TeleBot)
+bot = resolve(TeleBot)
 
 
 @bot.message_handler(commands=['start'])  # type: ignore[misc]

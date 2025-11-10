@@ -1,5 +1,5 @@
-import telebot
-from telebot.types import Message
+from telebot import TeleBot
+from telebot.types import CallbackQuery, Message
 
 from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.callbacks import (
@@ -17,7 +17,7 @@ from server.apps.tgbot.usecases.survey.survey_begin import (
 )
 from server.di import resolve
 
-bot = resolve(telebot.TeleBot)
+bot = resolve(TeleBot)
 
 
 @bot.message_handler(commands=['survey'])  # type: ignore[misc]
@@ -40,7 +40,7 @@ def handle_survey_text_answer_response(message: Message) -> None:
     func=survey_callback.filter.check
 )
 def handle_survey_callback_answer_response(
-    call: telebot.types.CallbackQuery,
+    call: CallbackQuery,
 ) -> None:
     """Handle button response for survey answer."""
     resolve(HandleSurveyCallbackResponseUseCase)(call)
