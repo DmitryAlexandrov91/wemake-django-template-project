@@ -17,6 +17,11 @@ EDIT_ANSWER_TEXT = 'Изменить ответ на вопрос №{answer_num
 PROCESS_NEW_ANSWER_TEXT = 'Введите новый ответ:'
 CANSEL_EDIT = 'Отмена'
 
+
+SUGGESTION_SAVED = '✅ Спасибо! Ваше предложение сохранено.'
+NO_USERNAME = '❗️ Установите Tg username перед отправкой предложений.'
+NO_USER = '❗️ He удалось определить пользователя.'
+NO_TEXT = '❗️ Сообщение не содержит текста.'
 SURVEY_COMPLITED = """
 Вопросов без ответов не найдено
 """

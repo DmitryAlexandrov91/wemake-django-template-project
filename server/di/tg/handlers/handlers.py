@@ -1,5 +1,7 @@
 import punq
 
+from server.apps.tgbot.handlers.suggestions import SuggestionsHandlerService
+from server.apps.tgbot.logic.suggestions_usecases import HandleSuggestionUseCase
 from server.apps.tgbot.usecases import (
     HandleStartCommandUseCase,
     SaveAnswerUseCase,
@@ -42,3 +44,9 @@ def _inject_common_usecases(container: punq.Container) -> None:
     """Register common tg usecases."""
     container.register(SaveAnswerUseCase)
     container.register(ProcessingAnswerUseCase)
+
+
+def _inject_suggestions_usecases(container: punq.Container) -> None:
+    """Register SuggestionsHandlerService and its usecase."""
+    container.register(HandleSuggestionUseCase)
+    container.register(SuggestionsHandlerService)

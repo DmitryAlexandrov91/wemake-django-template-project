@@ -8,5 +8,8 @@ from server.di.tg.handlers.handlers import (
     _inject_start_usecases as _inject_start_usecases,
 )
 from server.di.tg.handlers.handlers import (
+    _inject_suggestions_usecases as _inject_suggestions_usecases,
+)
+from server.di.tg.handlers.handlers import (
     _inject_survey_usecases as _inject_survey_usecases,
 )

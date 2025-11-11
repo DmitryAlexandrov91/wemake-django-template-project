@@ -13,7 +13,7 @@ class _User(BaseModel):
     is_bot: bool = False
     first_name: str
     last_name: str | None = None
-    username: str
+    username: str | None
     tg_username: str | None = None
 
 

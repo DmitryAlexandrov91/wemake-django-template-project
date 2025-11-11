@@ -1,0 +1,1 @@
+SUGGEST_COMMAND = '/suggest'

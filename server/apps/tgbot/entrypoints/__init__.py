@@ -14,3 +14,6 @@ from server.apps.tgbot.entrypoints.menu import (  # noqa: F401
     menu_handler,
 )
 from server.apps.tgbot.entrypoints.start import start_handler  # noqa: F401
+from server.apps.tgbot.entrypoints.suggestions import (
+    suggest_handler as suggest_handler,
+)
