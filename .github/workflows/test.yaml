@@ -19,13 +19,28 @@ jobs:
     steps:
       - name: 1. Checkout repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 2. Set environment variables
+      - name: 2. Check for modified migrations
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          MODIFIED_FILES=$(git diff --name-only --diff-filter=M \
+          origin/${{ github.base_ref }}...HEAD | grep -E '/migrations/' || true)
+
+          if [ -n "$MODIFIED_FILES" ]; then
+            echo "Error: The following existing migrations were modified:"
+            echo "$MODIFIED_FILES"
+            echo "Don't modify existing migrations. Create new migrations!"
+            exit 1
+          fi
+
+      - name: 3. Set environment variables
         run: |
           echo "IMAGE_NAME=${{ vars.DOCKERHUB_IMAGE }}" >> $GITHUB_ENV
           echo "TAG_NAME=$DOCKER_TAG" >> $GITHUB_ENV
 
-      - name: 3. Create .env file for CI
+      - name: 4. Create .env file for CI
         run: |
           pip3 install dump-env
           dump-env \
@@ -34,12 +49,12 @@ jobs:
             --strict SECRET_DJANGO_SECRET_KEY \
             --strict SECRET_TG_BOT_TOKEN > config/.env
 
-      - name: 4. Login to GitHub Container Registry
+      - name: 5. Login to GitHub Container Registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
             -u "${{ github.actor }}" --password-stdin
 
-      - name: 5. Build and run tests
+      - name: 6. Build and run tests
         run: |
           docker compose build \
             --progress=plain \
