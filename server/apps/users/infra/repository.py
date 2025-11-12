@@ -2,6 +2,7 @@ from typing import Any, final
 
 from django.contrib.auth import hashers
 from django.db.models import Count, QuerySet
+from django.db.models.functions import Lower
 
 from server.apps.users.models import CustomUser
 
@@ -33,7 +34,7 @@ class UserRepo:
         return self.get_users_with_department().get(tg_username=tg_username)
 
     def get_employees_with_survey_count(
-        self, order_field: str | None
+        self, sort_field: str | None, order_param: str
     ) -> QuerySet[CustomUser]:
         """Get all employees with survey_count."""
         queryset = (
@@ -41,8 +42,18 @@ class UserRepo:
             .prefetch_related('statistics')
             .annotate(survey_count=Count('survey_result'))
         )
-        if order_field:
-            return queryset.order_by(order_field)
+        if sort_field == 'full_name':
+            queryset = (
+                queryset.order_by(Lower(sort_field))
+                if order_param == 'asc'
+                else queryset.order_by(Lower(sort_field).desc())
+            )
+        elif sort_field == 'edited_at':
+            queryset = (
+                queryset.order_by(sort_field)
+                if order_param == 'asc'
+                else queryset.order_by(f'-{sort_field}')
+            )
         return queryset
 
     def get_employee_with_survey_count(self, pk: int) -> CustomUser:

@@ -28,13 +28,11 @@ class EmployeeView(APIView):
 
     def get(self, request: Request) -> Response:
         """Get list of employees."""
-        sort = request.query_params.get('sort')
-        order = request.query_params.get('order', 'asc')
-        if sort not in {'full_name', 'edited_at'}:
-            sort = None
-        if sort and order == 'desc':
-            sort = f'-{sort}'
-        queryset = resolve(UserRepo).get_employees_with_survey_count(sort)
+        sort_field = request.query_params.get('sort')
+        order_param = request.query_params.get('order', 'asc')
+        queryset = resolve(UserRepo).get_employees_with_survey_count(
+            sort_field=sort_field, order_param=order_param
+        )
         serializer = serializers.EmployeeReadSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
