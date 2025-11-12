@@ -10,7 +10,13 @@ from django.utils import timezone
 from pytest_mock import MockerFixture
 
 from server.apps.company.models import Department
-from server.apps.surveys.models import Question, Survey, SurveyResult
+from server.apps.surveys.models import (
+    AnswerOption,
+    Question,
+    Survey,
+    SurveyResult,
+    UserAnswer,
+)
 from server.apps.users.models import CustomUser
 from tests.plugins import department_factory, surveys_survey
 
@@ -147,3 +153,29 @@ def mock_celery_tasks(mocker: MockerFixture) -> dict[str, mock.Mock]:
         'update_task': mock_update_task,
         'signature': mock_signature,
     }
+
+
+@pytest.fixture
+def user_answer_complex(
+    survey_result_with_three_questions: tuple[SurveyResult, list[Question]],
+    surveys_answer_option_factory: Callable[[], AnswerOption],
+    surveys_question_factory: Callable[..., Question],
+    auth_user: CustomUser,
+) -> UserAnswer:
+    """Fixture creates a UserAnswer object with connected objects."""
+    survey_result, _ = survey_result_with_three_questions
+    survey_result.user = auth_user
+    survey_result.save()
+
+    question = surveys_question_factory()
+    answer_option = surveys_answer_option_factory()
+    question.surveys.add(survey_result.survey)
+    question.save()
+
+    user_answer = UserAnswer.objects.create(
+        survey_result=survey_result,
+        question=question,
+        text_answer='Test answer text',
+    )
+    user_answer.selected_options.add(answer_option)
+    return user_answer

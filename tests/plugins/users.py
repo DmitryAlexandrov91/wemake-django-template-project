@@ -129,6 +129,6 @@ def three_users_to_inactivate(
 
 
 @pytest.fixture
-def user_admin() -> admin.CustomUserAdmin:
+def user_admin_instance() -> admin.CustomUserAdmin:
     """UserAdmin fixture."""
     return admin.CustomUserAdmin(models.CustomUser, AdminSite())

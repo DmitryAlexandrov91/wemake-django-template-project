@@ -35,7 +35,7 @@ def test_average_answer_sec_virgin_user(active_user: CustomUser) -> None:
 def test_useradmin_get_queryset_prefetch(  # noqa: WPS234
     admin_user: Any,
     rf: Any,
-    user_admin: CustomUserAdmin,
+    user_admin_instance: CustomUserAdmin,
     survey: Survey,
     surveys_survey_result_factory: SurveyResultFactory,
 ) -> None:
@@ -43,6 +43,6 @@ def test_useradmin_get_queryset_prefetch(  # noqa: WPS234
     surveys_survey_result_factory(user=admin_user, survey=survey)
     request: HttpRequest = rf.get('/admin/users/customuser/')
     request.user = admin_user
-    queryset = user_admin.get_queryset(request)
+    queryset = user_admin_instance.get_queryset(request)
     assert hasattr(queryset, 'prefetch_related')
     assert hasattr(queryset, '_prefetch_related_lookups')

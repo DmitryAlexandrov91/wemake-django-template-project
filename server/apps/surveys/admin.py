@@ -1,9 +1,10 @@
 # flake8: noqa: WPS226
-from typing import override
+from typing import Any, override
 
 from django.contrib import admin
 from django.db.models import Prefetch, QuerySet
-from django.forms import models
+from django.db.models.fields.related import ForeignKey
+from django.forms import ModelChoiceField, models
 from django.http import HttpRequest
 
 from server.apps.surveys.admin_common import QuestionInline
@@ -26,6 +27,7 @@ class SurveyAdmin(admin.ModelAdmin[Survey]):
     list_display = (
         'id',
         'title',
+        'status',
         'start_date',
         'end_date',
     )
@@ -99,21 +101,42 @@ class SurveyResultAdmin(admin.ModelAdmin[SurveyResult]):
 class UserAnswerAdmin(admin.ModelAdmin[UserAnswer]):
     """Admin interface for UserAnswer model."""
 
-    list_display = ('survey_result', 'question', 'text_answer')
+    list_display = ('survey_result', 'question')
     list_select_related = (
         'survey_result__user',
         'survey_result__survey',
         'question',
     )
-    fields = ('text_answer', 'selected_options')
+    fields = (
+        'survey_result',
+        'question',
+        'text_answer',
+        'selected_options',
+    )
+    list_filter = ('survey_result__user', 'survey_result__survey', 'question')
+    search_fields = ('text_answer',)
 
     @override
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        """Creation of new user answers forbidden."""
-        return False
+    def get_queryset(self, request: HttpRequest) -> QuerySet[UserAnswer]:
+        """Advanced queryset."""
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            'survey_result',
+            'survey_result__survey',
+            'survey_result__user',
+            'question',
+        ).prefetch_related('selected_options')
 
-    save_as = False
-    save_on_top = True
+    @override
+    def formfield_for_foreignkey(
+        self,
+        db_field: ForeignKey[Any],
+        request: HttpRequest,
+        **kwargs: Any,
+    ) -> ModelChoiceField[Any] | None:
+        if db_field.name == 'survey_result':
+            kwargs['queryset'] = SurveyResult.objects.select_related('user')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Suggestion)

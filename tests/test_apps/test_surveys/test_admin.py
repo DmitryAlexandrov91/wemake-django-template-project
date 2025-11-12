@@ -6,8 +6,12 @@ import pytest
 from django.forms import ModelForm
 from django.http import HttpRequest
 
-from server.apps.surveys.admin import QuestionAdmin
-from server.apps.surveys.models import Question, Survey
+from server.apps.surveys.admin import QuestionAdmin, UserAnswerAdmin
+from server.apps.surveys.models import (
+    Question,
+    Survey,
+    UserAnswer,
+)
 from tests.plugins.surveys_admin import AdminSetup
 
 SURVEY_RESP_ATTR = 'survey_response_avg_period'
@@ -15,7 +19,7 @@ SURVEY_RESP_ATTR = 'survey_response_avg_period'
 
 @pytest.mark.django_db
 def test_get_surveys(  # noqa: WPS234
-    question_admin: QuestionAdmin,
+    question_admin_instance: QuestionAdmin,
     question_with_two_surveys: Callable[
         [dict[str, Any]], tuple[Question, list[Survey]]
     ],
@@ -25,19 +29,19 @@ def test_get_surveys(  # noqa: WPS234
         'text': 'test text',
         'question_type': 'score',
     })
-    result_data: str = question_admin.get_surveys(question)
+    result_data: str = question_admin_instance.get_surveys(question)
     expected: str = ', '.join(survey.title for survey in surveys)
     assert result_data == expected
 
 
 @pytest.mark.django_db
 def test_get_surveys_empty(
-    question_admin: QuestionAdmin,
+    question_admin_instance: QuestionAdmin,
     surveys_question_factory: Callable[..., Question],
 ) -> None:
     """Test empty."""
     question: Question = surveys_question_factory(text='Empty question?')
-    assert not question_admin.get_surveys(question)
+    assert not question_admin_instance.get_surveys(question)
 
 
 @pytest.mark.django_db
@@ -47,13 +51,13 @@ def test_get_queryset_prefetch(  # noqa: WPS234
     question_with_two_surveys: Callable[
         [dict[str, Any]], tuple[Question, list[Survey]]
     ],
-    question_admin: QuestionAdmin,
+    question_admin_instance: QuestionAdmin,
 ) -> None:
     """Test prefetch."""
     question, _ = question_with_two_surveys({})
     request: HttpRequest = rf.get('/admin/app/question/')
     request.user = admin_user
-    queryset = question_admin.get_queryset(request)
+    queryset = question_admin_instance.get_queryset(request)
     assert hasattr(queryset, 'prefetch_related')
     assert question in list(queryset)
 
@@ -93,3 +97,15 @@ def test_save_model_with_period_change(
 
     settings_obj.refresh_from_db()
     assert settings_obj.survey_response_avg_period == 14
+
+
+@pytest.mark.django_db
+def test_useransweradmin_get_queryset_prefetch(
+    user_answer_admin_instance: UserAnswerAdmin,
+    rf: Any,
+    user_answer_complex: UserAnswer,
+) -> None:
+    """Tests get_queryset in UserAnswerAdmin."""
+    request = rf.get('/admin/surveys/useranswer/')
+    qs = user_answer_admin_instance.get_queryset(request)
+    assert hasattr(qs, 'prefetch_related')
