@@ -50,11 +50,11 @@ def test_handle_cancel_edit_answer(
             survey_title=survey_result.survey.title,  # type: ignore [attr-defined]
             answers=''.join(
                 ANSWER_TEMPLATE.format(
-                    question_number=answer.pk,
+                    question_number=idx,
                     question_text=answer.question,
                     answer_text=answer.text_answer,
                 )
-                for answer in user_answers
+                for idx, answer in enumerate(iterable=user_answers, start=1)
             ),
         ),
         parse_mode='HTML',
