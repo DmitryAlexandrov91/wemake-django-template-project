@@ -1,6 +1,6 @@
 from typing import Any, final
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count, QuerySet, functions
 
 from server.apps.company.models import Department
 
@@ -34,7 +34,7 @@ class DepartmentRepo:
         return (
             self.get_all()
             .annotate(employees_count=Count('users'))
-            .order_by('name')
+            .order_by(functions.Lower('name'))
         )
 
     def create(self, **kwargs: Any) -> Department:
