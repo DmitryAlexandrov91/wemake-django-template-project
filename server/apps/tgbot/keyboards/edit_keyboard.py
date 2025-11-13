@@ -30,9 +30,9 @@ class EditAnswerKeyboard:
         """KB for edit UserAnswers."""
         keyboard = self._keyboard_builder(row_width=row_width)
         buttons = []
-        for answer in answers:
+        for idx, answer in enumerate(iterable=answers, start=1):
             button = self._button_builder(
-                text=EDIT_ANSWER_TEXT.format(answer_number=answer.pk),
+                text=EDIT_ANSWER_TEXT.format(answer_number=idx),
                 callback=callback,
                 callback_data={
                     'answer_id': answer.pk,
