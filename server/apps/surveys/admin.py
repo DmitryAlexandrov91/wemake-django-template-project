@@ -17,7 +17,7 @@ from server.apps.surveys.models import (
     SurveyResult,
     UserAnswer,
 )
-from server.apps.surveys.tasks import update_user_statistics_task
+from server.apps.surveys.tasks.tasks import update_user_statistics_task
 
 
 @admin.register(Survey)

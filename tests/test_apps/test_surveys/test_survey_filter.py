@@ -40,9 +40,7 @@ def test_active_survey_filter(
     department: Department,
 ) -> None:
     """Test ensure that survey filter status=active works correctly."""
-    create_surveys(department=department)  # type: ignore[call-arg]
-    active_survey = Survey.objects.get(status=SurveyStatus.ACTIVE)
-
+    active_survey = create_surveys(department=department)  # type: ignore[call-arg]
     response = auth_client.get(SURVEY_URL, {STATUS: 'active'})
     response_data = response.json()['data'][0]
 

@@ -4,7 +4,7 @@ import telebot
 
 from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import Survey
-from server.apps.surveys.tasks import email_survey_invitation_task
+from server.apps.surveys.tasks.tasks import email_survey_invitation_task
 from server.common.layouts import (
     END_DATE_LAYOUT,
     LINK_LAYOUT,

@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from server.apps.surveys.infra.repository import UserStatisticsRepo
 from server.apps.surveys.models import Question, Survey
-from server.apps.surveys.tasks import (
+from server.apps.surveys.tasks.tasks import (
     delete_marked_questions_task,
     delete_marked_surveys_task,
     delete_one_question_task,
