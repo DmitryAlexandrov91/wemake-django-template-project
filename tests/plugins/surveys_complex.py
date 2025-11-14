@@ -37,6 +37,7 @@ def create_surveys(
             end_date=today + timedelta(days=30),
             department=department_factory(name='Department1'),
             is_favorite=False,
+            status='draft',  # type: ignore[call-arg]
         )
         active_survey = surveys_survey_factory(
             title='Active survey',
@@ -45,6 +46,7 @@ def create_surveys(
             end_date=today + timedelta(days=30),
             department=department,
             is_favorite=False,
+            status='active',  # type: ignore[call-arg]
         )
         surveys_survey_factory(
             title='Ended survey',
@@ -53,6 +55,7 @@ def create_surveys(
             end_date=today - timedelta(days=30),
             department=department,
             is_favorite=False,
+            status='completed',  # type: ignore[call-arg]
         )
         return active_survey
 
