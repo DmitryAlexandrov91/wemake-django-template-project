@@ -1,6 +1,9 @@
 import punq
 
 from server.apps.tgbot.handlers.suggestions import SuggestionsHandlerService
+from server.apps.tgbot.logic.edit_answer_validator import (
+    ValidatorAnswersUpdatesUseCase,
+)
 from server.apps.tgbot.logic.suggestions_usecases import HandleSuggestionUseCase
 from server.apps.tgbot.usecases import (
     HandleStartCommandUseCase,
@@ -31,6 +34,7 @@ def _inject_edit_usecases(container: punq.Container) -> None:
     container.register(HandleEditResponseUseCase)
     container.register(HandleCancelEditResponseUseCase)
     container.register(HandleProcessEditResponseUseCase)
+    container.register(ValidatorAnswersUpdatesUseCase)
 
 
 def _inject_survey_usecases(container: punq.Container) -> None:

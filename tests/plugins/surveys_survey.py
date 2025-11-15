@@ -35,7 +35,7 @@ class _SurveyFactoryParams(TypedDict, total=False):
     title: str
     description: str
     start_date: date
-    end_date: date
+    end_date: date | None
     department: Department
     is_favorite: bool
     to_delete: bool
