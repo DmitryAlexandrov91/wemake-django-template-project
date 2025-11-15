@@ -121,6 +121,11 @@ jobs:
         ${{ (github.ref_name == 'main' ||
             github.ref_name == 'devops/test-deploy-main')
         && 'prod' || 'dev' }}
+      CONFIG_EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+      CONFIG_EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
+      CONFIG_EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      CONFIG_DEFAULT_FROM_EMAIL: ${{ vars.EMAIL_HOST_USER }}
+      CONFIG_EMAIL_PORT: ${{ vars.EMAIL_PORT }}
     runs-on: ubuntu-latest
     steps:
       - name: 1. Checkout repository code
