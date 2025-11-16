@@ -59,12 +59,12 @@ class QuestionAnswerOptionCreateSerializer(
 ):
     """Serializer for creating Question instance."""
 
-    type = serializers.CharField(source=QUESTION_TYPE_ATTR)
+    question_type = serializers.CharField()
     answers = AnswerOptionCreateSerializer(many=True, required=False)
 
     class Meta:
         model = Question
-        fields = (TEXT_ATTR, 'type', IS_FAVORITE_ATTR, 'answers')
+        fields = (TEXT_ATTR, 'question_type', IS_FAVORITE_ATTR, 'answers')
 
 
 class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
