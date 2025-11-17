@@ -46,7 +46,11 @@ class SurveyFilter(FilterSet):
         if filter_value == 'finished':
             queryset = queryset.filter(
                 models.Q(status=SurveyStatus.COMPLETED)
-                | models.Q(end_date__isnull=False, end_date__lt=now_date)
+                | models.Q(
+                    status=SurveyStatus.ACTIVE,
+                    end_date__isnull=False,
+                    end_date__lt=now_date,
+                )
             )
 
         return queryset
