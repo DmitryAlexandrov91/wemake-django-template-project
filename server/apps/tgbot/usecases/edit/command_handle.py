@@ -70,6 +70,7 @@ class HandleEditCommandUseCase:
             chat_id=chat_id,
             text=SURVEY_RESULTS_TEMPLATE.format(
                 survey_title=survey.title,
+                end_date=survey.end_date,
                 answers=''.join(
                     ANSWER_TEMPLATE.format(
                         question_number=idx,

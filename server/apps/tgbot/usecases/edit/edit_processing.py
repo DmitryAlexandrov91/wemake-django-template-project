@@ -54,6 +54,7 @@ class HandleProcessEditResponseUseCase:
                 message_id=state_data['callback_id'],
                 text=SURVEY_RESULTS_TEMPLATE.format(
                     survey_title=survey_result.survey.title,
+                    end_date=survey_result.survey.end_date,
                     answers=''.join(
                         ANSWER_TEMPLATE.format(
                             question_number=idx,

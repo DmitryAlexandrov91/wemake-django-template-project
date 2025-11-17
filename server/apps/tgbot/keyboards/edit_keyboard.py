@@ -25,7 +25,7 @@ class EditAnswerKeyboard:
         answers: models.QuerySet[UserAnswer],
         survey_result_id: int,
         callback: CallbackFactory,
-        row_width: int = 1,
+        row_width: int = 3,
     ) -> types.InlineKeyboardMarkup:
         """KB for edit UserAnswers."""
         keyboard = self._keyboard_builder(row_width=row_width)

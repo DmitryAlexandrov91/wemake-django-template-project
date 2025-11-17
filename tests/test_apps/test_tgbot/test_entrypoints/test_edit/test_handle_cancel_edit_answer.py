@@ -48,6 +48,7 @@ def test_handle_cancel_edit_answer(
         message_id=mock_callback_query.message.message_id,
         text=SURVEY_RESULTS_TEMPLATE.format(
             survey_title=survey_result.survey.title,  # type: ignore [attr-defined]
+            end_date=survey_result.survey.end_date,  # type: ignore [attr-defined]
             answers=''.join(
                 ANSWER_TEMPLATE.format(
                     question_number=idx,
