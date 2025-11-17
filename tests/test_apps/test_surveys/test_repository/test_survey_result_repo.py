@@ -1,7 +1,10 @@
 from collections.abc import Callable
 
 import pytest
+from django.utils import timezone
 
+from server.apps.company.models import Department
+from server.apps.surveys.choices import SurveyStatus
 from server.apps.surveys.infra.repository import (
     SurveyRepo,
     SurveyResultRepo,
@@ -75,3 +78,20 @@ def test_get_by_pk(survey: Survey) -> None:
     repo = resolve(SurveySaveRepo)
     survey_obj = repo.get_by_pk(pk=survey.id)
     assert survey_obj == survey
+
+
+@pytest.mark.django_db
+def test_get_all_expired_ids(
+    department: Department,
+    create_surveys: Callable[[Department], Survey],
+) -> None:
+    """Test getting expired surveys only."""
+    now_date = timezone.now().date()
+    create_surveys(department)
+    expired_survey = Survey.objects.get(
+        status=SurveyStatus.ACTIVE, end_date__lt=now_date
+    )
+    res = resolve(SurveySaveRepo).get_all_expired_ids()
+    expected_ids = [expired_survey.id]
+    assert isinstance(res, list)
+    assert res == expected_ids

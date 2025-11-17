@@ -37,6 +37,7 @@ def create_surveys(
             end_date=today + timedelta(days=30),
             department=department_factory(name='Department1'),
             is_favorite=False,
+            status='draft',
         )
         active_survey = surveys_survey_factory(
             title='Active survey',
@@ -45,6 +46,7 @@ def create_surveys(
             end_date=today + timedelta(days=30),
             department=department,
             is_favorite=False,
+            status='active',
         )
         surveys_survey_factory(
             title='Ended survey',
@@ -53,6 +55,16 @@ def create_surveys(
             end_date=today - timedelta(days=30),
             department=department,
             is_favorite=False,
+            status='completed',
+        )
+        surveys_survey_factory(
+            title='Expired survey',
+            description='Expired survey text',
+            start_date=today - timedelta(days=30),
+            end_date=today - timedelta(days=1),
+            department=department,
+            is_favorite=False,
+            status='active',
         )
         return active_survey
 
@@ -142,7 +154,7 @@ def mock_statistics_mocks(mocker: MockerFixture) -> dict[str, mock.Mock]:
 @pytest.fixture
 def mock_celery_tasks(mocker: MockerFixture) -> dict[str, mock.Mock]:
     """Mocking Celery."""
-    mock_group = mocker.patch('server.apps.surveys.tasks.group')
+    mock_group = mocker.patch('server.apps.surveys.tasks.tasks.group')
     mock_update_task = mocker.patch(
         'server.apps.surveys.tasks.update_user_statistics_task'
     )

@@ -24,6 +24,7 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
         _FULL_NAME_FIELD,
         'is_staff',
         'is_active',
+        'to_inactivate',
         'average_answer_sec',
     )
     list_filter = (
@@ -56,6 +57,7 @@ class CustomUserAdmin(BaseUserAdmin[CustomUser]):  # type: ignore[type-var]
             {
                 _FIELDS: (
                     'is_active',
+                    'to_inactivate',
                     'is_staff',
                     'is_superuser',
                     'groups',

@@ -14,9 +14,13 @@ from server.apps.tgbot.callbacks import answer_callback
 from server.apps.tgbot.keyboards.edit_keyboard import (
     EditAnswerKeyboard,
 )
+from server.apps.tgbot.logic.edit_answer_validator import (
+    ValidatorAnswersUpdatesUseCase,
+)
 from server.apps.tgbot.message_templates import (
     ANSWER_TEMPLATE,
     NO_ANSWERS,
+    SURVEY_NOT_FOUND,
     SURVEY_RESULTS_TEMPLATE,
 )
 from server.apps.users.infra.repository import UserRepo
@@ -32,6 +36,7 @@ class HandleEditCommandUseCase:
     _user_answer_repo: UserAnswerRepo
     _bot: TeleBot
     _keyboard_builder: EditAnswerKeyboard
+    _validator: ValidatorAnswersUpdatesUseCase
 
     def __call__(self, message: types.Message) -> None:
         """Show responses for user survey."""
@@ -42,6 +47,18 @@ class HandleEditCommandUseCase:
         user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
 
         survey = self._survey_repo.get_active_survey_for_user(user=user)
+
+        try:
+            survey = self._survey_repo.get_active_survey_for_user(user=user)
+        except Survey.DoesNotExist:
+            self._bot.send_message(
+                chat_id=message.chat.id,
+                text=SURVEY_NOT_FOUND,
+            )
+            return
+
+        if not self._validator(survey, message.chat.id):
+            return
 
         survey_result = self._survey_res_repo.get_or_create_user_survey_res(
             user=user, survey=survey

@@ -5,7 +5,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.request import Request
 
-from server.apps.surveys.choices import SurveyBotState
+from server.apps.surveys.choices import SurveyBotState, SurveyStatus
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
@@ -325,6 +325,15 @@ class SurveySaveRepo:
             Survey.objects.filter(to_delete=True).values_list(
                 ID_ATTR, flat=True
             )
+        )
+
+    def get_all_expired_ids(self) -> list[int]:
+        """Returns all the surveys to mark completed."""
+        now_date = timezone.now().date()
+        return list(
+            Survey.objects.filter(
+                status=SurveyStatus.ACTIVE, end_date__lt=now_date
+            ).values_list(ID_ATTR, flat=True)
         )
 
 

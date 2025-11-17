@@ -62,7 +62,6 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
 
     id = serializers.IntegerField(source=ATTR_PK, read_only=True)
     text = serializers.CharField()
-    type = serializers.CharField(source=QUESTION_TYPE_ATTR)
     user_answers = UserAnswersListSerializer(many=True)
     answer_options = AnswerOptionListSerializer(many=True)
     surveys = serializers.PrimaryKeyRelatedField(
@@ -74,7 +73,7 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
         fields = (
             'id',
             TEXT_ATTR,
-            'type',
+            QUESTION_TYPE_ATTR,
             'to_delete',
             'user_answers',
             'answer_options',

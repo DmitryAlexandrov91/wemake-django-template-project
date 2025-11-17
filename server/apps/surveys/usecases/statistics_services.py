@@ -69,7 +69,7 @@ class UpdateStatisticScheduler:
 
     def __call__(self, user_id: int | None) -> AsyncResult:
         """Starts updating user statistics."""
-        from server.apps.surveys.tasks import (  # noqa: PLC0415
+        from server.apps.surveys.tasks.tasks import (  # noqa: PLC0415
             update_user_statistics_task,
         )
 

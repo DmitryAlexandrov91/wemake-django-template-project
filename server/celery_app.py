@@ -20,7 +20,10 @@ def setup_periodic_tasks(sender: Celery, **kwargs: object) -> None:
     from server.apps.company.tasks import (  # noqa: PLC0415
         delete_marked_departments_task,
     )
-    from server.apps.surveys.tasks import (  # noqa: PLC0415
+    from server.apps.surveys.tasks.status import (  # noqa: PLC0415
+        turn_survey_active_to_complet_task,
+    )
+    from server.apps.surveys.tasks.tasks import (  # noqa: PLC0415
         delete_marked_questions_task,
         delete_marked_surveys_task,
     )
@@ -33,6 +36,7 @@ def setup_periodic_tasks(sender: Celery, **kwargs: object) -> None:
         delete_marked_departments_task,
         delete_marked_questions_task,
         delete_marked_surveys_task,
+        turn_survey_active_to_complet_task,
     )
     for task in tasks:
         _create_periodic_task(sender, crontab(minute=0, hour=0), task)
