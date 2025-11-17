@@ -61,9 +61,11 @@ class HandleEditCommandUseCase:
         survey_result = self._survey_res_repo.get_or_create_user_survey_res(
             user=user, survey=survey
         )
+
         user_answers = self._user_answer_repo.get_answers_by_survey_result(
             survey_result=survey_result
         )
+
         self._send_message(
             chat_id=message.chat.id,
             survey=survey,
@@ -83,6 +85,7 @@ class HandleEditCommandUseCase:
             chat_id=chat_id,
             text=SURVEY_RESULTS_TEMPLATE.format(
                 survey_title=survey.title,
+                end_date=survey.end_date,
                 answers=''.join(
                     ANSWER_TEMPLATE.format(
                         question_number=idx,
