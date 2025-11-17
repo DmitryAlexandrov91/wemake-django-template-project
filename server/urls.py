@@ -20,7 +20,6 @@ from server.apps.company import urls as company_urls
 from server.apps.surveys import urls as surveys_urls
 from server.apps.tgbot.views import TelegramWebhookView
 from server.apps.users import urls as users_urls
-from server.apps.users import views
 from server.di import resolve
 
 contrib.admin.autodiscover()
@@ -29,12 +28,7 @@ settings = resolve(conf.LazySettings)
 
 
 urlpatterns = [
-    # Apps:
-    path(
-        'password-recovery',
-        views.PasswordRecoveryAPIView.as_view(),
-        name='password-recovery',
-    ),
+    # # Apps:
     # Health checks:
     path('health/', include(health_urls)),
     # django-admin:

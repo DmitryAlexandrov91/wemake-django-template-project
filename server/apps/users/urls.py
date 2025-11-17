@@ -6,6 +6,7 @@ from server.apps.users.views import (
     EmployeeDetailView,
     EmployeeView,
     LogoutView,
+    PasswordRecoveryAPIView,
 )
 
 urlpatterns: list[URLPattern | URLResolver] = [
@@ -33,5 +34,10 @@ urlpatterns: list[URLPattern | URLResolver] = [
         'api/employees/<int:pk>',
         EmployeeDetailView.as_view(),
         name='employee-update',
+    ),
+    path(
+        'api/password-recovery',
+        PasswordRecoveryAPIView.as_view(),
+        name='password-recovery',
     ),
 ]
