@@ -46,8 +46,6 @@ class HandleEditCommandUseCase:
 
         user = self._user_repo.get_by_tg_username(f'@{tg_user.username}')
 
-        survey = self._survey_repo.get_active_survey_for_user(user=user)
-
         try:
             survey = self._survey_repo.get_active_survey_for_user(user=user)
         except Survey.DoesNotExist:
