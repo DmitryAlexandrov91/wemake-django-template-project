@@ -20,6 +20,7 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
 
     serializer_class = DepartmentCreateSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
+    lookup_value_regex = r'\d+'
 
     @override
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
