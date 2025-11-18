@@ -33,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer[CustomUser]):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'full_name')
+        fields = ('id', 'full_name', 'to_inactivate')
 
 
 class DepartmentSerializer(serializers.ModelSerializer[Department]):
