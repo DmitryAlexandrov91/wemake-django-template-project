@@ -191,3 +191,4 @@ pydocstyle.convention = "google"
 "server/apps/*/migrations/*.py" = ["D101", "E501", "RUF012"]
 "server/common/typing/*.py" = ["F401"]
 "tests/*.py" = ["S101"]
+"server/common/layouts.py" = ["RUF001"]
