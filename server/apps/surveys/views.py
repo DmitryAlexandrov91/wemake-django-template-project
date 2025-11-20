@@ -32,7 +32,7 @@ from server.apps.surveys.usecases.inform_recipients import survey_notification
 from server.di import resolve
 
 ALL_PARAM = 'all'
-ASC_PARAM = 'asc'
+DEFAULT_ORDER = 'desc'
 
 
 @question_viewset_schema
@@ -54,7 +54,7 @@ class QuestionViewSet(  # noqa: WPS215
         """Get queryset using repo."""
         repo = resolve(QuestionRepo)
         filter_param = self.request.query_params.get('filter', ALL_PARAM)
-        order_param = self.request.query_params.get('order', ASC_PARAM)
+        order_param = self.request.query_params.get('order', DEFAULT_ORDER)
         search_param = self.request.query_params.get('search')
         return repo.get_modified_questions_queryset(
             filter_param, order_param, search_param

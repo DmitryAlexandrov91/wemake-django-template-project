@@ -24,7 +24,7 @@ QUESTION_ID = 'question_id'
 QUESTION_TYPE = 'question_type'
 TEXT_ATTR = 'text'
 ID_ATTR = 'id'
-ASC_PARAM = 'asc'
+DEFAULT_ORDER = 'desc'
 ALL_PARAM = 'all'
 DEPARTMENT = 'department'
 SURVEY_ATTR = 'surveys'
@@ -101,7 +101,7 @@ class QuestionRepo:
         }
         queryset = filter_mapping.get(filter_param, queryset)
 
-        if order_param == ASC_PARAM:
+        if order_param == 'asc':
             queryset = queryset.order_by(ID_ATTR)
         else:
             queryset = queryset.order_by(f'-{ID_ATTR}')
@@ -216,17 +216,23 @@ class SurveyRepo:  # noqa: WPS214
         if search_param:
             queryset = queryset.filter(title__icontains=search_param)
         queryset = queryset.order_by(
-            'start_date'
-            if request.query_params.get('order', 'asc') == 'asc'
-            else '-start_date'
+            '-start_date'
+            if request.query_params.get('order', 'desc') == 'desc'
+            else 'start_date'
         )
 
+        # this filter mapping is for compatability with frontend queries
+        # using ?filter=XXXX param. Now Frontend works with native DRF ?status=X
+        # this also used in tests
         now_date = timezone.now().date()
         filter_mapping = {
             'favorite': queryset.filter(is_favorite=True),
-            'drafts': queryset.filter(start_date__gt=now_date),
-            'finished': queryset.filter(end_date__lte=now_date),
-            'archive': queryset.filter(end_date__lt=now_date),
+            'drafts': queryset.filter(status=SurveyStatus.DRAFT),
+            'finished': queryset.filter(
+                models.Q(end_date__lte=now_date)
+                | models.Q(status=SurveyStatus.COMPLETED)
+            ),
+            'archive': queryset.filter(status=SurveyStatus.ARCHIVED),
             'all': queryset,
         }
         return filter_mapping[request.query_params.get('filter', ALL_PARAM)]

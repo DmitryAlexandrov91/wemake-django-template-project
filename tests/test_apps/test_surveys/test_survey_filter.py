@@ -1,7 +1,9 @@
 from collections.abc import Callable
 
 import pytest
+from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from server.apps.company.models import Department
@@ -28,7 +30,7 @@ def test_survey_status_mapping(
     assert len(surveys) == 3
 
     for status in STATUS_MAPPING:
-        response = auth_client.get(SURVEY_URL, {STATUS: status})
+        response = auth_client.get(f'{SURVEY_URL}?order=asc', {STATUS: status})
         response_data = response.json()['data']
         assert len(response_data) == 1
 
@@ -56,10 +58,16 @@ def test_finished_survey_filter(
 ) -> None:
     """Test ensure that survey filter status=finished works correctly."""
     create_surveys(department=department)  # type: ignore[call-arg]
-    completed_survey = Survey.objects.get(status=SurveyStatus.COMPLETED)
+    now_date = timezone.now().date()
+    completed_surveys = Survey.objects.filter(
+        models.Q(status=SurveyStatus.COMPLETED)
+        | models.Q(
+            status=SurveyStatus.ACTIVE,
+            end_date__isnull=False,
+            end_date__lt=now_date,
+        )
+    )
 
-    response = auth_client.get(SURVEY_URL, {STATUS: 'finished'})
-    response_data = response.json()['data'][0]
-
-    assert response_data['name'] == completed_survey.title
-    assert response_data[STATUS] == completed_survey.status
+    response = auth_client.get(SURVEY_URL, {'status': 'finished'})
+    response_data = response.json()['data']
+    assert len(response_data) == len(completed_surveys)

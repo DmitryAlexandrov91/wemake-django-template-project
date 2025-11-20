@@ -32,7 +32,7 @@ class SurveyAdmin(admin.ModelAdmin[Survey]):
         'end_date',
     )
     search_fields = ('title', 'id')
-    ordering = ('-start_date',)
+    ordering = ('-id',)
     inlines = (QuestionInline,)
 
 
@@ -48,6 +48,7 @@ class QuestionAdmin(admin.ModelAdmin[Question]):
     )
     list_filter = ('question_type', 'surveys')
     search_fields = ('text',)
+    ordering = ('-id',)
 
     @admin.display(description='Surveys')
     def get_surveys(self, question: Question) -> str:

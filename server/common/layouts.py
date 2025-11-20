@@ -1,4 +1,3 @@
-# Message layouts for email invitations.
 SUBJECT_LAYOUT = 'Invitation to a new survey "{}"'
 MESSAGE_LAYOUT = (
     'Dear {}!\n\n'

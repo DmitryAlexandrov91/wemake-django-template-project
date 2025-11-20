@@ -24,7 +24,7 @@ from tests.test_apps.test_surveys.services import build_survey
 
 DATA_ATTR = 'data'
 NAME_ATTR = 'name'
-FILTER_ATTR = 'filter'
+FILTER_ATTR = 'status'
 ID_ATTR = 'id'
 
 
@@ -59,6 +59,7 @@ def test_filter_query_params(  # noqa: WPS210
     department_factory: department_factory.DepartmentFactory,
 ) -> None:
     """Test filtering."""
+    active = build_survey('active', department_factory, surveys_survey_factory)
     favorite = build_survey(
         'favorite', department_factory, surveys_survey_factory
     )
@@ -69,32 +70,36 @@ def test_filter_query_params(  # noqa: WPS210
     archive = build_survey(
         'archive', department_factory, surveys_survey_factory
     )
+
     favorite_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'favorite'}
     )
     survey = favorite_response.json()[DATA_ATTR][0]
     assert survey[NAME_ATTR] == favorite.title
+
     drafts_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'drafts'}
     )
     survey = drafts_response.json()[DATA_ATTR][0]
     assert survey[NAME_ATTR] == drafts.title
+
     finished_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'finished'}
     )
-    surveys = finished_response.json()[DATA_ATTR]
-    assert all(
-        survey[NAME_ATTR] in {archive.title, finished.title}
-        for survey in surveys
-    )
+    survey = finished_response.json()[DATA_ATTR][0]
+    assert survey[NAME_ATTR] == finished.title
+
     archive_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'archive'}
     )
-    survey = archive_response.json()[DATA_ATTR][0]
-    assert survey[NAME_ATTR] == archive.title
-    all_response = auth_client.get(surveys_survey.GET_ALL_SURVEYS_URL)
-    surveys = all_response.json()[DATA_ATTR]
-    assert len(surveys) == 4
+    surveys = archive_response.json()[DATA_ATTR][0]
+    assert surveys[NAME_ATTR] == archive.title
+
+    active_response = auth_client.get(
+        surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'active'}
+    )
+    surveys = active_response.json()[DATA_ATTR][0]
+    assert surveys[NAME_ATTR] == active.title
 
 
 @pytest.mark.django_db
