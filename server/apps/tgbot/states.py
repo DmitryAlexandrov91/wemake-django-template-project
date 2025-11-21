@@ -21,3 +21,9 @@ class SurveyPeriodStates(StatesGroup):
 
     waiting_for_start_date = State()
     waiting_for_end_date = State()
+
+
+class SuggestState(StatesGroup):
+    """States for receiving user suggestions."""
+
+    waiting_for_suggestion = State()

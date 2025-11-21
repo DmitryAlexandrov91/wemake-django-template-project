@@ -1,12 +1,13 @@
 import punq
 
-from server.apps.tgbot.handlers.suggestions import SuggestionsHandlerService
 from server.apps.tgbot.logic.edit_answer_validator import (
     ValidatorAnswersUpdatesUseCase,
 )
 from server.apps.tgbot.logic.suggestions_usecases import HandleSuggestionUseCase
 from server.apps.tgbot.usecases import (
     HandleStartCommandUseCase,
+    HandleSuggestCommandUseCase,
+    HandleSuggestionTextUseCase,
     SaveAnswerUseCase,
 )
 from server.apps.tgbot.usecases.common import ProcessingAnswerUseCase
@@ -53,4 +54,5 @@ def _inject_common_usecases(container: punq.Container) -> None:
 def _inject_suggestions_usecases(container: punq.Container) -> None:
     """Register SuggestionsHandlerService and its usecase."""
     container.register(HandleSuggestionUseCase)
-    container.register(SuggestionsHandlerService)
+    container.register(HandleSuggestCommandUseCase)
+    container.register(HandleSuggestionTextUseCase)

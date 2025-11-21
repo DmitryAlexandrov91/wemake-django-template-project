@@ -4,3 +4,9 @@ from server.apps.tgbot.usecases.common import (
 from server.apps.tgbot.usecases.start import (
     HandleStartCommandUseCase as HandleStartCommandUseCase,
 )
+from server.apps.tgbot.usecases.suggestions import (
+    HandleSuggestCommandUseCase as HandleSuggestCommandUseCase,
+)
+from server.apps.tgbot.usecases.suggestions import (
+    HandleSuggestionTextUseCase as HandleSuggestionTextUseCase,
+)
