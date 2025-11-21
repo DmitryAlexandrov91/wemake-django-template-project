@@ -78,8 +78,9 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
     @override
     def list(self, request: Request) -> Response:
         """Return a list of all departments with employees."""
-        serializer = DepartmentSerializer(self.get_queryset(), many=True)
-        return Response(serializer.data)
+        page = self.paginate_queryset(self.get_queryset())
+        serializer = DepartmentSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     def get_repository(self) -> DepartmentRepo:
         """Return an instance of DepartmentRepo."""

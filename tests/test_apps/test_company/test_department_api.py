@@ -82,7 +82,7 @@ def test_get_list_department(
     response = auth_client.get(url)
     response = auth_client.get(url)
     assert response.status_code == HTTPStatus.OK
-    assert len(response.data) == batch_size
+    assert len(response.data['data']) == batch_size
 
 
 @pytest.mark.django_db
@@ -98,6 +98,6 @@ def test_get_list_department_ordered(
     auth_client = auth_client_factory(active_user)
     response = auth_client.get(url)
 
-    assert [dep['department_name'] for dep in response.data] == [
+    assert [dep['department_name'] for dep in response.data['data']] == [
         f'Dep{dep_number}' for dep_number in range(batch_size)
     ]
