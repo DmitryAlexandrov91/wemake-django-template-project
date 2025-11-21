@@ -8,13 +8,13 @@ from server.apps.surveys.choices import (
     SurveyBotState,
     SurveyStatus,
 )
-from server.common.constants import DATA_LENGHT
+from server.common.constants import DATA_LENGTH
 
 
 class Survey(models.Model):
     """Survey model."""
 
-    title = models.CharField(max_length=DATA_LENGHT)
+    title = models.CharField(max_length=DATA_LENGTH)
     description = models.TextField(blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
@@ -27,7 +27,7 @@ class Survey(models.Model):
     to_delete = models.BooleanField(default=0)
 
     status = models.CharField(
-        max_length=DATA_LENGHT,
+        max_length=DATA_LENGTH,
         choices=SurveyStatus.choices,
         default=SurveyStatus.DRAFT,
     )
@@ -89,7 +89,7 @@ class Question(models.Model):
     )
     text = models.TextField()
     question_type = models.CharField(
-        max_length=DATA_LENGHT,
+        max_length=DATA_LENGTH,
         choices=QuestionType.choices,
     )
     is_favorite = models.BooleanField(default=False)
@@ -214,7 +214,7 @@ class SurveyResult(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     bot_state = models.CharField(
-        max_length=DATA_LENGHT,
+        max_length=DATA_LENGTH,
         choices=SurveyBotState.choices,
         default=SurveyBotState.WAITING_START,
     )

@@ -12,6 +12,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.callbacks import survey_callback
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
@@ -34,6 +35,7 @@ class HandleSurveyCommandUseCase:
     _question_repo: QuestionRepo
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
+    _state: StatePostgresStorage
 
     def __call__(
         self, message: types.Message, survey_result: SurveyResult
@@ -46,13 +48,16 @@ class HandleSurveyCommandUseCase:
         self._configure_state(user_id=tg_user.id, chat_id=message.chat.id)
 
         if survey_result.current_question is None:
-            self._bot.delete_state(user_id=tg_user.id, chat_id=message.chat.id)
+            self._state.delete_state(
+                user_id=tg_user.id, chat_id=message.chat.id
+            )
 
         sent_message = self._send_and_return_message(
             chat_id=message.chat.id,
             survey_result=survey_result,
             full_name=survey_result.user.full_name,
         )
+
         self._retrieve_data(
             user_id=tg_user.id,
             chat_id=message.chat.id,
@@ -61,13 +66,13 @@ class HandleSurveyCommandUseCase:
             sent_message=sent_message,
         )
 
-    def _configure_state(self, user_id: int, chat_id: int | None) -> None:
+    def _configure_state(self, user_id: int, chat_id: int) -> None:
         """Add custom filter and set state."""
         self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
-        self._bot.set_state(
+        self._state.set_state(
+            chat_id=chat_id,
             user_id=user_id,
             state=SurveyResponseState.survey_response,
-            chat_id=chat_id,
         )
 
     def _send_and_return_message(
@@ -98,16 +103,21 @@ class HandleSurveyCommandUseCase:
     def _retrieve_data(
         self,
         user_id: int,
-        chat_id: int | None,
+        chat_id: int,
         survey_result: SurveyResult,
         user: CustomUser,
         sent_message: types.Message,
     ) -> None:
         """Retrieve data after processing is complete."""
-        with self._bot.retrieve_data(  # type: ignore[union-attr]
+        with self._state.get_interactive_data(
             user_id=user_id, chat_id=chat_id
         ) as state_data:
-            state_data['question_id'] = survey_result.current_question.pk  # type: ignore[union-attr]
+            question_id = (
+                None
+                if survey_result.current_question is None
+                else survey_result.current_question.pk
+            )
+            state_data['question_id'] = question_id
             state_data['survey_result_id'] = survey_result.pk
             state_data['user_id'] = user.pk
             state_data['message_id'] = sent_message.message_id

@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from pytest_mock import MockFixture
 
 from server.apps.users import admin, models
-from server.common.constants import DATA_LENGHT
+from server.common.constants import DATA_LENGTH
 from tests.plugins.users_requests import RequestMock
 
 if TYPE_CHECKING:
@@ -98,7 +98,7 @@ def active_user(
     valid_request: RequestMock, fakery_m: FakeryM[models.CustomUser]
 ) -> models.CustomUser:
     """Fixture for creating an active user."""
-    original_password = secrets.token_urlsafe(DATA_LENGHT)
+    original_password = secrets.token_urlsafe(DATA_LENGTH)
     return fakery_m(models.CustomUser)(
         email=valid_request.data['email'],
         password=original_password,

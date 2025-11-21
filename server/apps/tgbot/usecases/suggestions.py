@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from telebot import TeleBot, types
 from telebot.custom_filters import StateFilter
 
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.logic.suggestions_usecases import HandleSuggestionUseCase
 from server.apps.tgbot.message_templates import (
     EMPTY_SUGGESTION,
@@ -19,6 +20,7 @@ class HandleSuggestCommandUseCase:
     """Usecase for starting suggestion input."""
 
     _bot: TeleBot
+    _state: StatePostgresStorage
 
     def __call__(self, message: types.Message) -> None:
         """Ask user to enter their suggestion."""
@@ -27,10 +29,10 @@ class HandleSuggestCommandUseCase:
             return
 
         self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
-        self._bot.set_state(
-            message.from_user.id,
-            SuggestState.waiting_for_suggestion,
-            message.chat.id,
+        self._state.set_state(
+            user_id=message.from_user.id,
+            state=SuggestState.waiting_for_suggestion,
+            chat_id=message.chat.id,
         )
 
         self._bot.send_message(
@@ -45,6 +47,7 @@ class HandleSuggestionTextUseCase:
 
     _bot: TeleBot
     _suggestion_usecase: HandleSuggestionUseCase
+    _state: StatePostgresStorage
 
     def __call__(self, message: types.Message) -> None:
         """Receive suggestion text and save it."""
@@ -66,7 +69,9 @@ class HandleSuggestionTextUseCase:
             text=message.text,
         )
 
-        self._bot.delete_state(message.from_user.id, message.chat.id)
+        self._state.delete_state(
+            user_id=message.from_user.id, chat_id=message.chat.id
+        )
 
         self._bot.send_message(
             chat_id=message.chat.id,

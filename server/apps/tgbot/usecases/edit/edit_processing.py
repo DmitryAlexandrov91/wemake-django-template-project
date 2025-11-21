@@ -7,6 +7,7 @@ from server.apps.surveys.infra.repository import (
     UserAnswerRepo,
 )
 from server.apps.tgbot.callbacks import answer_callback
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.edit_keyboard import (
     EditAnswerKeyboard,
 )
@@ -27,6 +28,7 @@ class HandleProcessEditResponseUseCase:
     _keyboard_builder: EditAnswerKeyboard
     _user_answer_repo: UserAnswerRepo
     _survey_result_repo: SurveyResultRepo
+    _state: StatePostgresStorage
 
     def __call__(self, message: types.Message) -> None:
         """Process answer text edit."""
@@ -35,8 +37,8 @@ class HandleProcessEditResponseUseCase:
         if message.from_user is None or message.text is None:
             return
 
-        with self._bot.retrieve_data(  # type: ignore[union-attr]
-            message.from_user.id, message.chat.id
+        with self._state.get_interactive_data(
+            user_id=message.from_user.id, chat_id=message.chat.id
         ) as state_data:
             survey_result = self._survey_result_repo.get_by_pk(
                 pk=state_data[SURVEY_RESULT_ID]
@@ -76,6 +78,6 @@ class HandleProcessEditResponseUseCase:
                 ),
             )
 
-        self._bot.delete_state(
+        self._state.delete_state(
             user_id=message.from_user.id, chat_id=message.chat.id
         )

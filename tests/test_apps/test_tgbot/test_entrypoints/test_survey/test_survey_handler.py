@@ -62,7 +62,7 @@ def test_survey_handler_with_none_user(
 def test_survey_handler_with_none_question(
     user_from_message_with_relations: MockMessage,
     mock_bot_send_message: MagicMock,
-    mock_bot_delete_state: MagicMock,
+    mock_delete_state: MagicMock,
 ) -> None:
     """Ensure survey_handler delete state when current_question is None."""
     tg_user = user_from_message_with_relations.from_user
@@ -82,7 +82,7 @@ def test_survey_handler_with_none_question(
     survey_handler(
         message=user_from_message_with_relations, survey_result=survey_result
     )
-    mock_bot_delete_state.assert_called_once_with(
+    mock_delete_state.assert_called_once_with(
         user_id=tg_user.id, chat_id=user_from_message_with_relations.chat.id
     )
     mock_bot_send_message.assert_called_once_with(

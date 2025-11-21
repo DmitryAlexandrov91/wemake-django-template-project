@@ -6,10 +6,10 @@ import pytest
 from pytest_mock import MockFixture
 
 from server.apps.users.tasks import send_recovery_email_task
-from server.common.constants import DATA_LENGHT
+from server.common.constants import DATA_LENGTH
 
 to_email = 'test@example.com'
-new_password = secrets.token_urlsafe(DATA_LENGHT)
+new_password = secrets.token_urlsafe(DATA_LENGTH)
 
 
 @pytest.fixture

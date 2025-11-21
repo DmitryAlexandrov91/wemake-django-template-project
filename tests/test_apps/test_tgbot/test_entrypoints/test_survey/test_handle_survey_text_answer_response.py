@@ -8,6 +8,7 @@ from server.apps.surveys.models.surveys import Question, SurveyResult
 from server.apps.tgbot.entrypoints.survey import (
     handle_survey_text_answer_response,
 )
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.message_templates import SURVEY_COMPLITED
 from server.apps.users.infra.repository import UserRepo
 from server.di import resolve
@@ -70,12 +71,12 @@ def test_handle_survey_text_with_none_user(
 @pytest.mark.django_db
 def test_handle_survey_text_with_none_question(
     user_from_message_with_relations: MockMessage,
-    mock_bot_delete_state: MagicMock,
+    mock_delete_state: MagicMock,
     mock_bot_edit_message_text: MagicMock,
     mock_bot_delete_message: MagicMock,
 ) -> None:
     """Ensure handle_survey delete state when current_question is None."""
-    bot = resolve(TeleBot)
+    state = resolve(StatePostgresStorage)
 
     tg_user = user_from_message_with_relations.from_user
     user_from_message_with_relations.text = 'New answer for question'
@@ -91,13 +92,13 @@ def test_handle_survey_text_with_none_question(
     survey_result.refresh_from_db()
     assert survey_result.current_question is None
 
-    bot.set_state(
+    state.set_state(
         user_id=user_from_message_with_relations.from_user.id,  # type: ignore[union-attr]
         chat_id=user_from_message_with_relations.chat.id,
         state='response_state',
     )
 
-    with bot.retrieve_data(  # type: ignore[union-attr]
+    with state.get_interactive_data(
         user_id=user_from_message_with_relations.from_user.id,  # type: ignore[union-attr]
         chat_id=user_from_message_with_relations.chat.id,
     ) as state_data:
@@ -106,7 +107,7 @@ def test_handle_survey_text_with_none_question(
         state_data['message_id'] = user_from_message_with_relations.message_id
 
     handle_survey_text_answer_response(message=user_from_message_with_relations)
-    mock_bot_delete_state.assert_called_once_with(
+    mock_delete_state.assert_called_once_with(
         user_id=tg_user.id, chat_id=user_from_message_with_relations.chat.id
     )
     mock_bot_edit_message_text.assert_called_once_with(

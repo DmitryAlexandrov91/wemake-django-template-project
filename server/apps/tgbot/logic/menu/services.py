@@ -7,6 +7,7 @@ from django.utils import timezone
 from telebot import TeleBot, types
 
 from server.apps.surveys.models import SurveyResult
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.logic.menu.constants import (
     DATE_PATTERN,
     MESSAGE_INVALIDE_DATE,
@@ -20,6 +21,7 @@ class PeriodBase:
     """Base class with common date validation and parsing methods."""
 
     _bot: TeleBot
+    _state: StatePostgresStorage
 
     def _send_invalid_date_format_message(self, chat_id: int) -> None:
         """Send message about invalid date format."""

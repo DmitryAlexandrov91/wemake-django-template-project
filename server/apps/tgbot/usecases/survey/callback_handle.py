@@ -11,6 +11,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.surveys.models.surveys import AnswerOption, SurveyResult
 from server.apps.tgbot.callbacks import survey_callback
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
@@ -29,6 +30,7 @@ class HandleSurveyCallbackResponseUseCase:
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
     _processing_answer_use_case: ProcessingAnswerUseCase
+    _state: StatePostgresStorage
 
     def __call__(self, call: types.CallbackQuery) -> Any:
         """Handle callback response."""
@@ -45,12 +47,12 @@ class HandleSurveyCallbackResponseUseCase:
             question=updated_survey_result.current_question
         )
 
-        with self._bot.retrieve_data(  # type: ignore[union-attr]
-            call.from_user.id, call.message.chat.id
-        ) as state_data:
-            state_data['question_id'] = (
-                updated_survey_result.current_question.pk  # type: ignore[union-attr]
-            )
+        self._state.set_data(
+            user_id=call.from_user.id,
+            chat_id=call.message.chat.id,
+            key='question_id',
+            value=updated_survey_result.current_question.pk,  # type: ignore[union-attr]
+        )
 
         self._edit_message_text(
             chat_id=call.message.chat.id,

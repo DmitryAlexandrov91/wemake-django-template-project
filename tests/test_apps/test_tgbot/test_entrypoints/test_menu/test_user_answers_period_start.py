@@ -26,6 +26,7 @@ def test_handle_archive_answers_for_period(
     assert args[TEXT_FIELD] == 'Введите <b>дату начала</b> в формате DD.MM.YYYY'
 
 
+@pytest.mark.django_db
 def test_handle_start_date(
     message_with_user: MockMessage,
     mock_bot_send_message: MagicMock,

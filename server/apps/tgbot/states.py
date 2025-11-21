@@ -1,29 +1,26 @@
-from telebot.handler_backends import (  # type: ignore[attr-defined]
-    State,
-    StatesGroup,
-)
+from enum import StrEnum
 
 
-class EditState(StatesGroup):
+class EditState(StrEnum):
     """State for edit answer."""
 
-    waiting_for_new_answer = State()
+    waiting_for_new_answer = 'EditState:waiting_for_new_answer'
 
 
-class SurveyResponseState(StatesGroup):
+class SurveyResponseState(StrEnum):
     """State for handle survey answer response."""
 
-    survey_response = State()
+    survey_response = 'SurveyResponseState:survey_response'
 
 
-class SurveyPeriodStates(StatesGroup):
+class SurveyPeriodStates(StrEnum):
     """States for handling the survey results period input from the user."""
 
-    waiting_for_start_date = State()
-    waiting_for_end_date = State()
+    waiting_for_start_date = 'waiting_for_start_date'
+    waiting_for_end_date = 'waiting_for_end_date'
 
 
-class SuggestState(StatesGroup):
+class SuggestState(StrEnum):
     """States for receiving user suggestions."""
 
-    waiting_for_suggestion = State()
+    waiting_for_suggestion = 'SuggestState:waiting_for_suggestion'

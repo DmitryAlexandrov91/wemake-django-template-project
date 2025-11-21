@@ -11,6 +11,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.surveys.models.surveys import AnswerOption, SurveyResult
 from server.apps.tgbot.callbacks import survey_callback
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
@@ -29,6 +30,7 @@ class HandleSurveyMessageResponseUseCase:
     _answer_option_repo: AnswerOptionRepo
     _keyboard_builder: SurveyHandleKeyboard
     _processing_answer_use_case: ProcessingAnswerUseCase
+    _state: StatePostgresStorage
 
     def __call__(self, message: types.Message) -> Any:
         """Handle message text response."""
@@ -49,7 +51,9 @@ class HandleSurveyMessageResponseUseCase:
         )
 
         if updated_survey_result.current_question is None:
-            self._bot.delete_state(user_id=tg_user.id, chat_id=message.chat.id)
+            self._state.delete_state(
+                user_id=tg_user.id, chat_id=message.chat.id
+            )
 
         self._edit_message_text(
             chat_id=message.chat.id,
@@ -58,12 +62,16 @@ class HandleSurveyMessageResponseUseCase:
             answer_options=answer_options,
         )
 
-        with self._bot.retrieve_data(  # type: ignore[union-attr]
-            tg_user.id, message.chat.id
-        ) as state_data:
-            state_data['question_id'] = (
-                updated_survey_result.current_question.pk  # type: ignore[union-attr]
-            )
+        self._state.set_data(
+            user_id=tg_user.id,
+            chat_id=message.chat.id,
+            key='question_id',
+            value=(
+                None
+                if updated_survey_result.current_question is None
+                else updated_survey_result.current_question.pk
+            ),
+        )
 
     def _edit_message_text(
         self,
@@ -93,10 +101,10 @@ class HandleSurveyMessageResponseUseCase:
         )
 
     def _retrieve_data_and_process_answer(
-        self, user_id: int, chat_id: int | None, text: str
+        self, user_id: int, chat_id: int, text: str
     ) -> tuple[SurveyResult, Any]:
         """Retrieve data, process answer and returns objs."""
-        with self._bot.retrieve_data(  # type: ignore[union-attr]
+        with self._state.get_interactive_data(
             user_id=user_id, chat_id=chat_id
         ) as state_data:
             updated_survey_result = self._processing_answer_use_case(

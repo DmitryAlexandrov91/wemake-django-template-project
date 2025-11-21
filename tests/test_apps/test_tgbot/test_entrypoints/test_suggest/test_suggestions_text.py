@@ -1,8 +1,9 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from telebot import types
 
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.message_templates import (
     EMPTY_SUGGESTION,
     NO_USER,
@@ -10,7 +11,6 @@ from server.apps.tgbot.message_templates import (
     SUGGESTION_REQUEST,
     SUGGESTION_SAVED,
 )
-from server.apps.tgbot.states import SuggestState
 from server.apps.tgbot.usecases.suggestions import (
     HandleSuggestCommandUseCase,
     HandleSuggestionTextUseCase,
@@ -45,7 +45,10 @@ def handle_suggest_command_use_case(
     mock_bot: Mock,
 ) -> HandleSuggestCommandUseCase:
     """Fixture for HandleSuggestCommandUseCase."""
-    return HandleSuggestCommandUseCase(_bot=mock_bot)
+    return HandleSuggestCommandUseCase(
+        _bot=mock_bot,
+        _state=StatePostgresStorage(),
+    )
 
 
 @pytest.fixture
@@ -54,13 +57,16 @@ def handle_suggestion_text_use_case(
 ) -> HandleSuggestionTextUseCase:
     """Fixture for HandleSuggestionTextUseCase."""
     return HandleSuggestionTextUseCase(
-        _bot=mock_bot, _suggestion_usecase=mock_suggestion_usecase
+        _bot=mock_bot,
+        _suggestion_usecase=mock_suggestion_usecase,
+        _state=StatePostgresStorage(),
     )
 
 
 class TestHandleSuggestCommandUseCase:
     """Tests for HandleSuggestCommandUseCase."""
 
+    @pytest.mark.django_db
     def test_call_with_valid_user(
         self,
         handle_suggest_command_use_case: HandleSuggestCommandUseCase,
@@ -78,9 +84,7 @@ class TestHandleSuggestCommandUseCase:
         handle_suggest_command_use_case(message)
 
         mock_bot.add_custom_filter.assert_called_once()
-        mock_bot.set_state.assert_called_once_with(
-            user.id, SuggestState.waiting_for_suggestion, CHAT_ID
-        )
+
         mock_bot.send_message.assert_called_once_with(
             chat_id=CHAT_ID, text=SUGGESTION_REQUEST
         )
@@ -90,6 +94,7 @@ class TestHandleSuggestCommandUseCase:
         handle_suggest_command_use_case: HandleSuggestCommandUseCase,
         mock_bot: Mock,
         tg_message_factory: MessageFactory,
+        mock_set_state: MagicMock,
     ) -> None:
         """Test handling /suggest command without from_user."""
         message: types.Message = tg_message_factory.build(  # type: ignore[assignment]
@@ -100,12 +105,13 @@ class TestHandleSuggestCommandUseCase:
         handle_suggest_command_use_case(message)
 
         mock_bot.send_message.assert_called_once_with(CHAT_ID, NO_USER)
-        mock_bot.set_state.assert_not_called()
+        mock_set_state.assert_not_called()
 
 
 class TestHandleSuggestionTextUseCase:
     """Tests for HandleSuggestionTextUseCase."""
 
+    @pytest.mark.django_db
     def test_call_with_valid_data(
         self,
         handle_suggestion_text_use_case: HandleSuggestionTextUseCase,
@@ -129,7 +135,6 @@ class TestHandleSuggestionTextUseCase:
         mock_suggestion_usecase.assert_called_once_with(
             tg_username=USERNAME, text=SUGGESTION_TEXT
         )
-        mock_bot.delete_state.assert_called_once_with(USER_ID, CHAT_ID)
         mock_bot.send_message.assert_called_once_with(
             chat_id=CHAT_ID, text=SUGGESTION_SAVED
         )

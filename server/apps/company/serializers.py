@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 
 from server.apps.company.models import Department
 from server.apps.users.models import CustomUser
-from server.common.constants import DATA_LENGHT
+from server.common.constants import DATA_LENGTH
 
 
 class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
@@ -14,7 +14,7 @@ class DepartmentCreateSerializer(serializers.ModelSerializer[Department]):
 
     department_name = serializers.CharField(
         source='name',
-        max_length=DATA_LENGHT,
+        max_length=DATA_LENGTH,
         validators=[
             UniqueValidator(
                 queryset=Department.objects.all().select_related(),

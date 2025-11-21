@@ -3,7 +3,7 @@ from typing import override
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from server.common.constants import DATA_LENGHT
+from server.common.constants import DATA_LENGTH
 
 User = get_user_model()
 
@@ -11,7 +11,7 @@ User = get_user_model()
 class Department(models.Model):
     """The department model in the company."""
 
-    name = models.CharField(max_length=DATA_LENGHT, unique=True)
+    name = models.CharField(max_length=DATA_LENGTH, unique=True)
     description = models.TextField(blank=True)
     head = models.ForeignKey(
         User,

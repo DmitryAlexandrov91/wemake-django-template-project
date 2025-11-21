@@ -75,7 +75,39 @@ class TGApiCallbackAnswer(BaseModel):
 @pytest.fixture
 def mock_bot_send_message(mocker: MockerFixture) -> MagicMock:
     """Mock the `telebot.TeleBot.send_message` method."""
-    return mocker.patch('telebot.TeleBot.send_message')
+    mock_sent_message = MagicMock()
+    mock_sent_message.message_id = 12345
+
+    mock_send_message = mocker.patch('telebot.TeleBot.send_message')
+    mock_send_message.return_value = mock_sent_message
+
+    return mock_send_message
+
+
+@pytest.fixture
+def mock_delete_state(mocker: MockerFixture) -> MagicMock:
+    """
+    Mock.
+
+    the `server.apps.tgbot.infra.storage.StatePostgresStorage.delete_state`
+    method.
+    """
+    return mocker.patch(
+        'server.apps.tgbot.infra.storage.StatePostgresStorage.delete_state'
+    )
+
+
+@pytest.fixture
+def mock_set_state(mocker: MockerFixture) -> MagicMock:
+    """
+    Mock.
+
+    the `server.apps.tgbot.infra.storage.StatePostgresStorage.set_state`
+    method.
+    """
+    return mocker.patch(
+        'server.apps.tgbot.infra.storage.StatePostgresStorage.set_state'
+    )
 
 
 @pytest.fixture

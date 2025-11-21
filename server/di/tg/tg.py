@@ -1,6 +1,7 @@
 import punq
 from telebot import TeleBot
 
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.edit_keyboard import (
     CancelEditAnswerKeyboard,
     EditAnswerKeyboard,
@@ -23,10 +24,17 @@ from server.settings.components import tgbot as tg_settings
 
 def _inject_tg(container: punq.Container) -> None:
     """Register TG."""
+    state_storage = StatePostgresStorage()
     container.register(
-        TeleBot, instance=TeleBot(tg_settings.BOT_TOKEN), scope='singleton'
+        service=TeleBot,
+        instance=TeleBot(
+            token=tg_settings.BOT_TOKEN,
+            state_storage=state_storage,
+        ),
+        scope='singleton',
     )
     container.register(TelegramService)
+    container.register(StatePostgresStorage, instance=state_storage)
 
 
 def _inject_handlers(container: punq.Container) -> None:
