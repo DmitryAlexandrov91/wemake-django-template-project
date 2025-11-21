@@ -7,12 +7,13 @@ import pytest
 from django.utils import timezone
 
 from server.apps.company.models import Department
-from server.apps.surveys.choices import QuestionType
+from server.apps.surveys.choices import QuestionType, SurveyStatus
 from server.apps.surveys.models import (
     AnswerOption,
     Question,
     Survey,
 )
+from tests.plugins.users_requests import RequestMock
 
 if TYPE_CHECKING:
     from tests.plugins.fakery import FakeryM
@@ -125,3 +126,9 @@ def questions_batch(
         return questions
 
     return factory  # type: ignore[return-value]
+
+
+@pytest.fixture
+def survey_activation_request() -> RequestMock:
+    """Patch request to change survey status to active."""
+    return RequestMock(data={'status': SurveyStatus.ACTIVE})

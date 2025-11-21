@@ -11,8 +11,7 @@ from rest_framework import (
     viewsets,
 )
 
-from server.apps.surveys import models, paginators
-from server.apps.surveys.filters import SurveyFilter
+from server.apps.surveys import choices, filters, models, paginators
 from server.apps.surveys.infra.repository import (
     QuestionRepo,
     SurveyRepo,
@@ -101,7 +100,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
     pagination_class = paginators.CustomPaginator
     http_method_names = ('get', 'post', 'patch', 'delete')
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = SurveyFilter
+    filterset_class = filters.SurveyFilter
 
     @override
     def get_serializer_class(
@@ -134,7 +133,6 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
                 {'detail': 'Передан несуществующий вопрос'},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        survey_notification(survey=created_survey)
         return response.Response(
             SurveyListSerializer(
                 resolve(SurveyRepo).build_survey_for_create_response(
@@ -153,6 +151,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         survey = repo.get_modified_surveys_queryset(request).get(
             pk=kwargs['pk']
         )
+        survey_status_orig = survey.status
         serializer = self.get_serializer(
             survey,
             data=request.data,
@@ -160,6 +159,11 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         )
         serializer.is_valid(raise_exception=True)
         updated_survey = repo.update_survey(survey, **serializer.validated_data)
+        if (
+            survey_status_orig == choices.SurveyStatus.DRAFT
+            and updated_survey.status == choices.SurveyStatus.ACTIVE
+        ):
+            survey_notification(survey=updated_survey)
 
         return response.Response(
             SurveyListSerializer(updated_survey).data,

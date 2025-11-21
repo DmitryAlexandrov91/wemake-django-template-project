@@ -98,6 +98,7 @@ def survey(surveys_survey_factory: SurveyFactory) -> Survey:
         title='Original Title',
         description='Original Description',
         start_date=date(2025, 10, 15),
+        status=SurveyStatus.DRAFT,
     )
 
 

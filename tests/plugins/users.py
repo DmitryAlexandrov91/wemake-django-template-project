@@ -5,11 +5,11 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 
 import pytest
-from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
 from pytest_mock import MockFixture
 
-from server.apps.users import admin, models
+from server.apps.company.models import Department
+from server.apps.users import models
 from server.common.constants import DATA_LENGTH
 from tests.plugins.users_requests import RequestMock
 
@@ -59,6 +59,7 @@ def user_batch(
             user_factory(
                 username=f'user{user_number}',  # noqa: WPS226
                 email=f'user{user_number}@example.ru',
+                **kwargs,
             )
             for user_number in range(batch_size)
         ]
@@ -85,10 +86,19 @@ def auth_user(user_factory: UserFactory, department: Any) -> models.CustomUser:
 
 
 @pytest.fixture
-def mocked_send_mail(mocker: MockFixture) -> Any:
+def mocked_send_password_recovery_email(mocker: MockFixture) -> Any:
     """Mock the email sending task."""
     return mocker.patch(
         'server.apps.users.tasks.send_recovery_email_task.delay',
+        return_value=None,
+    )
+
+
+@pytest.fixture
+def mocked_send_survey_invitation(mocker: MockFixture) -> Any:
+    """Mock the email sending task for survey invitation."""
+    return mocker.patch(
+        'server.apps.surveys.usecases.inform_recipients.email_survey_invitation_task.delay',
         return_value=None,
     )
 
@@ -114,8 +124,9 @@ def admin_user(db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def three_users_to_inactivate(
+def three_users_to_process(
     user_factory: UserFactory,
+    department: Department,
 ) -> list[models.CustomUser]:
     """Fixture that creates three users with to_inactivate=True."""
     return [
@@ -123,12 +134,7 @@ def three_users_to_inactivate(
             username=f'user{user_number}',
             email=f'user{user_number}@example.ru',  # noqa: WPS226
             to_inactivate=True,
+            department=department,
         )
         for user_number in range(3)
     ]
-
-
-@pytest.fixture
-def user_admin_instance() -> admin.CustomUserAdmin:
-    """UserAdmin fixture."""
-    return admin.CustomUserAdmin(models.CustomUser, AdminSite())

@@ -17,7 +17,7 @@ EMPLOYEE_URL = reverse('employee')
 
 @pytest.mark.django_db
 def test_post_success(
-    mocked_send_mail: Any,
+    mocked_send_password_recovery_email: Any,
     api_client: APIClient,
     active_user: CustomUser,
     valid_request: Any,
@@ -25,7 +25,7 @@ def test_post_success(
     """Testing successful password recovery."""
     response = api_client.post(PASS_RECOVERY_URL, valid_request.data)
     assert response.status_code == status.HTTP_200_OK
-    mocked_send_mail.assert_called_once()
+    mocked_send_password_recovery_email.assert_called_once()
     old_password = active_user.password
     active_user.refresh_from_db()
     assert not check_password(old_password, active_user.password)

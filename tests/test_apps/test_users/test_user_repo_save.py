@@ -25,11 +25,11 @@ def test_create_user(auth_user: CustomUser) -> None:
 
 @pytest.mark.django_db
 def test_get_all_to_inactivate_ids(
-    three_users_to_inactivate: list[CustomUser],
+    three_users_to_process: list[CustomUser],
 ) -> None:
     """Test getting user ids to inactivate."""
     repo = UserRepoSave()
-    expected_ids = [user.id for user in three_users_to_inactivate]
+    expected_ids = [user.id for user in three_users_to_process]
     res = repo.get_all_to_inactivate_ids()
     assert set(res) == set(expected_ids)
     for user_id in res:
