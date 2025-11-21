@@ -7,6 +7,7 @@ from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import Survey, SurveyQuestion
 from server.apps.users.models import CustomUser
 from server.di import resolve
+from tests.plugins.surveys import QuestionFactory
 
 NAME = 'name'
 DEPARTMENT = 'department'
@@ -52,36 +53,22 @@ def test_get_active_survey_for_user_by_id(
 @pytest.mark.django_db
 def test_create_survey_with_questions_and_answers(
     department: Department,
+    surveys_question_factory: QuestionFactory,
 ) -> None:
     """Create survey with questions and answers."""
-    repo = SurveyRepo()
+    questions = [
+        surveys_question_factory(text='Question 1'),
+        surveys_question_factory(text='Question 2'),
+    ]
     survey_data = {
         'title': 'Test survey',
         'description': 'Test desc',
         'department_name': department,
         'start_date': '2025-10-3',
-        'questions': [
-            {
-                TEXT: 'Question 1',
-                IS_FAVORITE: False,
-                QUESTION_TYPE: SCORE,
-                ANSWERS: [
-                    {TEXT: 'Answer 1'},
-                    {TEXT: 'Answer 2'},
-                ],
-            },
-            {
-                TEXT: 'Question 2',
-                IS_FAVORITE: True,
-                QUESTION_TYPE: SCORE,
-                ANSWERS: [
-                    {TEXT: 'Answer 3'},
-                ],
-            },
-        ],
+        'questions': [{'id': question.id} for question in questions],
     }
 
-    survey = repo.create_survey_with_questions(survey_data)
+    survey = SurveyRepo().create_survey_with_questions(survey_data)
 
     assert Survey.objects.filter(pk=survey.pk).exists()
     assert survey.questions.count() == 2
@@ -89,39 +76,3 @@ def test_create_survey_with_questions_and_answers(
         assert SurveyQuestion.objects.filter(
             survey=survey, question=question
         ).exists()
-        answer_count = 2 if question.text == 'Question 1' else 1
-        assert question.answer_options.count() == answer_count
-
-
-@pytest.mark.django_db
-def test_create_survey_with_questions_no_answers(
-    department: Department,
-) -> None:
-    """Create survey with questions but without answers."""
-    survey_data = {
-        'title': 'Test survey',
-        'description': 'Test desc',
-        'department_name': department,
-        'start_date': '2025-10-3',
-        'questions': [
-            {
-                TEXT: 'Question 1',
-                IS_FAVORITE: False,
-                QUESTION_TYPE: SCORE,
-                ANSWERS: [],
-            },
-            {
-                TEXT: 'Question 2',
-                IS_FAVORITE: True,
-                QUESTION_TYPE: SCORE,
-                ANSWERS: [],
-            },
-        ],
-    }
-
-    survey = resolve(SurveyRepo).create_survey_with_questions(survey_data)
-
-    assert Survey.objects.filter(pk=survey.pk).exists()
-    assert survey.questions.count() == 2
-    for question in survey.questions.all():
-        assert question.answer_options.count() == 0

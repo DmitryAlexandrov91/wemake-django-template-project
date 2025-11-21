@@ -137,16 +137,8 @@ class SurveyRepo:  # noqa: WPS214
         )
 
         for question_data in questions_data:
-            answers_data = question_data.pop('answers', [])
-            question = Question.objects.create(**question_data)
-
+            question = Question.objects.get(id=question_data['id'])
             SurveyQuestion.objects.create(survey=survey, question=question)
-
-            if answers_data:
-                AnswerOption.objects.bulk_create([
-                    AnswerOption(question=question, **answer_data)
-                    for answer_data in answers_data
-                ])
 
         return survey
 

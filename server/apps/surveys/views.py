@@ -127,7 +127,13 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
     ) -> response.Response:
         create_serializer = self.get_serializer(data=request.data)
         create_serializer.is_valid(raise_exception=True)
-        created_survey = create_serializer.save()
+        try:
+            created_survey = create_serializer.save()
+        except models.Question.DoesNotExist:
+            return response.Response(
+                {'detail': 'Передан несуществующий вопрос'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         survey_notification(survey=created_survey)
         return response.Response(
             SurveyListSerializer(
