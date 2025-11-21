@@ -21,10 +21,10 @@ def test_inactivate_single_user_task(active_user: CustomUser) -> None:
 
 @pytest.mark.django_db
 def test_inactivate_marked_users_task(
-    three_users_to_inactivate: list[CustomUser],
+    three_users_to_process: list[CustomUser],
 ) -> None:
     """Test bulk user inactivation."""
-    user_ids = [user.id for user in three_users_to_inactivate]
+    user_ids = [user.id for user in three_users_to_process]
     inactivate_marked_users_task.delay()
     for user_id in user_ids:
         updated_user = CustomUser.objects.get(pk=user_id)

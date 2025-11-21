@@ -17,7 +17,7 @@ from server.apps.surveys.models import (
     SurveyResult,
     UserAnswer,
 )
-from server.apps.users.models import CustomUser
+from server.apps.users import models
 from tests.plugins import department_factory, surveys_survey
 
 
@@ -111,9 +111,9 @@ def survey_result_with_three_questions(
 
 @pytest.fixture
 def survey_results_for_user(
-    active_user: CustomUser,
+    active_user: models.CustomUser,
     surveys_survey_result_factory: Callable[[], SurveyResult],
-) -> tuple[CustomUser, int]:
+) -> tuple[models.CustomUser, int]:
     """Fixture creates five completed SurveyResult objects for the user."""
     now = timezone.now()
     delta_sum = 0
@@ -172,7 +172,7 @@ def user_answer_complex(
     survey_result_with_three_questions: tuple[SurveyResult, list[Question]],
     surveys_answer_option_factory: Callable[[], AnswerOption],
     surveys_question_factory: Callable[..., Question],
-    auth_user: CustomUser,
+    auth_user: models.CustomUser,
 ) -> UserAnswer:
     """Fixture creates a UserAnswer object with connected objects."""
     survey_result, _ = survey_result_with_three_questions

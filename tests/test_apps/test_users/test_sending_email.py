@@ -1,10 +1,12 @@
 import secrets
 from smtplib import SMTPException
 from typing import Any
+from unittest.mock import Mock, patch
 
 import pytest
 from pytest_mock import MockFixture
 
+from server.apps.surveys.tasks import email_survey_invitation_task
 from server.apps.users.tasks import send_recovery_email_task
 from server.common.constants import DATA_LENGTH
 
@@ -39,3 +41,18 @@ def test_send_recovery_email_failure(mocked_send_mail_error: Any) -> None:
     with pytest.raises(SMTPException):
         send_recovery_email_task(to_email, new_password)
     mocked_send_mail_error.assert_called_once()
+
+
+@patch('server.apps.surveys.tasks.tasks.send_mail')
+def test_email_survey_invitation_task_sends_mail(mock_emailing: Mock) -> None:
+    """Test sending email."""
+    from_email = 'noreply@example.com'
+    to_emails = ['user1@example.com', 'user2@example.com']
+
+    email_survey_invitation_task(
+        subject='Subject',
+        message='Message',
+        from_email=from_email,
+        to_emails=to_emails,
+    )
+    mock_emailing.assert_called_once()

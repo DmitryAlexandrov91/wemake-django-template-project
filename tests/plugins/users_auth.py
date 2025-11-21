@@ -1,9 +1,11 @@
 import secrets
 
 import pytest
+from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from server.apps.users.admin import CustomUserAdmin
 from server.apps.users.models import CustomUser
 from tests.plugins.fakery import FakeryM
 
@@ -49,3 +51,9 @@ def auth_client_user_without_department(
     """Return an authenticated APIClient for testing."""
     api_client.force_authenticate(user=user)
     return api_client
+
+
+@pytest.fixture
+def user_admin_instance() -> CustomUserAdmin:
+    """UserAdmin fixture."""
+    return CustomUserAdmin(CustomUser, AdminSite())
