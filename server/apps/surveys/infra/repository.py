@@ -24,7 +24,6 @@ QUESTION_ID = 'question_id'
 QUESTION_TYPE = 'question_type'
 TEXT_ATTR = 'text'
 ID_ATTR = 'id'
-DEFAULT_ORDER = 'desc'
 ALL_PARAM = 'all'
 DEPARTMENT = 'department'
 SURVEY_ATTR = 'surveys'
@@ -209,8 +208,14 @@ class SurveyRepo:  # noqa: WPS214
             queryset = queryset.filter(title__icontains=search_param)
         queryset = queryset.order_by(
             '-start_date'
-            if request.query_params.get('order', 'desc') == 'desc'
+            if request.query_params.get('order') == 'desc'
             else 'start_date'
+        )
+
+        # second order by id needs because start_date not unique and
+        # cause doubles in paginator
+        queryset = queryset.order_by(
+            '-id' if request.query_params.get('order') == 'desc' else 'id'
         )
 
         # this filter mapping is for compatability with frontend queries

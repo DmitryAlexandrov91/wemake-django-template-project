@@ -81,7 +81,7 @@ def test_filter_query_params(  # noqa: WPS210
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'drafts'}
     )
     survey = drafts_response.json()[DATA_ATTR][0]
-    assert survey[NAME_ATTR] == drafts.title
+    assert survey['status'] == drafts.status
 
     finished_response = auth_client.get(
         surveys_survey.GET_ALL_SURVEYS_URL, {FILTER_ATTR: 'finished'}
