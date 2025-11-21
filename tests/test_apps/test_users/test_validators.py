@@ -18,15 +18,13 @@ def test_valid_request(valid_request: Any) -> None:
 @pytest.mark.django_db
 def test_wrong_request(wrong_request: Any) -> None:
     """Tests a request with invalid email."""
-    with pytest.raises(ValidationError):
-        validate_request(wrong_request)
+    assert validate_request(wrong_request) is None
 
 
 @pytest.mark.django_db
 def test_empty_request(empty_request: Any) -> None:
     """Tests an empty email request."""
-    with pytest.raises(ValidationError):
-        validate_request(empty_request)
+    assert validate_request(empty_request) is None
 
 
 @pytest.mark.parametrize(

@@ -2,18 +2,15 @@ import secrets
 from typing import Any
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.request import Request
 
 from server.apps.users.infra.repository import UserRepo, UserRepoSave
 from server.apps.users.tasks import send_recovery_email_task
-from server.apps.users.validators import validate_request
 from server.common.constants import DATA_LENGTH
 from server.di import resolve
 
 
-def pass_recovery_processing(request: Request) -> Any | None:
+def pass_recovery_processing(email: str) -> Any | None:
     """Processes the POST request for password recovery."""
-    email = validate_request(request)
     try:
         user = resolve(UserRepo).get_by_email(email)
     except ObjectDoesNotExist:

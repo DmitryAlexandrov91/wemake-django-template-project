@@ -7,6 +7,7 @@ from server.apps.users.drf_spectacular_schemas.schema import (
     password_recovery_schema,
 )
 from server.apps.users.processing import pass_recovery_processing
+from server.apps.users.validators import validate_request
 
 
 @password_recovery_schema
@@ -18,5 +19,8 @@ class PasswordRecoveryAPIView(APIView):
 
     def post(self, request: Request) -> Response:
         """Handle POST request for password recovery."""
-        pass_recovery_processing(request)
+        email = validate_request(request)
+        if not email:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        pass_recovery_processing(email)
         return Response(status=status.HTTP_200_OK)
