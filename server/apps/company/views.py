@@ -12,6 +12,7 @@ from server.apps.company.serializers import (
     DepartmentCreateSerializer,
     DepartmentSerializer,
 )
+from server.apps.surveys.paginators import CustomPaginator
 from server.di import resolve
 
 
@@ -20,6 +21,7 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
 
     serializer_class = DepartmentCreateSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
+    pagination_class = CustomPaginator
     lookup_value_regex = r'\d+'
 
     @override
