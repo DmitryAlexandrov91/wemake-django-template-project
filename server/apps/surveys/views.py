@@ -73,6 +73,12 @@ class QuestionViewSet(  # noqa: WPS215
         self, request: request.Request, *args: Any, **kwargs: Any
     ) -> response.Response:
         """Partial update question using repo."""
+        if not request.data:
+            return response.Response(
+                {'detail': 'PATCH request body cannot be empty.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         repo = resolve(QuestionRepo)
         qestion = repo.get_by_pk(kwargs['pk'])
         serializer = self.get_serializer(
@@ -147,6 +153,11 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         self, request: request.Request, *args: Any, **kwargs: Any
     ) -> response.Response:
         """Partial update survey using repo."""
+        if not request.data:
+            return response.Response(
+                {'detail': 'PATCH request body cannot be empty.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         repo = resolve(SurveyRepo)
         survey = repo.get_modified_surveys_queryset(request).get(
             pk=kwargs['pk']

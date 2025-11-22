@@ -69,3 +69,15 @@ def test_mark_to_delete_nonexistent_survey(auth_client: APIClient) -> None:
     url = reverse('surveys-detail', kwargs={'pk': 1})
     with pytest.raises(ObjectDoesNotExist):
         auth_client.delete(url)
+
+
+@pytest.mark.django_db
+def test_patch_empty_body_returns_400(
+    consent_given_question: Question, auth_client: APIClient
+) -> None:
+    """PATCH without body must return 400."""
+    url = reverse('questions-detail', kwargs={'pk': consent_given_question.pk})
+    response = auth_client.patch(url, data={}, format='json')
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()['detail'] == 'PATCH request body cannot be empty.'

@@ -109,3 +109,16 @@ def test_partial_update_calls_survey_notification(
         == choices.SurveyStatus.ACTIVE
     )
     mock_survey_notification.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_survey_patch_empty_body(
+    auth_client: APIClient,
+    survey: models.Survey,
+) -> None:
+    """PATCH without body must return 400."""
+    url = reverse('surveys-detail', kwargs={'pk': survey.pk})
+    response = auth_client.patch(url, data={}, format='json')
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['detail'] == 'PATCH request body cannot be empty.'
