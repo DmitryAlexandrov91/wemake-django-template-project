@@ -1,27 +1,28 @@
 from typing import Any, override
 
 from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from server.apps.company.infra.repository import DepartmentRepo
 from server.apps.company.models import Department
+from server.apps.company.paginators import DepartmentPaginator
+from server.apps.company.schemas import department_viewset_schema
 from server.apps.company.serializers import (
     DepartmentCreateSerializer,
     DepartmentSerializer,
 )
-from server.apps.surveys.paginators import CustomPaginator
 from server.di import resolve
 
 
+@department_viewset_schema
 class DepartmentViewSet(viewsets.ModelViewSet[Department]):
     """ViewSet for managing departments."""
 
     serializer_class = DepartmentCreateSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
-    pagination_class = CustomPaginator
+    pagination_class = DepartmentPaginator
     lookup_value_regex = r'\d+'
 
     @override
@@ -76,13 +77,18 @@ class DepartmentViewSet(viewsets.ModelViewSet[Department]):
             status=status.HTTP_202_ACCEPTED,
         )
 
-    @extend_schema(responses=DepartmentSerializer)
     @override
     def list(self, request: Request) -> Response:
         """Return a list of all departments with employees."""
-        page = self.paginate_queryset(self.get_queryset())
-        serializer = DepartmentSerializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = DepartmentSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = DepartmentSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_repository(self) -> DepartmentRepo:
         """Return an instance of DepartmentRepo."""

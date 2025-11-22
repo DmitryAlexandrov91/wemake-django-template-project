@@ -101,3 +101,19 @@ def test_get_list_department_ordered(
     assert [dep['department_name'] for dep in response.data['data']] == [
         f'Dep{dep_number}' for dep_number in range(batch_size)
     ]
+
+
+@pytest.mark.django_db
+def test_get_list_all_department(
+    auth_client_factory: AuthClientFactory,
+    active_user: CustomUser,
+    department_batch: DepartmentBatchFactory,
+) -> None:
+    """Get all department list."""
+    batch_size = 3
+    department_batch(batch_size)
+    url = reverse(DEPARTMENTS_LIST_URL_NAME)
+    auth_client = auth_client_factory(active_user)
+    response = auth_client.get(url, {'per_page': 'all'})
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.data) == batch_size
