@@ -8,6 +8,7 @@ from server.apps.surveys.infra.repository import (
 )
 from server.apps.surveys.models.surveys import SurveyResult, UserAnswer
 from server.apps.tgbot.callbacks import answer_callback, answer_cancel_callback
+from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.edit_keyboard import (
     EditAnswerKeyboard,
 )
@@ -25,6 +26,7 @@ class HandleCancelEditResponseUseCase:
     _bot: TeleBot
     _keyboard_builder: EditAnswerKeyboard
     _user_answer_repo: UserAnswerRepo
+    _state: StatePostgresStorage
 
     def __call__(self, call: types.CallbackQuery) -> None:
         """Cancel button handler."""
@@ -45,6 +47,11 @@ class HandleCancelEditResponseUseCase:
             answers=user_answers,
             survey_result_id=survey_result.pk,
             callback=answer_callback,
+        )
+
+        self._state.delete_state(
+            chat_id=call.message.chat.id,
+            user_id=call.from_user.id,
         )
 
         self._edit_message(

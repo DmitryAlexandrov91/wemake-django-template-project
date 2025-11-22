@@ -7,6 +7,7 @@ from server.apps.surveys.infra.repository import SurveyRepo
 from server.apps.surveys.models import Survey, SurveyQuestion
 from server.apps.users.models import CustomUser
 from server.di import resolve
+from tests.plugins.fakery import FakeryM
 from tests.plugins.surveys import QuestionFactory
 
 NAME = 'name'
@@ -76,3 +77,11 @@ def test_create_survey_with_questions_and_answers(
         assert SurveyQuestion.objects.filter(
             survey=survey, question=question
         ).exists()
+
+
+@pytest.mark.django_db
+def test_get_by_pk(fakery_m: FakeryM[Survey]) -> None:
+    """Test ensure that get_by_pk method works correctly."""
+    any_survey = fakery_m(Survey)()
+    survey_by_method = resolve(SurveyRepo).get_by_pk(pk=any_survey.pk)
+    assert survey_by_method.pk == any_survey.pk

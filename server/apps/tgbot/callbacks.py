@@ -17,14 +17,23 @@ class CallbackFactory:
         )
 
 
+SURVEY_RESULT_ID = 'survey_result_id'
+
+
+survey_list_callback = CallbackFactory(
+    'survey_id', 'user_id', prefix='surveys', config={}
+)
+back_to_active_surveys = CallbackFactory(
+    SURVEY_RESULT_ID, prefix='back_to_surveys', config={}
+)
 answer_callback = CallbackFactory(
-    'answer_id', 'survey_result_id', prefix='edit', config={}
+    'answer_id', SURVEY_RESULT_ID, prefix='edit', config={}
 )
 answer_cancel_callback = CallbackFactory(
-    'answer_id', 'survey_result_id', prefix='cancel', config={}
+    'answer_id', SURVEY_RESULT_ID, prefix='cancel', config={}
 )
 survey_callback = CallbackFactory(
-    'survey_result_id',
+    SURVEY_RESULT_ID,
     'question_id',
     'answer_option',
     prefix='survey',

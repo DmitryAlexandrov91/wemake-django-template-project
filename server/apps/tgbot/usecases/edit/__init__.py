@@ -10,3 +10,6 @@ from server.apps.tgbot.usecases.edit.command_handle import (
 from server.apps.tgbot.usecases.edit.edit_processing import (
     HandleProcessEditResponseUseCase as HandleProcessEditResponseUseCase,
 )
+from server.apps.tgbot.usecases.edit.survey_choise_handle import (
+    SurveyAnswersEditUseCase as SurveyAnswersEditUseCase,
+)

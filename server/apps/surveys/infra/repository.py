@@ -273,19 +273,26 @@ class SurveyRepo:  # noqa: WPS214
             )
         )
 
-    def get_active_survey_for_user(self, user: CustomUser) -> Survey:
-        """Returns the only active survey for the user, if any."""
+    def get_active_surveys_for_user(
+        self, user: CustomUser
+    ) -> models.QuerySet[Survey]:
+        """Returns all active surveys for user."""
         now_date = timezone.now().date()
-        return (
-            Survey.objects.filter(
-                department=user.department, start_date__lte=now_date
-            )
-            .filter(
-                models.Q(end_date__gte=now_date)
-                | models.Q(end_date__isnull=True)
-            )
-            .latest('start_date')
+        return Survey.objects.filter(
+            department=user.department,
+            start_date__lte=now_date,
+            status=SurveyStatus.ACTIVE,
+        ).filter(
+            models.Q(end_date__gte=now_date) | models.Q(end_date__isnull=True)
         )
+
+    def get_active_survey_for_user(self, user: CustomUser) -> Survey:
+        """Returns the last active survey for the user, if any."""
+        return self.get_active_surveys_for_user(user=user).latest('start_date')
+
+    def get_by_pk(self, pk: int) -> Survey:
+        """Returns single Survey obj by pk."""
+        return Survey.objects.get(pk=pk)
 
     def get_survey_recipients(
         self,
@@ -303,6 +310,7 @@ class SurveyRepo:  # noqa: WPS214
             Survey.objects.filter(
                 department=user.department,
                 start_date__lte=now_date,
+                status=SurveyStatus.ACTIVE,
             )
             .exclude(end_date__lt=now_date, end_date__isnull=False)
             .get(pk=survey_id)

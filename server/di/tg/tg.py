@@ -1,10 +1,12 @@
 import punq
 from telebot import TeleBot
 
+from server.apps.tgbot.buttons.back_to_surveys import BackToSurveysButton
 from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.keyboards.edit_keyboard import (
     CancelEditAnswerKeyboard,
     EditAnswerKeyboard,
+    SurveysListKeyboard,
 )
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.services.keyboard_builder import (
@@ -53,3 +55,5 @@ def _inject_keyboards(container: punq.Container) -> None:
     container.register(EditAnswerKeyboard)
     container.register(CancelEditAnswerKeyboard)
     container.register(SurveyHandleKeyboard)
+    container.register(SurveysListKeyboard)
+    container.register(BackToSurveysButton)

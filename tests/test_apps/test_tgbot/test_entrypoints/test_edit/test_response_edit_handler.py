@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from server.apps.tgbot.entrypoints.edit import (
     responses_edit_handler,
 )
+from server.apps.tgbot.message_templates import SURVEY_CHOISE
 from tests.plugins.tgbot.fixtures import MockMessage
 
 
@@ -22,8 +23,7 @@ def test_responses_edit_handler(
 
     mock_bot_send_message.assert_called_once_with(
         chat_id=user_from_message_with_relations.chat.id,
-        text=ANY,
-        parse_mode='HTML',
+        text=SURVEY_CHOISE,
         reply_markup=ANY,
     )
 
