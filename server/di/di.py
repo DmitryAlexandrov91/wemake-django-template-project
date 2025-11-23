@@ -12,6 +12,7 @@ from server.apps.surveys.infra.repository import (
     UserStatisticsRepo,
 )
 from server.apps.surveys.infra.suggestion_repository import SuggestionRepo
+from server.apps.surveys.infra.survey_question_repo import SurveyQuestionRepo
 from server.apps.surveys.usecases.advance_to_next_question import (
     AdvanceToNextQuestion,
 )
@@ -44,6 +45,7 @@ def _inject_infra(container: punq.Container) -> None:
     container.register(UserAnswerRepo)
     container.register(UserStatisticsRepo)
     container.register(SuggestionRepo)
+    container.register(SurveyQuestionRepo)
 
 
 def _inject_survey_infra(container: punq.Container) -> None:

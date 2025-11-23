@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 from django.db import transaction
 
-from server.apps.surveys.models import Question, SurveyResult
+from server.apps.surveys.infra.survey_question_repo import SurveyQuestionRepo
+from server.apps.surveys.models import SurveyResult
 
 if TYPE_CHECKING:
     from server.apps.surveys.usecases.statistics_services import (
@@ -18,6 +19,7 @@ class AdvanceToNextQuestion:
     """Use-case for moving survey forward after answering."""
 
     _sheduler: UpdateStatisticScheduler
+    _survey_question_repo: SurveyQuestionRepo
 
     def __call__(self, survey_result: SurveyResult) -> SurveyResult:
         """
@@ -37,13 +39,11 @@ class AdvanceToNextQuestion:
             return survey_result
 
         next_question = (
-            Question.objects.filter(
-                surveys=survey_result.survey,
-                id__gt=current_question.id,
+            self._survey_question_repo.get_survey_question_next_question(
+                current_question=current_question, survey=survey_result.survey
             )
-            .order_by('id')
-            .first()
         )
+
         with transaction.atomic():
             survey_result.current_question = next_question
             survey_result.completed_questions += 1

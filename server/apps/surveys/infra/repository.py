@@ -360,7 +360,9 @@ class SurveyResultRepo:
         self, user: CustomUser, survey: Survey
     ) -> SurveyResult:
         """Finds or creates SurveyResult object for the user and survey."""
-        first_question = survey.questions.earliest('pk')
+        first_question = (
+            SurveyQuestion.objects.filter(survey=survey).earliest('pk').question
+        )
         user_survey_result, _ = SurveyResult.objects.get_or_create(
             user=user,
             survey=survey,
