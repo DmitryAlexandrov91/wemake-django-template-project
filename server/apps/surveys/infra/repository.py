@@ -206,16 +206,13 @@ class SurveyRepo:  # noqa: WPS214
         search_param = request.query_params.get('search')
         if search_param:
             queryset = queryset.filter(title__icontains=search_param)
-        queryset = queryset.order_by(
-            '-start_date'
-            if request.query_params.get('order') == 'desc'
-            else 'start_date'
-        )
 
-        # second order by id needs because start_date not unique and
-        # cause doubles in paginator
         queryset = queryset.order_by(
-            '-id' if request.query_params.get('order') == 'desc' else 'id'
+            '-start_date',
+            '-id'
+            if request.query_params.get('order', 'desc') == 'desc'
+            else 'start_date',
+            'id',
         )
 
         # this filter mapping is for compatability with frontend queries
