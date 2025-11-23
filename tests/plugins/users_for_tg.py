@@ -37,11 +37,14 @@ def user_from_message_with_relations(
         status=SurveyStatus.ACTIVE,
         department=department,
     )
+
+    first_question = fakery_m(Question)()
     survey_result = fakery_m(SurveyResult)(
-        user=user, survey=survey, current_question=fakery_m(Question)()
+        user=user, survey=survey, current_question=first_question
     )
-    fakery_m(SurveyQuestion)(survey=survey)
+    fakery_m(SurveyQuestion)(survey=survey, question=first_question)
     for _ in range(3):
         fakery_m(UserAnswer)(survey_result=survey_result)
+        fakery_m(SurveyQuestion)(survey=survey, question=fakery_m(Question)())
 
     return message_with_user
