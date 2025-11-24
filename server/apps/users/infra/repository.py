@@ -15,7 +15,9 @@ class UserRepo:
 
     def get_users_with_department(self) -> QuerySet[CustomUser]:
         """Base queryset with department selection."""
-        return CustomUser.objects.select_related('department', 'statistics')
+        return CustomUser.objects.filter(is_active=True).select_related(
+            'department', 'statistics'
+        )
 
     def get_all(self) -> QuerySet[CustomUser]:
         """Return all User instances from DB."""
@@ -38,7 +40,8 @@ class UserRepo:
     ) -> QuerySet[CustomUser]:
         """Get all employees with survey_count."""
         queryset = (
-            CustomUser.objects.select_related(DEPARTMENT)
+            CustomUser.objects.filter(is_active=True)
+            .select_related(DEPARTMENT)
             .prefetch_related('statistics')
             .annotate(survey_count=Count('survey_result'))
         )
@@ -59,7 +62,8 @@ class UserRepo:
     def get_employee_with_survey_count(self, pk: int) -> CustomUser:
         """Get one employee with survey_count annotation."""
         return (
-            CustomUser.objects.select_related(DEPARTMENT)
+            CustomUser.objects.filter(is_active=True)
+            .select_related(DEPARTMENT)
             .annotate(survey_count=Count('survey_result'))
             .get(pk=pk)
         )
