@@ -1,8 +1,15 @@
 from typing import Any, final
 
-from django.db.models import Count, QuerySet, functions
+from django.db.models import (  # noqa: WPS347
+    Count,
+    Prefetch,
+    Q,
+    QuerySet,
+    functions,
+)
 
 from server.apps.company.models import Department
+from server.apps.users.models import CustomUser
 
 
 @final
@@ -14,7 +21,15 @@ class DepartmentRepo:
         return (
             Department.objects.all()
             .select_related('head')
-            .prefetch_related('users')
+            .prefetch_related(
+                Prefetch(
+                    'users',
+                    queryset=CustomUser.objects.filter(is_active=True),
+                )
+            )
+            .annotate(
+                employees_count=Count('users', filter=Q(users__is_active=True))
+            )
         )
 
     def get_by_pk(self, pk: int) -> Department:
@@ -31,11 +46,7 @@ class DepartmentRepo:
 
     def get_all_ordered_by_name(self) -> QuerySet[Department]:
         """Return all departments ordered by name ASC."""
-        return (
-            self.get_all()
-            .annotate(employees_count=Count('users'))
-            .order_by(functions.Lower('name'))
-        )
+        return self.get_all().order_by(functions.Lower('name'))
 
     def create(self, **kwargs: Any) -> Department:
         """Create and return a new Department instance."""
