@@ -20,6 +20,7 @@ IS_FAVORITE_ATTR = 'is_favorite'
 SURVEY_FIELD = 'surveys'
 ID_FIELD = 'id'
 NAME = 'name'
+QUESTIONT_FIELD = 'questions'
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
@@ -94,7 +95,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer[Survey]):
             'finished_at',
             IS_FAVORITE_ATTR,
             'to_delete',
-            'questions',
+            QUESTIONT_FIELD,
             'department_name',
         )
         read_only_fields = (ID_FIELD,)
@@ -124,6 +125,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
         choices=SurveyStatus.choices,
         required=False,
     )
+    questions = QuestionAnswerOptionCreateSerializer(many=True, required=False)
 
     class Meta:
         model = Survey
@@ -137,6 +139,7 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
             'to_delete',
             'department_name',
             'status',
+            QUESTIONT_FIELD,
         )
 
     @override
@@ -145,3 +148,35 @@ class SurveyUpdateSerializer(serializers.ModelSerializer[Survey]):
     ) -> Survey:
         """Use repo for update operation with nested relations."""
         return resolve(SurveyRepo).update_survey(instance, **validated_data)
+
+    def validate_questions(self, questions: Any) -> Any:
+        """Only drafts can have questions changed."""
+        if self.instance and self.instance.status != SurveyStatus.DRAFT:
+            raise serializers.ValidationError('Можно менять только черновикам.')
+        return questions
+
+    def validate_finished_at(self, end_date: Any) -> Any:
+        """End date editable only for draft/active surveys."""
+        if self.instance and self.instance.status not in {
+            SurveyStatus.DRAFT,
+            SurveyStatus.ACTIVE,
+        }:
+            raise serializers.ValidationError(
+                'Дату окончания можно изменить '
+                'опросам чей статус: активный или черновик'
+            )
+        return end_date
+
+    def validate_status(self, status: Any) -> Any:
+        """Cannot revert active/completed survey back to draft."""
+        if (
+            self.instance
+            and status == SurveyStatus.DRAFT
+            and self.instance.status
+            in {SurveyStatus.ACTIVE, SurveyStatus.COMPLETED}
+        ):
+            raise serializers.ValidationError(
+                'Невозможно поменять статус активного '
+                'или завершенного опроса на черновик'
+            )
+        return status

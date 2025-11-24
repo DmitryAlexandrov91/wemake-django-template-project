@@ -135,9 +135,7 @@ class SurveyRepo:  # noqa: WPS214
             department=survey_data.pop('department_name'), **survey_data
         )
 
-        for question_data in questions_data:
-            question = Question.objects.get(id=question_data['id'])
-            SurveyQuestion.objects.create(survey=survey, question=question)
+        self._add_questions_to_survey(survey, questions_data)
 
         return survey
 
@@ -234,6 +232,7 @@ class SurveyRepo:  # noqa: WPS214
     def update_survey(self, survey: Survey, **kwargs: Any) -> Survey:
         """Update survey."""
         department = kwargs.pop('department_name', None)
+        questions_data = kwargs.pop('questions', None)
 
         mapped_data = {
             key: field_value
@@ -245,6 +244,11 @@ class SurveyRepo:  # noqa: WPS214
             mapped_data['department'] = department
 
         Survey.objects.filter(pk=survey.pk).update(**mapped_data)
+
+        if questions_data:
+            SurveyQuestion.objects.filter(survey=survey).delete()
+            self._add_questions_to_survey(survey, questions_data)
+
         survey.refresh_from_db()
 
         return survey
@@ -312,6 +316,14 @@ class SurveyRepo:  # noqa: WPS214
             .exclude(end_date__lt=now_date, end_date__isnull=False)
             .get(pk=survey_id)
         )
+
+    def _add_questions_to_survey(
+        self, survey: Survey, questions_data: list[dict[str, int]]
+    ) -> None:
+        """Add questions to a survey."""
+        for question_data in questions_data:
+            question = Question.objects.get(id=question_data[ID_ATTR])
+            SurveyQuestion.objects.create(survey=survey, question=question)
 
 
 @final

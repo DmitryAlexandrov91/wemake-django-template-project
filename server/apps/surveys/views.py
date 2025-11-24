@@ -32,6 +32,7 @@ from server.di import resolve
 
 ALL_PARAM = 'all'
 DEFAULT_ORDER = 'desc'
+DETAIL_KEY = 'detail'
 
 
 @question_viewset_schema
@@ -75,7 +76,7 @@ class QuestionViewSet(  # noqa: WPS215
         """Partial update question using repo."""
         if not request.data:
             return response.Response(
-                {'detail': 'PATCH request body cannot be empty.'},
+                {DETAIL_KEY: 'PATCH request body cannot be empty.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -136,7 +137,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
             created_survey = create_serializer.save()
         except models.Question.DoesNotExist:
             return response.Response(
-                {'detail': 'Передан несуществующий вопрос'},
+                {DETAIL_KEY: 'Передан несуществующий вопрос'},
                 status=status.HTTP_404_NOT_FOUND,
             )
         return response.Response(
@@ -155,7 +156,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         """Partial update survey using repo."""
         if not request.data:
             return response.Response(
-                {'detail': 'PATCH request body cannot be empty.'},
+                {DETAIL_KEY: 'PATCH request body cannot be empty.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         repo = resolve(SurveyRepo)
@@ -169,7 +170,17 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        updated_survey = repo.update_survey(survey, **serializer.validated_data)
+
+        try:
+            updated_survey = repo.update_survey(
+                survey, **serializer.validated_data
+            )
+        except models.Question.DoesNotExist:
+            return response.Response(
+                {DETAIL_KEY: 'Передан несуществующий вопрос'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         if (
             survey_status_orig == choices.SurveyStatus.DRAFT
             and updated_survey.status == choices.SurveyStatus.ACTIVE
