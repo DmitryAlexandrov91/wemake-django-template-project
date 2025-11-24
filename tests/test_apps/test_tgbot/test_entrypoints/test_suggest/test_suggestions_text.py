@@ -83,8 +83,6 @@ class TestHandleSuggestCommandUseCase:
 
         handle_suggest_command_use_case(message)
 
-        mock_bot.add_custom_filter.assert_called_once()
-
         mock_bot.send_message.assert_called_once_with(
             chat_id=CHAT_ID, text=SUGGESTION_REQUEST
         )

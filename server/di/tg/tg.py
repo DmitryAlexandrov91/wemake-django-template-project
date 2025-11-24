@@ -1,5 +1,6 @@
 import punq
 from telebot import TeleBot
+from telebot.custom_filters import StateFilter
 
 from server.apps.tgbot.buttons.back_to_surveys import BackToSurveysButton
 from server.apps.tgbot.infra.storage import StatePostgresStorage
@@ -9,6 +10,7 @@ from server.apps.tgbot.keyboards.edit_keyboard import (
     SurveysListKeyboard,
 )
 from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
+from server.apps.tgbot.middleware import StateMiddleware
 from server.apps.tgbot.services.keyboard_builder import (
     ButtonBuilderService,
     KeyboardBuilderService,
@@ -27,12 +29,16 @@ from server.settings.components import tgbot as tg_settings
 def _inject_tg(container: punq.Container) -> None:
     """Register TG."""
     state_storage = StatePostgresStorage()
+    bot = TeleBot(
+        token=tg_settings.BOT_TOKEN,
+        state_storage=state_storage,
+        use_class_middlewares=True,
+    )
+    bot.add_custom_filter(StateFilter(bot))  # type: ignore[no-untyped-call]
+    bot.setup_middleware(StateMiddleware(bot))
     container.register(
         service=TeleBot,
-        instance=TeleBot(
-            token=tg_settings.BOT_TOKEN,
-            state_storage=state_storage,
-        ),
+        instance=bot,
         scope='singleton',
     )
     container.register(TelegramService)

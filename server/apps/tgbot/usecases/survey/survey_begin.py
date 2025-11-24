@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from telebot import TeleBot, types
-from telebot.custom_filters import StateFilter
 
 from server.apps.surveys.infra.repository import (
     AnswerOptionRepo,
@@ -68,7 +67,6 @@ class HandleSurveyCommandUseCase:
 
     def _configure_state(self, user_id: int, chat_id: int) -> None:
         """Add custom filter and set state."""
-        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
         self._state.set_state(
             chat_id=chat_id,
             user_id=user_id,

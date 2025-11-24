@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from telebot import TeleBot, types
-from telebot.custom_filters import StateFilter
 
 from server.apps.surveys.infra.repository import (
     UserAnswerRepo,
@@ -38,7 +37,6 @@ class HandleEditResponseUseCase:
             callback=answer_cancel_callback,
         )
 
-        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
         self._state.set_state(
             user_id=call.from_user.id,
             chat_id=call.message.chat.id,

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from telebot import TeleBot, types
-from telebot.custom_filters import StateFilter
 
 from server.apps.tgbot.infra.storage import StatePostgresStorage
 from server.apps.tgbot.logic.suggestions_usecases import HandleSuggestionUseCase
@@ -28,7 +27,6 @@ class HandleSuggestCommandUseCase:
             self._bot.send_message(message.chat.id, NO_USER)
             return
 
-        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
         self._state.set_state(
             user_id=message.from_user.id,
             state=SuggestState.waiting_for_suggestion,
