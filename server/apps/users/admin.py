@@ -116,10 +116,3 @@ class UserStatisticsAdmin(admin.ModelAdmin[UserStatistics]):
     ) -> bool:
         """Changing objects prohibited."""
         return False
-
-    @override
-    def has_delete_permission(
-        self, request: HttpRequest, object: Any | None = None
-    ) -> bool:
-        """Object deletion prohibited."""
-        return False

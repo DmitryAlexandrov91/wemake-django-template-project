@@ -127,7 +127,11 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
     finished_count = serializers.IntegerField(read_only=True)
     questions = QuestionListSerializer(many=True)
     department = DepartmentListSerializer()
-    employees = SurveyTimeReportSerializer(many=True, read_only=True)
+    employees = SurveyTimeReportSerializer(
+        many=True,
+        read_only=True,
+        source='result',
+    )
 
     class Meta:
         model = Survey
