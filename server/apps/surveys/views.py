@@ -203,14 +203,3 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         survey = resolve(SurveySaveRepo).get_by_pk(pk)
         resolve(SurveyRepo).update_survey(survey=survey, to_delete=True)
         return response.Response(status=status.HTTP_200_OK)
-
-    @override
-    def retrieve(
-        self, request: request.Request, *args: Any, **kwargs: dict[str, Any]
-    ) -> response.Response:
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance,
-            context={'survey_id': instance.id},
-        )
-        return response.Response(serializer.data)

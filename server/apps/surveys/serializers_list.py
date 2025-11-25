@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, override
 
 from django.db.models import Model
 from drf_spectacular.utils import extend_schema_field
@@ -95,8 +95,6 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
         Within the current survey.
         """
         survey_id = self.context.get('survey_id')
-        if survey_id is None:
-            return []
         answers = [
             user_answer
             for user_answer in question.user_answers.all()
@@ -174,3 +172,9 @@ class SurveyListSerializer(SerializerIDFieldMixin[Survey]):
             'status',
             'employees',
         )
+
+    @override
+    def to_representation(self, instance: Survey) -> dict[str, Any]:
+        """Add survey_id to context before serialization."""
+        self.context['survey_id'] = instance.id
+        return super().to_representation(instance)
