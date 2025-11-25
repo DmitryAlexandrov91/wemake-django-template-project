@@ -52,7 +52,11 @@ class AdvanceToNextQuestion:
         with transaction.atomic():
             survey_result.current_question = next_question
             survey_result.completed_questions += 1
-            updated_fields = ['current_question', 'completed_questions']
+            updated_fields = [
+                'current_question',
+                'completed_questions',
+                'updated_at',
+            ]
 
             if is_completed:
                 survey_result.bot_state = SurveyBotState.COMPLETED

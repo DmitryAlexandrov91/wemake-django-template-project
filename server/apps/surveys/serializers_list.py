@@ -1,5 +1,9 @@
+from typing import Any
+
 from django.db.models import Model
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+from rest_framework.utils.serializer_helpers import ReturnDict
 
 from server.apps.company.models import Department
 from server.apps.surveys.models import (
@@ -31,7 +35,6 @@ class SerializerIDFieldMixin[ModelT: Model](
 class UserAnswersListSerializer(SerializerIDFieldMixin[UserAnswer]):
     """Serializer for Answer model."""
 
-    id = serializers.IntegerField(source=ATTR_PK, read_only=True)
     result = serializers.SerializerMethodField()  # noqa: WPS110
     employer = UserShortSerializer(source='survey_result.user')
 
@@ -62,7 +65,7 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
 
     id = serializers.IntegerField(source=ATTR_PK, read_only=True)
     text = serializers.CharField()
-    user_answers = UserAnswersListSerializer(many=True)
+    user_answers = serializers.SerializerMethodField()
     answer_options = AnswerOptionListSerializer(many=True)
     surveys = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Survey.objects.all()
@@ -79,6 +82,27 @@ class QuestionListSerializer(SerializerIDFieldMixin[Question]):
             'answer_options',
             'surveys',
         )
+
+    @extend_schema_field(
+        serializers.ListSerializer(child=UserAnswersListSerializer())
+    )
+    def get_user_answers(  # noqa: WPS615
+        self, question: Question
+    ) -> ReturnDict[Any, Any] | list[None]:
+        """
+        Return serialized user answers for the given question.
+
+        Within the current survey.
+        """
+        survey_id = self.context.get('survey_id')
+        if survey_id is None:
+            return []
+        answers = [
+            user_answer
+            for user_answer in question.user_answers.all()
+            if user_answer.survey_result.survey_id == survey_id
+        ]
+        return UserAnswersListSerializer(answers, many=True).data
 
 
 class QuestionShortSerializer(SerializerIDFieldMixin[Question]):

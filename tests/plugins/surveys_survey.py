@@ -40,6 +40,7 @@ class _SurveyFactoryParams(TypedDict, total=False):
     is_favorite: bool
     to_delete: bool
     status: str
+    question: Question | None
 
 
 class _SurveyResultFactoryParams(TypedDict, total=False):
@@ -156,3 +157,24 @@ def two_questions_to_delete(surveys_question_factory: QuestionFactory) -> Any:
         surveys_question_factory(text='Question1', to_delete=True),
         surveys_question_factory(text='Question2', to_delete=True),
     ]
+
+
+@pytest.fixture
+def surveys_with_answers_to_questions(
+    surveys_survey_factory: SurveyFactory,
+    surveys_question_factory: QuestionFactory,
+    surveys_survey_result_factory: SurveyResultFactory,
+    surveys_user_answer_result_factory: UserAnswerFactory,
+    active_user: CustomUser,
+) -> Survey:
+    """Create a survey with one question and a user answer."""
+    survey = surveys_survey_factory()
+    question = surveys_question_factory(surveys={survey})
+    survey_result = surveys_survey_result_factory(
+        user=active_user, survey=survey
+    )
+    surveys_user_answer_result_factory(
+        survey_result=survey_result, question=question
+    )
+
+    return survey

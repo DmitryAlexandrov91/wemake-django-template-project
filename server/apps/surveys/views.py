@@ -120,6 +120,14 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         }.get(self.action, SurveyListSerializer)
 
     @override
+    def get_object(self) -> models.Survey:
+        return (
+            resolve(SurveyRepo)
+            .get_modified_surveys_queryset(self.request)
+            .get(pk=self.kwargs['pk'])
+        )
+
+    @override
     def get_queryset(self) -> QuerySet[models.Survey]:
         """Return modificated Survey`s queryset."""
         return resolve(SurveyRepo).get_modified_surveys_queryset(self.request)
@@ -159,10 +167,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
                 {DETAIL_KEY: 'PATCH request body cannot be empty.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        repo = resolve(SurveyRepo)
-        survey = repo.get_modified_surveys_queryset(request).get(
-            pk=kwargs['pk']
-        )
+        survey = self.get_object()
         survey_status_orig = survey.status
         serializer = self.get_serializer(
             survey,
@@ -172,7 +177,7 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         serializer.is_valid(raise_exception=True)
 
         try:
-            updated_survey = repo.update_survey(
+            updated_survey = resolve(SurveyRepo).update_survey(
                 survey, **serializer.validated_data
             )
         except models.Question.DoesNotExist:
@@ -198,3 +203,14 @@ class SurveyViewSet(viewsets.ModelViewSet[models.Survey]):
         survey = resolve(SurveySaveRepo).get_by_pk(pk)
         resolve(SurveyRepo).update_survey(survey=survey, to_delete=True)
         return response.Response(status=status.HTTP_200_OK)
+
+    @override
+    def retrieve(
+        self, request: request.Request, *args: Any, **kwargs: dict[str, Any]
+    ) -> response.Response:
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance,
+            context={'survey_id': instance.id},
+        )
+        return response.Response(serializer.data)
