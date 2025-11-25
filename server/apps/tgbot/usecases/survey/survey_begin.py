@@ -16,6 +16,7 @@ from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
     SURVEY_START,
+    TgBotQuestionType,
 )
 from server.apps.tgbot.states import SurveyResponseState
 from server.apps.users.infra.repository import UserRepo
@@ -84,6 +85,9 @@ class HandleSurveyCommandUseCase:
             else SURVEY_START.format(
                 full_name=full_name,
                 question=survey_result.current_question,
+                question_type=TgBotQuestionType[
+                    survey_result.current_question.question_type
+                ],
             ),
             parse_mode='HTML',
             reply_markup=None

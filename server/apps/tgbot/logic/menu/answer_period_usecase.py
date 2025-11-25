@@ -3,7 +3,6 @@ from datetime import datetime
 
 from django.db.models import QuerySet
 from telebot import TeleBot, types
-from telebot.custom_filters import StateFilter
 
 from server.apps.surveys.models.surveys import SurveyResult
 from server.apps.tgbot.infra.storage import StatePostgresStorage
@@ -32,8 +31,6 @@ class InitiatePeriodAnswers:
     def __call__(self, call: types.CallbackQuery) -> None:
         """Handle callback and request start date from user."""
         self._bot.answer_callback_query(call.id)
-
-        self._bot.add_custom_filter(StateFilter(self._bot))  # type: ignore[no-untyped-call]
 
         self._state.set_state(
             user_id=call.from_user.id,

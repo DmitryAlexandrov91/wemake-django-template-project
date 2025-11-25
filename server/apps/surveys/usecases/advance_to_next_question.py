@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from django.db import transaction
 
+from server.apps.surveys.choices import SurveyBotState
 from server.apps.surveys.infra.survey_question_repo import SurveyQuestionRepo
 from server.apps.surveys.models import SurveyResult
 
@@ -44,14 +45,22 @@ class AdvanceToNextQuestion:
             )
         )
 
+        is_completed = (
+            not next_question and survey_result.completed_questions > 0
+        )
+
         with transaction.atomic():
             survey_result.current_question = next_question
             survey_result.completed_questions += 1
-            survey_result.save(
-                update_fields=['current_question', 'completed_questions']
-            )
+            updated_fields = ['current_question', 'completed_questions']
 
-        if not next_question and survey_result.completed_questions > 0:
+            if is_completed:
+                survey_result.bot_state = SurveyBotState.COMPLETED
+                updated_fields.append('bot_state')
+
+            survey_result.save(update_fields=updated_fields)
+
+        if is_completed:
             self._sheduler(user_id=survey_result.user.pk)
 
         return survey_result

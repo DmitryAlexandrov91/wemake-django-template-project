@@ -13,7 +13,10 @@ from server.apps.tgbot.logic.menu.constants import (
     MESSAGE_INVALIDE_DATE,
     PARSE_MODE,
 )
-from server.apps.tgbot.message_templates import ANSWER_TEMPLATE
+from server.apps.tgbot.message_templates import (
+    ANSWER_TEMPLATE,
+    ANSWERS_LIST_TEMPLATE,
+)
 
 
 @dataclass
@@ -59,8 +62,11 @@ def generate_view_answers_message(
     results_survey = []
 
     for archive_results in archive_survey:
-        survey_title = archive_results.survey.title
-        results_survey.append(f'Опрос <b>{survey_title}</b>')
+        results_survey.append(
+            ANSWERS_LIST_TEMPLATE.format(
+                survey_title=archive_results.survey.title
+            ),
+        )
         for index, answer in enumerate(
             archive_results.user_answers.all(), start=1
         ):

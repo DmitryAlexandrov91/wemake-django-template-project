@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 SURVEY_RESULTS_TEMPLATE = """
 📋 Опрос <b>{survey_title}</b>
 <i>редактирование доступно до {end_date}</i>
@@ -7,6 +9,11 @@ SURVEY_RESULTS_TEMPLATE = """
 ANSWER_TEMPLATE = """
 <b>Вопрос №{question_number}:</b> <i>{question_text}</i>
 Ваш ответ: <i>{answer_text}</i>
+"""
+
+ANSWERS_LIST_TEMPLATE = """
+
+Опрос <b>{survey_title}</b>
 """
 
 NO_ANSWERS = 'Ответов нет'
@@ -29,12 +36,12 @@ SURVEY_COMPLITED = """
 SURVEY_START = """
 Добрый день, {full_name}\n
 Ответьте, пожалуйста, на вопрос:\n
-<b><i>{question}</i></b>
+<b><i>{question}</i></b> <i>({question_type})</i>
 """
 
 SURVEY_CONTINUE = """
 Ответьте, пожалуйста, на следующий вопрос:\n
-<b><i>{question}</i></b>
+<b><i>{question}</i></b> <i>({question_type})</i>
 """
 
 SURVEY_STATUS_EDIT_FORBIDDEN = (
@@ -50,3 +57,11 @@ SURVEY_CHOISE = """
 """
 
 BACK_TO_SURVEYS = '🔙 Вернуться к активным опросам'
+
+
+class TgBotQuestionType(StrEnum):
+    """Class for readable question types from frontend."""
+
+    ratingScale = 'Плохо-Прекрасно'  # noqa: N815
+    score = '1-9'
+    consentGiven = 'Да-Нет'  # noqa: N815

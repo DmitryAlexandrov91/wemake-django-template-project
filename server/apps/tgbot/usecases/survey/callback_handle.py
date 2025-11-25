@@ -16,6 +16,7 @@ from server.apps.tgbot.keyboards.survey_keyboard import SurveyHandleKeyboard
 from server.apps.tgbot.message_templates import (
     SURVEY_COMPLITED,
     SURVEY_CONTINUE,
+    TgBotQuestionType,
 )
 from server.apps.tgbot.usecases.common import (
     ProcessingAnswerUseCase,
@@ -75,7 +76,10 @@ class HandleSurveyCallbackResponseUseCase:
             text=SURVEY_COMPLITED
             if updated_survey_result.current_question is None
             else SURVEY_CONTINUE.format(
-                question=updated_survey_result.current_question
+                question=updated_survey_result.current_question,
+                question_type=TgBotQuestionType[
+                    updated_survey_result.current_question.question_type
+                ],
             ),
             reply_markup=None
             if updated_survey_result.current_question is None
