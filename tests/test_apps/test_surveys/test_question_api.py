@@ -1,5 +1,7 @@
 # flake8: noqa: WPS226
+from collections.abc import Callable
 from http import HTTPStatus
+from typing import Any
 
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
@@ -40,6 +42,23 @@ def test_mark_question_to_delete(
     assert response.status_code == status.HTTP_200_OK
     consent_given_question.refresh_from_db()
     assert consent_given_question.to_delete is True
+
+
+@pytest.mark.django_db
+def test_mark_question_assigned_to_survey_to_delete(
+    question_with_two_surveys: Callable[
+        [dict[str, Any]], tuple[Question, list[Survey]]
+    ],
+    auth_client: APIClient,
+) -> None:
+    """Test deleting an question by primary key."""
+    question, _ = question_with_two_surveys({
+        'text': 'test text',
+        'question_type': 'score',
+    })
+    url = reverse('questions-detail', kwargs={'pk': question.pk})
+    response = auth_client.delete(url)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

@@ -97,6 +97,11 @@ class QuestionViewSet(  # noqa: WPS215
         """Mark question for deletion by primary key."""
         repo = resolve(QuestionRepo)
         question = repo.get_by_pk(pk=pk)
+        if repo.survey_assigned_to_question(question):
+            return response.Response(
+                data={'error': 'Survey(s) assigned to the question.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         repo.update_question(question=question, to_delete=True)
         return response.Response(status=status.HTTP_200_OK)
 

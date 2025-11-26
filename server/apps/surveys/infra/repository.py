@@ -120,6 +120,10 @@ class QuestionRepo:
         question = Question.objects.get(pk=pk)
         question.delete()
 
+    def survey_assigned_to_question(self, question: Question) -> bool:
+        """Reports there is s survey assigned to the question."""
+        return question.surveys.exists()
+
 
 @final
 class SurveyRepo:  # noqa: WPS214

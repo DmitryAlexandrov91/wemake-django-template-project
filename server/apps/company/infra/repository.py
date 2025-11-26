@@ -13,7 +13,7 @@ from server.apps.users.models import CustomUser
 
 
 @final
-class DepartmentRepo:
+class DepartmentRepo:  # noqa: WPS214
     """Repository for Department model."""
 
     def get_all(self) -> QuerySet[Department]:
@@ -64,3 +64,11 @@ class DepartmentRepo:
         """Delete one department."""
         department = Department.objects.get(pk=pk)
         department.delete()
+
+    def active_users_in_department(self, department: Department) -> bool:
+        """Reports there is an active user in the department."""
+        return department.users.filter(is_active=True).exists()
+
+    def surveys_in_department(self, department: Department) -> bool:
+        """Reports there is a survey assigned to the department."""
+        return department.surveys.exists()
